@@ -133,14 +133,26 @@ class SpreadsheetParser:
             return None
 
     def _resolve_column_map(self, columns: List[str]) -> Dict[str, Optional[str]]:
-        """Maps detected dataframe columns to standard schema fields."""
+        """Maps detected dataframe columns to standard schema fields using fuzzy & substring matching."""
         resolved = {}
         for field, aliases in self.COLUMN_MAPPINGS.items():
             matched_col = None
+            # 1. Exact match
             for alias in aliases:
                 if alias in columns:
                     matched_col = alias
                     break
+            # 2. Normalized Substring match if exact match not found
+            if not matched_col:
+                for col in columns:
+                    clean_col = col.replace("/", " ").replace("#", " ").replace("(", " ").replace(")", " ")
+                    clean_tokens = [t.strip() for t in clean_col.split() if t.strip()]
+                    for alias in aliases:
+                        if alias in clean_col or any(alias == t for t in clean_tokens):
+                            matched_col = col
+                            break
+                    if matched_col:
+                        break
             resolved[field] = matched_col
         return resolved
 
