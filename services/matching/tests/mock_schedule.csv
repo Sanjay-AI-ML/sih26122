@@ -1,0 +1,8 @@
+activity_id,activity_name,discipline,tag,wbs_path,planned_start,planned_finish
+ACT-PIPE-101,Fabrication of Spools for Line 24-PL-001,piping,24-PL-001,WBS-01,2026-08-01,2026-08-10
+ACT-PIPE-102,Erection of Spools for Line 24-PL-001,piping,24-PL-001,WBS-01,2026-08-11,2026-08-20
+ACT-PIPE-103,Hydrotest of Line 24-PL-001,piping,24-PL-001,WBS-01,2026-08-21,2026-08-25
+ACT-CIVIL-201,Excavation for Tank Foundation,civil,TK-100,WBS-02,2026-08-01,2026-08-15
+ACT-CIVIL-202,Pouring Concrete for Tank Foundation,civil,TK-100,WBS-02,2026-08-16,2026-08-30
+ACT-ELEC-301,Cable Pulling for Substation,electrical,SUB-01,WBS-03,2026-08-01,2026-08-10
+ACT-PIPE-104,Erection of Spools for Line 24-PL-002,piping,24-PL-002,WBS-01,2026-08-11,2026-08-20
