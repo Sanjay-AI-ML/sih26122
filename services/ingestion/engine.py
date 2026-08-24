@@ -15,6 +15,9 @@ from services.ingestion.parsers.spreadsheet_parser import SpreadsheetParser
 from services.ingestion.parsers.pdf_parser import PDFParser
 from services.ingestion.parsers.voice_parser import VoiceParser
 from services.ingestion.parsers.scan_parser import ScanParser
+from services.ingestion.parsers.audio_parser import AudioParser
+from services.ingestion.parsers.ocr_parser import OCRParser
+from services.ingestion.llm_extractor import LLMExtractor
 
 
 class IngestionEngine:
@@ -28,6 +31,9 @@ class IngestionEngine:
         self.pdf_parser = PDFParser()
         self.voice_parser = VoiceParser()
         self.scan_parser = ScanParser()
+        self.audio_parser = AudioParser()
+        self.ocr_parser = OCRParser()
+        self.llm_extractor = LLMExtractor()
 
     def ingest_file(
         self,
@@ -53,9 +59,15 @@ class IngestionEngine:
                 filename=filename,
                 default_date=default_date
             )
+        elif modality == "audio" or ext in {".wav", ".mp3", ".m4a", ".ogg", ".flac"}:
+            return self.audio_parser.parse_audio(
+                audio_input=file_content,
+                filename=filename,
+                default_date=default_date
+            )
         elif modality == "scan" or ext in {".jpg", ".jpeg", ".png", ".tiff", ".bmp"}:
-            return self.scan_parser.parse(
-                file_input=file_content,
+            return self.ocr_parser.parse_image(
+                image_input=file_content,
                 filename=filename,
                 default_date=default_date
             )
@@ -110,5 +122,31 @@ class IngestionEngine:
         return self.spreadsheet_parser.parse_file(
             file_input=file_input,
             filename=filename,
+            default_date=default_date
+        )
+
+    def ingest_audio(
+        self,
+        audio_input: Union[bytes, str, Path, io.BytesIO],
+        filename: str = "supervisor_voice.wav",
+        default_date: Optional[str] = None
+    ) -> List[ExtractedEvent]:
+        """Transcribes audio and extracts events."""
+        return self.audio_parser.parse_audio(
+            audio_input=audio_input,
+            filename=filename,
+            default_date=default_date
+        )
+
+    def ingest_with_llm(
+        self,
+        text: str,
+        source_document: str = "daily_progress_report.txt",
+        default_date: Optional[str] = None
+    ) -> List[ExtractedEvent]:
+        """Extracts events using local LLM/SLM schema-constrained prompt."""
+        return self.llm_extractor.extract_with_llm(
+            text=text,
+            source_document=source_document,
             default_date=default_date
         )

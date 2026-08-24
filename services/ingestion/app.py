@@ -223,6 +223,60 @@ def ingest_voice_endpoint(payload: VoiceIngestRequest):
     )
 
 
+@app.post(
+    "/ingest/audio",
+    response_model=IngestResponse,
+    tags=["Ingestion"],
+    summary="Upload & Transcribe Audio File (.wav, .mp3, .m4a, .ogg)"
+)
+async def ingest_audio_endpoint(
+    file: UploadFile = File(...),
+    default_date: Optional[str] = Form(None)
+):
+    """
+    Uploads supervisor voice recording, transcribes via local Whisper model, and extracts events.
+    """
+    filename = file.filename or "supervisor_voice.wav"
+    content = await file.read()
+    events = engine.ingest_audio(
+        audio_input=content,
+        filename=filename,
+        default_date=default_date
+    )
+    return IngestResponse(
+        success=True,
+        total_events=len(events),
+        source_document=filename,
+        input_format="voice",
+        events=events
+    )
+
+
+@app.post(
+    "/ingest/llm",
+    response_model=IngestResponse,
+    tags=["Ingestion"],
+    summary="Ingest Text via Schema-Constrained Local SLM/LLM"
+)
+def ingest_llm_endpoint(payload: TextIngestRequest):
+    """
+    Extracts events using local LLM / SLM schema-constrained extraction with Pydantic guard.
+    """
+    events = engine.ingest_with_llm(
+        text=payload.text,
+        source_document=payload.source_document or "typed_dpr_input.txt",
+        default_date=payload.default_date
+    )
+    return IngestResponse(
+        success=True,
+        total_events=len(events),
+        source_document=payload.source_document or "typed_dpr_input.txt",
+        input_format="free_text",
+        events=events
+    )
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("services.ingestion.app:app", host="0.0.0.0", port=8001, reload=True)
+

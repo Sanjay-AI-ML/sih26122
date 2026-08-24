@@ -59,13 +59,32 @@ Every extracted event validates against this exact contract before downstream co
   - Accepts multipart file upload (`file`) OR form field (`text`).
 
 ### Dedicated Endpoints
-- **`POST /ingest/file`** (Multipart File Upload: `.txt`, `.pdf`, `.csv`, `.xlsx`, `.jpg`, `.png`)
+- **`POST /ingest/file`** (Multipart File Upload: `.txt`, `.pdf`, `.csv`, `.xlsx`, `.jpg`, `.png`, `.wav`, `.mp3`)
 - **`POST /ingest/text`** (JSON Payload: `{"text": "...", "source_document": "...", "default_date": "..."}`)
 - **`POST /ingest/voice`** (JSON Payload: `{"transcript": "...", "source_document": "...", "default_date": "..."}`)
+- **`POST /ingest/audio`** (Multipart Voice Recording Upload: `.wav`, `.mp3`, `.m4a`, `.ogg`)
+- **`POST /ingest/llm`** (Schema-Constrained Local SLM/LLM extraction)
 
 ---
 
-## 4. Example Usages (cURL)
+## 4. Interactive CLI Tool
+
+Test any report or voice note directly from your terminal:
+
+```bash
+# Ingest and display table format
+python -m services.ingestion.cli shared/sample-data/daily_progress_report_piping.txt
+
+# Ingest direct text
+python -m services.ingestion.cli --text "2026-08-20: Civil team poured 50 cum concrete at Area-04."
+
+# Ingest and export to JSON
+python -m services.ingestion.cli shared/sample-data/discipline_progress_civil.xlsx --export extracted.json
+```
+
+---
+
+## 5. Example Usages (cURL)
 
 ### A. Ingest Free-Text DPR via JSON
 ```bash
@@ -84,20 +103,15 @@ curl -X POST "http://localhost:8001/ingest/file" \
   -F "file=@shared/sample-data/discipline_progress_piping.csv"
 ```
 
-### C. Ingest Code-Mixed Hinglish Supervisor Voice Transcript
+### C. Ingest Direct Audio Recording
 ```bash
-curl -X POST "http://localhost:8001/ingest/voice" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "transcript": "Line 12-CS-104 pe hydrostatic test start ho gaya hai Punj Lloyd ke through, 6 joints complete check kiya pressure 18 bar hold hai.",
-    "source_document": "voice_mic_02.wav",
-    "default_date": "2026-08-20"
-  }'
+curl -X POST "http://localhost:8001/ingest/audio" \
+  -F "file=@supervisor_voice_note.wav"
 ```
 
 ---
 
-## 5. Local Setup & Running Tests
+## 6. Local Setup & Running Tests
 
 ### Install dependencies:
 ```bash

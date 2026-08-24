@@ -23,6 +23,11 @@ SUPPORTED_FILE_EXTENSIONS: Dict[str, str] = {
     ".png": "scan",
     ".tiff": "scan",
     ".bmp": "scan",
+    ".wav": "audio",
+    ".mp3": "audio",
+    ".m4a": "audio",
+    ".ogg": "audio",
+    ".flac": "audio",
 }
 
 # Discipline taxonomy keywords
