@@ -1,0 +1,8 @@
+Date,Discipline,Tag_or_Line_ID,Activity_Phrase,Location,Event_Type,Quantity,Unit,Contractor,Delay_Reason,Source_Excerpt
+2026-08-20,piping,Line 24-PL-001,Spool erection on pipe rack,CDU-II Bay 3,finish,14,spools,L&T Heavy Engineering,,Spool erection of 14 spools completed on Line 24-PL-001
+2026-08-20,piping,Line 12-CS-104,Hydrostatic testing at 18.5 bar,Pump Station Manifold,start,6,joints,Punj Lloyd,,Hydrotest commenced on Line 12-CS-104 with 6 joints inspected
+2026-08-20,piping,Line 08-SS-202,Fit-up and root pass welding,Pump House Manifold,start,8,joints,Bridge & Roof,,Fit-up and welding started on Line 08-SS-202
+2026-08-20,piping,Line 30-PL-009,Valve assembly and installation,Valve Pit VP-02,progress,2,nos,Tata Projects,Heavy rainfall and waterlogging in pit,Valve assembly delayed due to waterlogging in valve pit
+2026-08-20,piping,Line 16-PL-015,Flange torquing and alignment,Exchanger Bay E-102,finish,4,nos,L&T Heavy Engineering,,Flange tightening completed on Line 16-PL-015 connecting to E-102
+2026-08-21,piping,Line 24-PL-001,Radiography test inspection,CDU-II Bay 3,finish,18,joints,L&T Heavy Engineering,,RT clearance received for 18 joints on Line 24-PL-001
+2026-08-21,piping,Line 14-PL-088,Heavy spool lifting and positioning,Utility Yard,progress,1,spools,Bridge & Roof,Awaiting crane safety permit from HSE,Lifting suspended awaiting crane permit

@@ -1,0 +1,5 @@
+[SCANNED SITE LOG - IMAGE SAMPLE STUB]
+File: SITE_DIARY_LOG_SCAN_2026-08-20.JPG
+Handwritten entry noted:
+"20-Aug: Line 24-PL-001 spool erection 14 nos done by L&T. TK-101 excavation done. Rain stopped work at 4 PM."
+Note: Production OCR is out of scope for 30h prototype per Masterplan. Scanned files route to manual review or scan parser stub.

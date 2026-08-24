@@ -1,0 +1,52 @@
+[
+  {
+    "id": "VT-001",
+    "audio_source": "supervisor_mic_unit2_01.wav",
+    "language_mode": "en",
+    "transcript": "Spool erection on Line 24-PL-001 finished today afternoon. L&T team completed 14 spools at CDU unit pipe rack.",
+    "expected_discipline": "piping",
+    "expected_tag": "Line 24-PL-001",
+    "expected_event_type": "finish",
+    "expected_qty": 14.0
+  },
+  {
+    "id": "VT-002",
+    "audio_source": "supervisor_mic_unit2_02.wav",
+    "language_mode": "hi-en-mixed",
+    "transcript": "Line 12-CS-104 pe hydrostatic test start ho gaya hai Punj Lloyd ke through, 6 joints complete check kiya pressure 18 bar hold hai.",
+    "expected_discipline": "piping",
+    "expected_tag": "Line 12-CS-104",
+    "expected_event_type": "start",
+    "expected_qty": 6.0
+  },
+  {
+    "id": "VT-003",
+    "audio_source": "supervisor_mic_civil_01.wav",
+    "language_mode": "hi-en-mixed",
+    "transcript": "Tank TK-101 ka foundation excavation complete kar diya Tata Projects ne, total 450 cum earthwork finish ho gaya.",
+    "expected_discipline": "civil",
+    "expected_tag": "TK-101",
+    "expected_event_type": "finish",
+    "expected_qty": 450.0
+  },
+  {
+    "id": "VT-004",
+    "audio_source": "supervisor_mic_pump_01.wav",
+    "language_mode": "en",
+    "transcript": "Started concrete pouring for Pump P-201A foundation today morning. 85 cubic meters poured by Bridge & Roof.",
+    "expected_discipline": "civil",
+    "expected_tag": "P-201A",
+    "expected_event_type": "start",
+    "expected_qty": 85.0
+  },
+  {
+    "id": "VT-005",
+    "audio_source": "supervisor_mic_delay_01.wav",
+    "language_mode": "en",
+    "transcript": "Work on Line 14-PL-088 is delayed because crane permit has not been approved by safety team.",
+    "expected_discipline": "piping",
+    "expected_tag": "Line 14-PL-088",
+    "expected_event_type": "progress",
+    "expected_delay": "crane permit has not been approved by safety team"
+  }
+]

@@ -1,0 +1,121 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExtractedEvent",
+  "description": "Standardized event schema extracted from heterogeneous field progress reports for SIH26122 (Setu)",
+  "type": "object",
+  "required": [
+    "activity_phrase",
+    "discipline",
+    "event_type",
+    "event_date",
+    "source_document",
+    "source_excerpt",
+    "input_format"
+  ],
+  "properties": {
+    "activity_phrase": {
+      "type": "string",
+      "description": "Extracted activity description phrase, e.g. spool erected on Line 24-PL-001",
+      "minLength": 1
+    },
+    "discipline": {
+      "type": "string",
+      "enum": [
+        "civil",
+        "piping",
+        "static_rotating",
+        "electrical",
+        "instrumentation",
+        "hse"
+      ],
+      "description": "Infrastructure engineering discipline code"
+    },
+    "tag_or_line_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Engineering tag, line number, equipment ID, or spool number (e.g. Line 24-PL-001, TK-101, P-201A)"
+    },
+    "location": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Site unit, plot, bay, or geographical section (e.g. Refinery Unit 02, Pump Bay 4)"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "start",
+        "finish",
+        "progress",
+        "unspecified"
+      ],
+      "description": "Execution status milestone"
+    },
+    "event_date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO formatted date (YYYY-MM-DD) of the logged event"
+    },
+    "quantity": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "Work quantity completed or logged"
+    },
+    "unit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Unit of measurement (e.g. joints, meters, cum, MT, nos)"
+    },
+    "contractor": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Executing contractor or subcontractor name (e.g. L&T, Punj Lloyd, Bridge & Roof)"
+    },
+    "delay_reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Reported delay reason or bottleneck (e.g. Heavy monsoon rainfall, Crane permit awaited)"
+    },
+    "source_document": {
+      "type": "string",
+      "description": "Filename or identifier of the source file / stream (e.g. DPR_2026-08-24_Piping.txt)",
+      "minLength": 1
+    },
+    "source_excerpt": {
+      "type": "string",
+      "description": "Exact verbatim original sentence, row, or utterance \u2014 essential for auditability",
+      "minLength": 1
+    },
+    "input_format": {
+      "type": "string",
+      "enum": [
+        "free_text",
+        "spreadsheet",
+        "scan",
+        "voice"
+      ],
+      "description": "Source modality format"
+    },
+    "raw_confidence_hint": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Optional parsing confidence score (0.0 to 1.0) indicating extractor certainty"
+    }
+  },
+  "additionalProperties": false
+}
