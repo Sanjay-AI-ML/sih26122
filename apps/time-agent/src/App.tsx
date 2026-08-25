@@ -43,6 +43,7 @@ const i18n: any = {
     "saveConfig": "SAVE CONFIGURATION",
     "resetDefaults": "RESET TO DEFAULTS",
     "upload": "Upload Report or Attachment",
+    "takePicture": "Take Picture",
     "startRec": "Start recording",
     "send": "Send update",
     "structured": "STRUCTURED FOR SCHEDULE",
@@ -108,6 +109,7 @@ const i18n: any = {
     "saveConfig": "कॉन्फ़िगरेशन सहेजें",
     "resetDefaults": "डिफ़ॉल्ट पर रीसेट करें",
     "upload": "रिपोर्ट या अटैचमेंट अपलोड करें",
+    "takePicture": "तस्वीर लें",
     "startRec": "रिकॉर्डिंग शुरू करें",
     "send": "अपडेट भेजें",
     "structured": "शेड्यूल के लिए संरचित",
@@ -788,6 +790,10 @@ function App() {
                 <input type="file" id="file-upload-input" className="hidden" accept=".txt,.csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.wav,.mp3,.docx,.xer,.xml" onChange={handleFileUpload} />
                 <label htmlFor="file-upload-input" className="w-10 h-10 rounded-lg border border-[#CCCCCC] bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 shrink-0 transition-colors" title={t("upload")}>
                   <span className="material-symbols-outlined text-xl text-[#666666]">attach_file</span>
+                </label>
+                <input type="file" id="camera-capture-input" className="hidden" accept="image/*" capture="environment" onChange={handleFileUpload} />
+                <label htmlFor="camera-capture-input" className="w-10 h-10 rounded-lg border border-[#CCCCCC] bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 shrink-0 transition-colors" title={t("takePicture")}>
+                  <span className="material-symbols-outlined text-xl text-[#666666]">photo_camera</span>
                 </label>
                 <button onClick={toggleMic} title={t("startRec")} className={"w-10 h-10 rounded-lg border flex items-center justify-center transition-colors shrink-0 " + (isRecording ? "bg-[#DA251C] text-white border-[#DA251C] animate-pulse" : "border-[#E1B91B] text-[#E1B91B] bg-white hover:bg-amber-50")}>
                   <span className="material-symbols-outlined text-xl">mic</span>
