@@ -199,12 +199,12 @@ export const RecordDetailScreen: React.FC = () => {
                 </div>
               </div>
               <div className="border border-border-standard rounded-md overflow-x-auto">
-                <table className="w-full text-left border-collapse min-w-[380px]">
+                <table className="w-full table-fixed text-left border-collapse min-w-[380px]">
                   <thead className="bg-panel-accent border-b border-border-standard">
                     <tr>
-                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('tableHeaderField')}</th>
-                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('tableHeaderValue')}</th>
-                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('tableHeaderMapping')}</th>
+                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px] w-1/3">{t('tableHeaderField')}</th>
+                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px] w-1/3">{t('tableHeaderValue')}</th>
+                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px] w-1/3">{t('tableHeaderMapping')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-standard font-body-sm text-body-sm">

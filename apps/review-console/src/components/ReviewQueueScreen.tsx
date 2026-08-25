@@ -257,16 +257,16 @@ export const ReviewQueueScreen: React.FC = () => {
       {viewMode === 'table' ? (
         <div className="flex-grow border border-border-standard rounded-md bg-surface-container-lowest overflow-hidden shadow-xs flex flex-col">
           <div className="overflow-x-auto flex-grow custom-scrollbar">
-            <table className="w-full text-left border-collapse min-w-[760px]">
+            <table className="w-full table-fixed text-left border-collapse min-w-[760px]">
               <thead className="sticky top-0 bg-[#F5F5F5] border-b border-border-standard z-20">
                 <tr>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-12 text-center text-[10px]">{t("status")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-20 text-center text-[10px]">{t("status")}</th>
                   <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-24 text-[10px]">{t("eventIdCol")}</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-14 text-center text-[10px]">{t("inputFormat")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-20 text-center text-[10px]">{t("inputFormat")}</th>
                   <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider text-[10px]">{t("descriptionCol")}</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-28 text-[10px]">{t("disciplines")}</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-28 text-[10px]">{t("date")}</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-14 text-center text-[10px]">{t("actionsCol")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-32 text-[10px]">{t("disciplines")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-36 text-[10px]">{t("date")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-20 text-center text-[10px]">{t("actionsCol")}</th>
                 </tr>
               </thead>
               <tbody className="font-body-sm text-body-sm text-on-surface divide-y divide-border-standard">
@@ -310,7 +310,7 @@ export const ReviewQueueScreen: React.FC = () => {
                         <td className="py-2 px-3 text-center text-outline">
                           {getInputIcon(item.inputFormat)}
                         </td>
-                        <td className={`py-2 px-3 ${isFlagged ? 'font-medium text-danger' : item.status === 'in_progress' ? 'text-on-surface-variant italic' : item.status === 'auto_approved' ? 'text-on-surface-variant' : 'font-medium'}`}>
+                        <td className={`py-2 px-3 truncate max-w-[260px] ${isFlagged ? 'font-medium text-danger' : item.status === 'in_progress' ? 'text-on-surface-variant italic' : item.status === 'auto_approved' ? 'text-on-surface-variant' : 'font-medium'}`}>
                           {t(item.activityDescription) || item.activityDescription}
                         </td>
                         <td className="py-2 px-3">
