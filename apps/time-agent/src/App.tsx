@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
     function OilIndiaLogo({ className = "w-7 h-7" }) {
       return (
@@ -166,6 +166,124 @@ function App() {
       const [inputText, setInputText] = useState("");
       const [playingAudio, setPlayingAudio] = useState(false);
       const [isLoggedIn, setIsLoggedIn] = useState(true);
+
+      const videoRef = useRef<HTMLVideoElement | null>(null);
+      const [isCameraActive, setIsCameraActive] = useState(false);
+      const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+
+      const startCamera = async () => {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          setVideoStream(stream);
+          setIsCameraActive(true);
+        } catch (err) {
+          try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            setVideoStream(stream);
+            setIsCameraActive(true);
+          } catch (e) {
+            setMessages((prev: any[]) => [...prev, { 
+              id: Date.now() + 1, 
+              type: "bot", 
+              text: "Camera access denied or unavailable: " + (e as Error).message, 
+              time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) 
+            }]);
+          }
+        }
+      };
+
+      const stopCamera = () => {
+        if (videoStream) {
+          videoStream.getTracks().forEach(track => track.stop());
+          setVideoStream(null);
+        }
+        setIsCameraActive(false);
+      };
+
+      const uploadCapturedFile = async (file: File) => {
+        if (isOffline) {
+          const fileItem: any = {
+            id: Date.now(),
+            type: "file",
+            name: file.name,
+            size: file.size,
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          };
+          const newQueue = [...queue, fileItem];
+          setQueue(newQueue);
+          localStorage.setItem("time_agent_offline_queue", JSON.stringify(newQueue));
+          setMessages((prev: any[]) => [
+            ...prev,
+            { id: Date.now(), type: "user", text: "Uploading capture: " + file.name, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
+            { id: Date.now() + 1, type: "bot", text: "offlineFileQueuedMsg", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
+          ]);
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+        setIsTyping(true);
+        setMessages((prev: any[]) => [...prev, { id: Date.now(), type: "user", text: "Uploading capture: " + file.name, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+        try {
+          const res = await fetch("http://localhost:8001/ingest/file", { method: "POST", body: formData });
+          if (!res.ok) throw new Error("Upload HTTP " + res.status);
+          const data = await res.json();
+          if (!data.events || data.events.length === 0) {
+            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "No activities could be extracted from capture.", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+          } else {
+            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "Extracted " + data.total_events + " event(s) from capture. Processing match...", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+            const event = data.events[0];
+            const matchRes = await fetch("http://localhost:8002/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(event) });
+            if (matchRes.ok) {
+              const matchData = await matchRes.json();
+              const confBand = matchData.confidence_band ? matchData.confidence_band.toUpperCase() : "LOW";
+              setMessages((prev: any[]) => [...prev, {
+                id: Date.now() + 2, type: "card",
+                activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
+                discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
+                tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
+                start: event.event_date || "-", finish: "-",
+                linked: matchData.top_activity_id ? t("linkedTo") + ": " + matchData.top_activity_id : "No match",
+                conf: Math.round((matchData.confidence_score || 0) * 100) + "% - " + confBand,
+                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+              }]);
+              if (data.total_events > 1) {
+                setMessages((prev: any[]) => [...prev, { id: Date.now() + 3, type: "bot", text: (data.total_events - 1) + " more event(s) queued in the Review Console.", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+              }
+            }
+          }
+        } catch (err: any) {
+          setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "Upload error: " + err.message, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+        } finally {
+          setIsTyping(false);
+        }
+      };
+
+      const capturePhoto = () => {
+        const video = document.getElementById('camera-preview') as HTMLVideoElement;
+        if (video) {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 480;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(async (blob) => {
+              if (blob) {
+                const file = new File([blob], `camera_capture_${Date.now()}.png`, { type: 'image/png' });
+                await uploadCapturedFile(file);
+              }
+            }, 'image/png');
+          }
+        }
+        stopCamera();
+      };
+
+      useEffect(() => {
+        if (videoRef.current && videoStream) {
+          videoRef.current.srcObject = videoStream;
+        }
+      }, [videoStream, isCameraActive]);
 
   const t = (key: string) => {
     return i18n[language === "EN" ? "EN" : "HI"][key] || key;
@@ -791,10 +909,9 @@ function App() {
                 <label htmlFor="file-upload-input" className="w-10 h-10 rounded-lg border border-[#CCCCCC] bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 shrink-0 transition-colors" title={t("upload")}>
                   <span className="material-symbols-outlined text-xl text-[#666666]">attach_file</span>
                 </label>
-                <input type="file" id="camera-capture-input" className="hidden" accept="image/*" capture="environment" onChange={handleFileUpload} />
-                <label htmlFor="camera-capture-input" className="w-10 h-10 rounded-lg border border-[#CCCCCC] bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 shrink-0 transition-colors" title={t("takePicture")}>
+                <button onClick={startCamera} title={t("takePicture")} className="w-10 h-10 rounded-lg border border-[#CCCCCC] bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 shrink-0 transition-colors">
                   <span className="material-symbols-outlined text-xl text-[#666666]">photo_camera</span>
-                </label>
+                </button>
                 <button onClick={toggleMic} title={t("startRec")} className={"w-10 h-10 rounded-lg border flex items-center justify-center transition-colors shrink-0 " + (isRecording ? "bg-[#DA251C] text-white border-[#DA251C] animate-pulse" : "border-[#E1B91B] text-[#E1B91B] bg-white hover:bg-amber-50")}>
                   <span className="material-symbols-outlined text-xl">mic</span>
                 </button>
@@ -828,6 +945,44 @@ function App() {
               </div>
             </div>
           </nav>
+
+          {/* Camera Viewport Overlay */}
+          {isCameraActive && (
+            <div className="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center p-4">
+              <div className="bg-[#f6f3f2] p-4 rounded-lg w-full max-w-md border border-[#CCCCCC] flex flex-col gap-3.5 shadow-lg">
+                <div className="flex justify-between items-center border-b border-[#CCCCCC] pb-2">
+                  <span className="font-bold text-xs text-black">{t("takePicture")}</span>
+                  <button onClick={stopCamera} className="text-[#666666] hover:text-black cursor-pointer">
+                    <span className="material-symbols-outlined text-lg">close</span>
+                  </button>
+                </div>
+                <div className="relative aspect-video rounded overflow-hidden bg-black flex items-center justify-center">
+                  <video 
+                    ref={videoRef}
+                    id="camera-preview"
+                    autoPlay 
+                    playsInline 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex items-center justify-end gap-2">
+                  <button 
+                    onClick={stopCamera}
+                    className="px-3 py-1.5 border border-[#CCCCCC] rounded font-semibold text-xs text-black bg-white hover:bg-gray-50 cursor-pointer"
+                  >
+                    {t("cancel") || "Cancel"}
+                  </button>
+                  <button 
+                    onClick={capturePhoto}
+                    className="px-4 py-1.5 rounded font-semibold text-xs text-white bg-[#E1B91B] hover:bg-[#c9a312] cursor-pointer flex items-center gap-1.5"
+                  >
+                    <span className="material-symbols-outlined text-base">photo_camera</span>
+                    <span>{t("takePicture")}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
