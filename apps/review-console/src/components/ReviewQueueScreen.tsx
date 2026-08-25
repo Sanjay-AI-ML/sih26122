@@ -260,7 +260,7 @@ export const ReviewQueueScreen: React.FC = () => {
             <table className="w-full text-left border-collapse min-w-[760px]">
               <thead className="sticky top-0 bg-[#F5F5F5] border-b border-border-standard z-20">
                 <tr>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-12 text-center text-[10px]">{t("queueStatus")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-12 text-center text-[10px]">{t("status")}</th>
                   <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-24 text-[10px]">{t("eventIdCol")}</th>
                   <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-14 text-center text-[10px]">{t("inputFormat")}</th>
                   <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider text-[10px]">{t("descriptionCol")}</th>

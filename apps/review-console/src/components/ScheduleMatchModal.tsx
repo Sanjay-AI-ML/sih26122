@@ -45,8 +45,8 @@ export const ScheduleMatchModal: React.FC = () => {
         {/* Header */}
         <div className="flex justify-between items-center px-3 sm:px-4 py-2 sm:py-2.5 border-b border-border-standard bg-surface-container-low">
           <div>
-            <h2 className="font-h3 text-h3 text-primary font-bold">{t("scheduleMatch")}</h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Planner's {t('plannerDecisionModule')}</p>
+            <h2 className="font-h3 text-h3 text-primary font-bold">{t("schedulematch")}</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">{t("plannerdecisionmodule")}</p>
           </div>
           <button 
             onClick={() => setIsScheduleModalOpen(false)}
