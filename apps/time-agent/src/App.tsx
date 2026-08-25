@@ -79,7 +79,11 @@ const i18n: any = {
     "noMatchFound": "No schedule match found",
     "fontSmall": "A-",
     "fontNormal": "A",
-    "fontLarge": "A+"
+    "fontLarge": "A+",
+    "offlineQueuedMsg": "Offline Mode: Saved field report to local sync queue.",
+    "offlineFileQueuedMsg": "Offline Mode: File queued for sync.",
+    "syncingMsg": "Syncing local queue to servers...",
+    "syncSuccessMsg": "Successfully synced {count} updates to Review Console!"
   },
   "HI": {
     "greeting": "शुभ संध्या। अपनी फ़ील्ड प्रगति दर्ज करने के लिए तैयार हैं? अपडेट टाइप करें या DPR फ़ाइल अपलोड करें।",
@@ -140,7 +144,11 @@ const i18n: any = {
     "noMatchFound": "कोई शेड्यूल मैच नहीं मिला",
     "fontSmall": "अ-",
     "fontNormal": "अ",
-    "fontLarge": "अ+"
+    "fontLarge": "अ+",
+    "offlineQueuedMsg": "ऑफ़लाइन मोड: स्थानीय सिंक कतार में फ़ील्ड रिपोर्ट सहेजी गई।",
+    "offlineFileQueuedMsg": "ऑफ़लाइन मोड: सिंक के लिए फ़ाइल कतारबद्ध है।",
+    "syncingMsg": "स्थानीय कतार को सर्वर पर सिंक किया जा रहा है...",
+    "syncSuccessMsg": "{count} अपडेट सफलतापूर्वक रिव्यू कंसोल पर सिंक किए गए!"
   }
 };
 
@@ -176,11 +184,109 @@ function App() {
         { id: 1, type: "bot", text: "greeting", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
       ]);
 
-      const [queue, setQueue] = useState([
-        { id: 1, text: "Pump alignment done", time: "10:42 AM" },
-        { id: 2, text: "Valve inspection complete", time: "09:15 AM" },
-        { id: 3, text: "Safety check Sector 4", time: "08:30 AM" }
-      ]);
+      const [queue, setQueue] = useState<any[]>(() => {
+        try {
+          const stored = localStorage.getItem("time_agent_offline_queue");
+          return stored ? JSON.parse(stored) : [];
+        } catch (e) {
+          return [];
+        }
+      });
+
+      const handleSync = async () => {
+        setIsOffline(false);
+        setScreen("home");
+        if (queue.length === 0) return;
+
+        setMessages((prev: any[]) => [...prev, {
+          id: Date.now(),
+          type: "bot",
+          text: "syncingMsg",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        }]);
+
+        const itemsToSync = [...queue];
+        setQueue([]);
+        localStorage.removeItem("time_agent_offline_queue");
+
+        let successCount = 0;
+        for (const item of itemsToSync) {
+          try {
+            if (item.type === "text") {
+              const ingestRes = await fetch("http://localhost:8001/ingest/llm", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: item.text, source_document: "field_agent_chat_offline", default_date: new Date().toISOString().split("T")[0] })
+              });
+              if (!ingestRes.ok) throw new Error();
+              const ingestData = await ingestRes.json();
+              if (ingestData.events && ingestData.events.length > 0) {
+                const event = ingestData.events[0];
+                const matchRes = await fetch("http://localhost:8002/match", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(event)
+                });
+                if (matchRes.ok) {
+                  const matchData = await matchRes.json();
+                  await fetch("http://localhost:8003/queue/add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ event: event, match: matchData })
+                  });
+                  successCount++;
+                }
+              }
+            } else if (item.type === "file") {
+              const formData = new FormData();
+              if (item.content) {
+                const blob = new Blob([item.content], { type: "text/plain" });
+                formData.append("file", blob, item.name);
+              } else {
+                const blob = new Blob(["Offline file entry"], { type: "text/plain" });
+                formData.append("file", blob, item.name);
+              }
+              const res = await fetch("http://localhost:8001/ingest/file", { method: "POST", body: formData });
+              if (res.ok) {
+                const data = await res.json();
+                if (data.events && data.events.length > 0) {
+                  const event = data.events[0];
+                  const matchRes = await fetch("http://localhost:8002/match", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(event)
+                  });
+                  if (matchRes.ok) {
+                    const matchData = await matchRes.json();
+                    await fetch("http://localhost:8003/queue/add", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ event: event, match: matchData })
+                    });
+                    successCount++;
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Sync item failed", e);
+            setQueue(prev => {
+              const newQ = [...prev, item];
+              localStorage.setItem("time_agent_offline_queue", JSON.stringify(newQ));
+              return newQ;
+            });
+          }
+        }
+
+        if (successCount > 0) {
+          setMessages((prev: any[]) => [...prev, {
+            id: Date.now() + 1,
+            type: "bot",
+            text: tf("syncSuccessMsg", { count: String(successCount) }),
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          }]);
+        }
+      };
 
       useEffect(() => {
         if (screen === "history") {
@@ -202,6 +308,27 @@ function App() {
         const newMsg = { id: Date.now(), type: "user", text: inputText, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) };
         setMessages((prev: any[]) => [...prev, newMsg]);
         setInputText("");
+
+        if (isOffline) {
+          const queueItem = {
+            id: Date.now(),
+            type: "text",
+            text: newMsg.text,
+            time: newMsg.time
+          };
+          const newQueue = [...queue, queueItem];
+          setQueue(newQueue);
+          localStorage.setItem("time_agent_offline_queue", JSON.stringify(newQueue));
+
+          setMessages((prev: any[]) => [...prev, {
+            id: Date.now() + 1,
+            type: "bot",
+            text: "offlineQueuedMsg",
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          }]);
+          return;
+        }
+
         setIsTyping(true);
         try {
           const ingestRes = await fetch("http://localhost:8001/ingest/llm", {
@@ -251,6 +378,41 @@ function App() {
       const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        if (isOffline) {
+          const fileItem: any = {
+            id: Date.now(),
+            type: "file",
+            name: file.name,
+            size: file.size,
+            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          };
+
+          const saveAndMsg = (item: any) => {
+            const newQueue = [...queue, item];
+            setQueue(newQueue);
+            localStorage.setItem("time_agent_offline_queue", JSON.stringify(newQueue));
+            setMessages((prev: any[]) => [
+              ...prev,
+              { id: Date.now(), type: "user", text: "Uploading: " + file.name, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
+              { id: Date.now() + 1, type: "bot", text: "offlineFileQueuedMsg", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
+            ]);
+          };
+
+          if (file.name.endsWith(".txt") || file.name.endsWith(".csv")) {
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+              fileItem.content = evt.target?.result;
+              saveAndMsg(fileItem);
+            };
+            reader.readAsText(file);
+          } else {
+            saveAndMsg(fileItem);
+          }
+          e.target.value = "";
+          return;
+        }
+
         const formData = new FormData();
         formData.append("file", file);
         setIsTyping(true);
@@ -588,7 +750,7 @@ function App() {
                     <div className="text-xs text-[#666666]">{tf("profileDetails", {shift})}</div>
                   </div>
                 </div>
-                <button onClick={() => { setQueue([]); setIsOffline(false); setScreen("home"); }} className="flex items-center justify-between py-2 text-xs font-semibold text-black hover:bg-gray-50 px-2 rounded">
+                <button onClick={handleSync} className="flex items-center justify-between py-2 text-xs font-semibold text-black hover:bg-gray-50 px-2 rounded">
                   <span className="flex items-center gap-2"><span className="material-symbols-outlined text-base">sync</span> {t("syncNow")}</span>
                   {queue.length > 0 && <span className="bg-[#1842AA] text-white text-[9px] px-2 py-0.5 rounded-full">{queue.length}</span>}
                 </button>
@@ -613,7 +775,7 @@ function App() {
           )}
 
           {/* Bottom Composer on Home */}
-          {screen === "home" && !isOffline && (
+          {screen === "home" && (
             <div className="fixed bottom-14 left-0 w-full bg-white border-t border-[#CCCCCC] p-2.5 flex items-center justify-center z-30 shadow-sm">
               <div className="w-full max-w-2xl flex items-center gap-2">
                 <input
