@@ -141,14 +141,21 @@ class TextParser:
 
         # 1. Tag or Line ID Extraction
 
-        # Conversational / Small Talk Filter
+        # Conversational / Small Talk / Unrelated Filter
         # If the phrase doesn't have a known tag, and doesn't contain basic construction verbs, drop it.
-        action_verbs = ["done", "complet", "start", "finish", "progress", "install", "erect", "weld", "inspect", "test", "pour", "excavat", "align", "shift", "mobiliz", "demobiliz", "clear", "ongoing", "lay", "fabricat", "paint", "coat"]
+        action_verbs = [
+            "done", "complet", "start", "finish", "progress", "install", "erect", 
+            "weld", "inspect", "test", "pour", "excavat", "align", "shift", 
+            "mobiliz", "demobiliz", "clear", "ongoing", "lay", "fabricat", "paint", 
+            "coat", "trench", "backfill", "grout", "calibrate", "commission", 
+            "hydrotest", "radiography", "ndt", "blasting", "insulation", "wrapping", 
+            "pull", "terminate", "loop", "check", "tally", "verification"
+        ]
         tag_or_line_id = self._extract_tag_or_line_id(cleaned_phrase)
         
         has_action = any(v in cleaned_phrase.lower() for v in action_verbs)
         # We also check for disciplines just in case
-        has_disc = any(d in cleaned_phrase.lower() for d in ["piping", "civil", "electrical", "instrumentation", "mechanical", "hse", "safety"])
+        has_disc = any(d in cleaned_phrase.lower() for d in ["piping", "civil", "electrical", "instrumentation", "mechanical", "hse", "safety", "structural", "equipment"])
         
         if not tag_or_line_id and not has_action and not has_disc:
             return None

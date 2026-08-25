@@ -1,4 +1,4 @@
-﻿"""
+"""
 LLM / SLM Extraction Module for Setu (SIH26122 - Member A).
 Performs schema-constrained natural language extraction using local models (Qwen / Mistral via Ollama/LiteLLM)
 with strict Pydantic validation fallback.
@@ -101,15 +101,22 @@ class LLMExtractor:
         if not text or not text.strip():
             return []
             
-        # Pre-filter conversational junk (like "hi", "hello")
+        # Pre-filter conversational / unrelated junk (like "hi", logo text, random words)
         text_lower = text.lower()
-        action_verbs = ["done", "complet", "start", "finish", "progress", "install", "erect", "weld", "inspect", "test", "pour", "excavat", "align", "shift", "mobiliz", "demobiliz", "clear", "ongoing", "lay", "fabricat", "paint", "coat"]
+        action_verbs = [
+            "done", "complet", "start", "finish", "progress", "install", "erect", 
+            "weld", "inspect", "test", "pour", "excavat", "align", "shift", 
+            "mobiliz", "demobiliz", "clear", "ongoing", "lay", "fabricat", "paint", 
+            "coat", "trench", "backfill", "grout", "calibrate", "commission", 
+            "hydrotest", "radiography", "ndt", "blasting", "insulation", "wrapping", 
+            "pull", "terminate", "loop", "check", "tally", "verification"
+        ]
         has_action = any(v in text_lower for v in action_verbs)
-        has_disc = any(d in text_lower for d in ["piping", "civil", "electrical", "instrumentation", "mechanical", "hse", "safety"])
+        has_disc = any(d in text_lower for d in ["piping", "civil", "electrical", "instrumentation", "mechanical", "hse", "safety", "structural", "equipment"])
         has_numbers = any(char.isdigit() for char in text_lower)
         
-        # If it's very short and has no actions, disciplines, or numbers, it's just chat
-        if len(text_lower.strip()) < 10 and not has_action and not has_disc and not has_numbers:
+        # If it has no actions, disciplines, or numbers, it's not a field log or report
+        if not has_action and not has_disc and not has_numbers:
             return []
 
 
