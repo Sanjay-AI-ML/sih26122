@@ -394,13 +394,22 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [isHighContrast, setIsHighContrast] = useState(false);
   const [isTextEnlarged, setIsTextEnlarged] = useState(false);
   const [language, setLanguage] = useState<'EN' | 'HI'>('EN');
+  // Pre-compute normalized translation map to avoid O(N) search on every render cell
+  const normalizedDict = useMemo(() => {
+    const dict: Record<string, string> = {};
+    const currentDict = consoleI18n[language] || {};
+    Object.entries(currentDict).forEach(([k, v]) => {
+      const normKey = k.toLowerCase().replace(/_|\s|-/g, '');
+      dict[normKey] = v as string;
+    });
+    return dict;
+  }, [language]);
+
   const t = useCallback((key: string) => {
     if (!key) return key;
     const targetKey = key.toLowerCase().replace(/_|\s|-/g, '');
-    const currentDict = consoleI18n[language] || {};
-    const match = Object.entries(currentDict).find(([k]) => k.toLowerCase().replace(/_|\s|-/g, '') === targetKey);
-    return match ? (match[1] as string) : key;
-  }, [language]);
+    return normalizedDict[targetKey] || key;
+  }, [normalizedDict]);
 
   const tf = useCallback((key: string, vars: Record<string, string>) => {
     let str = t(key);
