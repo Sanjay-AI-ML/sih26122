@@ -101,7 +101,7 @@ export const ExportReportModal: React.FC = () => {
                       onChange={() => toggleColumn(col)}
                       className="accent-primary rounded"
                     />
-                    <span>{col}</span>
+                    <span>{t(col)}</span>
                   </label>
                 );
               })}
@@ -110,7 +110,7 @@ export const ExportReportModal: React.FC = () => {
 
           {/* Summary info */}
           <div className="bg-panel-accent p-2.5 rounded border border-border-standard text-xs text-on-surface-variant">
-            Total records ready for export: <strong className="text-on-surface font-technical-data">{items.length} records</strong>
+            {t("totalrecordsready")} <strong className="text-on-surface font-technical-data">{items.length} {t("records")}</strong>
           </div>
         </div>
 
@@ -120,7 +120,7 @@ export const ExportReportModal: React.FC = () => {
             onClick={() => setIsExportModalOpen(false)}
             className="px-3 py-1.5 border border-border-standard rounded font-body-sm text-body-sm font-medium text-on-surface bg-surface hover:bg-surface-container-low transition-colors cursor-pointer text-xs"
           >
-            Cancel
+            {t("cancel")}
           </button>
           <button 
             type="button"
@@ -128,7 +128,7 @@ export const ExportReportModal: React.FC = () => {
             className="px-4 py-1.5 rounded font-body-sm text-body-sm font-medium text-on-primary bg-primary hover:bg-primary-container transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer text-xs"
           >
             <span className="material-symbols-outlined text-[16px]">download</span>
-            Download {exportFormat}
+            {t("download")} {exportFormat}
           </button>
         </div>
       </div>
