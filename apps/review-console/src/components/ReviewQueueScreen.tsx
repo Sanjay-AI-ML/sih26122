@@ -311,7 +311,7 @@ export const ReviewQueueScreen: React.FC = () => {
                           {getInputIcon(item.inputFormat)}
                         </td>
                         <td className={`py-2 px-3 ${isFlagged ? 'font-medium text-danger' : item.status === 'in_progress' ? 'text-on-surface-variant italic' : item.status === 'auto_approved' ? 'text-on-surface-variant' : 'font-medium'}`}>
-                          {item.activityDescription}
+                          {t(item.activityDescription) || item.activityDescription}
                         </td>
                         <td className="py-2 px-3">
                           <span className="px-1.5 py-0.5 border border-border-standard rounded text-[10.5px] bg-surface-container">
@@ -427,7 +427,7 @@ export const ReviewQueueScreen: React.FC = () => {
 
                 <div>
                   <h3 className="font-body-md text-body-md font-medium text-on-surface mb-1 line-clamp-2">
-                    {item.activityDescription}
+                    {t(item.activityDescription) || item.activityDescription}
                   </h3>
                   <div className="inline-block bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[11px]">
                     {t(item.discipline?.toLowerCase()) || item.discipline}

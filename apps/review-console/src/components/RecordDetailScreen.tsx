@@ -319,7 +319,7 @@ export const RecordDetailScreen: React.FC = () => {
                       </div>
 
                       <h4 className="font-body-md text-body-md text-on-surface font-medium mb-1 pr-6 leading-snug">
-                        {cand.title}
+                        {t(cand.title) || cand.title}
                       </h4>
 
                       <div className="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
@@ -330,7 +330,7 @@ export const RecordDetailScreen: React.FC = () => {
                       {cand.rationale && (
                         <div className="bg-surface border border-primary/20 rounded p-1.5 mt-1.5">
                           <p className="font-body-sm text-body-sm text-on-surface-variant text-[11px] leading-normal">
-                            <strong className="text-on-surface">{t("rationale")}:</strong> {cand.rationale}
+                            <strong className="text-on-surface">{t("rationale")}:</strong> {t(cand.rationale) || cand.rationale}
                           </p>
                         </div>
                       )}
