@@ -44,6 +44,10 @@ const i18n: any = {
     "resetDefaults": "RESET TO DEFAULTS",
     "upload": "Upload Report or Attachment",
     "takePicture": "Take Picture",
+    "clearQueue": "Clear Queue",
+    "cancel": "Cancel",
+    "records": "records",
+    "status": "Status",
     "startRec": "Start recording",
     "send": "Send update",
     "structured": "STRUCTURED FOR SCHEDULE",
@@ -110,6 +114,10 @@ const i18n: any = {
     "resetDefaults": "डिफ़ॉल्ट पर रीसेट करें",
     "upload": "रिपोर्ट या अटैचमेंट अपलोड करें",
     "takePicture": "तस्वीर लें",
+    "clearQueue": "कतार साफ करें",
+    "cancel": "रद्द करें",
+    "records": "रिकॉर्ड",
+    "status": "स्थिति",
     "startRec": "रिकॉर्डिंग शुरू करें",
     "send": "अपडेट भेजें",
     "structured": "शेड्यूल के लिए संरचित",
@@ -204,7 +212,7 @@ function App() {
         if (isOffline) {
           const fileItem: any = {
             id: Date.now(),
-            type: "file",
+            type: "camera",
             name: file.name,
             size: file.size,
             time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -284,6 +292,17 @@ function App() {
           videoRef.current.srcObject = videoStream;
         }
       }, [videoStream, isCameraActive]);
+
+      const clearQueue = () => {
+        setQueue([]);
+        localStorage.removeItem("time_agent_offline_queue");
+        setMessages((prev: any[]) => [...prev, {
+          id: Date.now(),
+          type: "bot",
+          text: "Offline sync queue cleared.",
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        }]);
+      };
 
   const t = (key: string) => {
     return i18n[language === "EN" ? "EN" : "HI"][key] || key;
@@ -386,7 +405,7 @@ function App() {
                   ]);
                 }
               }
-            } else if (item.type === "file") {
+            } else if (item.type === "file" || item.type === "camera") {
               const formData = new FormData();
               if (item.content) {
                 const blob = new Blob([item.content], { type: "text/plain" });
@@ -724,11 +743,41 @@ function App() {
                 </div>
                 <p className="text-center text-xs text-[#666666] max-w-xs">{t("queuedMsg")}</p>
                 <div className="w-full max-w-md flex flex-col gap-2 mt-2">
-                  <h3 className="font-bold text-xs text-black">Queue ({queue.length})</h3>
+                  <div className="flex justify-between items-center mb-1">
+                    <h3 className="font-bold text-xs text-black">Queue ({queue.length})</h3>
+                    {queue.length > 0 && (
+                      <button onClick={clearQueue} className="text-xs text-[#DA251C] hover:underline cursor-pointer flex items-center gap-1 font-semibold">
+                        <span className="material-symbols-outlined text-sm">delete</span>
+                        {t("clearQueue")}
+                      </button>
+                    )}
+                  </div>
                   {queue.map(q => (
                     <div key={q.id} className="bg-white border border-[#CCCCCC] border-l-4 border-l-[#E1B91B] p-3 rounded shadow-sm flex justify-between items-center">
                       <div>
-                        <div className="font-semibold text-xs text-black">{q.text}</div>
+                        <div className="font-semibold text-xs text-black flex items-center gap-1.5">
+                          {q.type === 'file' ? (
+                            <>
+                              <span className="material-symbols-outlined text-sm text-[#1842AA]">description</span>
+                              <span className="truncate max-w-[220px]" title={q.name}>{q.name} (File)</span>
+                            </>
+                          ) : q.type === 'camera' ? (
+                            <>
+                              <span className="material-symbols-outlined text-sm text-[#51A71D]">photo_camera</span>
+                              <span className="truncate max-w-[220px]" title={q.name}>{q.name || 'Camera Capture'} (Photo)</span>
+                            </>
+                          ) : q.type === 'voice' ? (
+                            <>
+                              <span className="material-symbols-outlined text-sm text-[#E1B91B]">mic</span>
+                              <span>Voice Record (Audio)</span>
+                            </>
+                          ) : (
+                            <>
+                              <span className="material-symbols-outlined text-sm text-[#666666]">chat</span>
+                              <span className="truncate max-w-[220px]" title={q.text}>{q.text} (Text)</span>
+                            </>
+                          )}
+                        </div>
                         <div className="text-[10px] text-[#666666] mt-1 flex items-center gap-1">
                           <span className="material-symbols-outlined text-xs">schedule</span> {q.time}
                         </div>
