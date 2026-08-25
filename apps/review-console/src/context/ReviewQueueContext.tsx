@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useMemo, useCallback } from
 import type { QueueItem, NewReportInput, CreateActivityInput, StatusType, DisciplineType, InputFormatType, ScheduleCandidate } from "../types";
 import { initialQueueItems } from '../data/mockData';
 import { ingestText, matchEvent, writebackApprove, writebackReject, addScheduleActivity } from '../lib/api';
+import { jsPDF } from 'jspdf';
+import * as XLSX from 'xlsx';
 
 interface ToastState {
   message: string;
@@ -690,25 +692,62 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
       return data;
     });
 
+    if (rows.length === 0) {
+      showToast('No records available to export', undefined, 'error');
+      return;
+    }
+
+    const filenameBase = `kadam_review_queue_${new Date().toISOString().slice(0, 10)}`;
+
     if (format === 'CSV') {
-      const headers = Object.keys(rows[0] || {}).join(',');
+      const headers = Object.keys(rows[0]).join(',');
       const csvContent = "data:text/csv;charset=utf-8," + 
-        [headers, ...rows.map(e => Object.values(e).map(val => `"${val}"`).join(','))].join('\n');
+        [headers, ...rows.map(e => Object.values(e).map(val => `"${String(val).replace(/"/g, '""')}"`).join(','))].join('\n');
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement('a');
       link.setAttribute('href', encodedUri);
-      link.setAttribute('download', `kadam_review_queue_${new Date().toISOString().slice(0,10)}.csv`);
+      link.setAttribute('download', `${filenameBase}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } else {
-      // Simulate file download for Excel/PDF
-      const link = document.createElement('a');
-      link.setAttribute('href', 'data:text/plain;charset=utf-8,Kadam Export Data');
-      link.setAttribute('download', `kadam_review_queue_${new Date().toISOString().slice(0,10)}.${format.toLowerCase() === 'excel' ? 'xlsx' : 'pdf'}`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+    } else if (format === 'Excel') {
+      // Generate a real XLSX file using xlsx package
+      const worksheet = XLSX.utils.json_to_sheet(rows);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Review Queue");
+      XLSX.writeFile(workbook, `${filenameBase}.xlsx`);
+    } else if (format === 'PDF') {
+      // Generate a real PDF document using jspdf package
+      const doc = new jsPDF();
+      doc.setFontSize(16);
+      doc.text("Kadam - Review Queue Export", 14, 20);
+      doc.setFontSize(10);
+      doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
+      
+      let y = 40;
+      const headers = Object.keys(rows[0]);
+      
+      // Draw Header Row
+      doc.setFont("helvetica", "bold");
+      headers.forEach((header, index) => {
+        doc.text(header.substring(0, 15), 14 + index * 26, y);
+      });
+      
+      y += 8;
+      doc.setFont("helvetica", "normal");
+      rows.forEach(row => {
+        if (y > 280) {
+          doc.addPage();
+          y = 20;
+        }
+        headers.forEach((header, index) => {
+          const val = String(row[header] || '');
+          doc.text(val.substring(0, 15), 14 + index * 26, y);
+        });
+        y += 8;
+      });
+      
+      doc.save(`${filenameBase}.pdf`);
     }
 
     showToast(`Report exported as ${format} successfully`, undefined, 'success');
