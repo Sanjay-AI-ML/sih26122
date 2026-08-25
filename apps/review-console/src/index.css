@@ -65,14 +65,14 @@
   --font-body-md: "Poppins", sans-serif;
   --font-body-sm: "Poppins", sans-serif;
 
-  --text-h1: 1.375rem;
-  --text-h2: 1.175rem;
-  --text-h3: 1rem;
-  --text-body-lg: 0.9rem;
-  --text-body-md: 0.8125rem;
-  --text-body-sm: 0.75rem;
-  --text-technical-data: 0.725rem;
-  --text-label-caps: 0.65rem;
+  --text-h1: 1.5rem;
+  --text-h2: 1.3rem;
+  --text-h3: 1.1rem;
+  --text-body-lg: 0.975rem;
+  --text-body-md: 0.875rem;
+  --text-body-sm: 0.8rem;
+  --text-technical-data: 0.775rem;
+  --text-label-caps: 0.725rem;
 
   --spacing-sidebar-width: 220px;
   --spacing-section-margin: 16px;
@@ -83,19 +83,19 @@
 
 /* Base custom styles */
 html {
-  font-size: 13.5px;
+  font-size: 14.5px;
   -webkit-text-size-adjust: 100%;
 }
 
 @media (min-width: 1536px) {
   html {
-    font-size: 14px;
+    font-size: 15.5px;
   }
 }
 
 @media (max-width: 1024px) {
   html {
-    font-size: 13px;
+    font-size: 13.5px;
   }
 }
 
