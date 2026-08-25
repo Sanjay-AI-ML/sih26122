@@ -100,7 +100,20 @@ const consoleI18n: any = {
     "exploration": "Exploration",
     "drilling": "Drilling",
     "prev": "Prev",
-    "next": "Next"
+    "next": "Next",
+    "recommended": "Recommended",
+    "browseMasterSchedule": "Browse Master Schedule (Full Match)",
+    "confirmMatch": "Confirm Match",
+    "needsReviewLabel": "Needs Review",
+    "tableHeaderField": "Field",
+    "tableHeaderValue": "Extracted Value",
+    "tableHeaderMapping": "System Mapping",
+    "activityphrase": "Activity Phrase",
+    "disciplineField": "Discipline",
+    "tagid": "Tag ID",
+    "statusField": "Status",
+    "progressField": "Progress",
+    "production": "Production"
   },
   "HI": {
     "accessibilityHelp": "अभिगम्यता सहायता",
@@ -191,7 +204,20 @@ const consoleI18n: any = {
     "exploration": "अन्वेषण",
     "drilling": "ड्रिलिंग",
     "prev": "पिछला",
-    "next": "अगला"
+    "next": "अगला",
+    "recommended": "अनुशंसित",
+    "browseMasterSchedule": "मुख्य शेड्यूल ब्राउज़ करें (पूर्ण मिलान)",
+    "confirmMatch": "मिलान की पुष्टि करें",
+    "needsReviewLabel": "समीक्षा की आवश्यकता है",
+    "tableHeaderField": "फ़ील्ड",
+    "tableHeaderValue": "निकाला गया मान",
+    "tableHeaderMapping": "सिस्टम मैपिंग",
+    "activityphrase": "गतिविधि विवरण",
+    "disciplineField": "अनुशासन",
+    "tagid": "टैग आईडी",
+    "statusField": "स्थिति",
+    "progressField": "प्रगति",
+    "production": "उत्पादन"
   }
 };
 

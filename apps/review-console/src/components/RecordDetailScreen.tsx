@@ -195,16 +195,16 @@ export const RecordDetailScreen: React.FC = () => {
                 <h3 className="font-h3 text-h3 text-on-surface font-semibold">{t('extractedFields')}</h3>
                 <div className="inline-flex items-center gap-1 px-2 py-1 rounded bg-warning/20 border border-warning/30 text-tertiary-container font-label-caps text-label-caps text-[10px] shadow-2xs">
                   <span className="material-symbols-outlined text-[12px]" data-icon="error">error</span>
-                  Needs Review · {item.confidenceScore}% confidence
+                  {t('needsReviewLabel')} · {item.confidenceScore}% {t('confidenceCol').toLowerCase()}
                 </div>
               </div>
               <div className="border border-border-standard rounded-md overflow-x-auto">
                 <table className="w-full text-left border-collapse min-w-[380px]">
                   <thead className="bg-panel-accent border-b border-border-standard">
                     <tr>
-                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('tag')}</th>
-                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('structured')}</th>
-                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('scheduleActivityCol')}</th>
+                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('tableHeaderField')}</th>
+                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('tableHeaderValue')}</th>
+                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('tableHeaderMapping')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-standard font-body-sm text-body-sm">
@@ -220,7 +220,7 @@ export const RecordDetailScreen: React.FC = () => {
                           className={`hover:bg-primary-fixed/30 transition-colors ${field.hasWarning ? 'bg-warning/5' : ''}`}
                         >
                           <td className={`py-2 px-2.5 font-body-sm text-body-sm text-on-surface-variant align-middle ${field.hasWarning ? 'border-l-2 border-warning pl-[8px]' : ''}`}>
-                            {field.fieldName}
+                            {t(field.fieldName?.toLowerCase().replace(/ /g, '')) || field.fieldName}
                           </td>
                           <td className={`py-2 px-2.5 font-body-sm text-body-sm align-middle ${isTagField ? 'font-technical-data text-technical-data text-tertiary-container font-medium' : 'text-on-surface font-medium'}`}>
                             {field.extractedValue}
@@ -291,7 +291,7 @@ export const RecordDetailScreen: React.FC = () => {
                     >
                       {isRecommended && (
                         <div className="absolute top-0 right-0 bg-primary text-on-primary px-1.5 py-0.5 rounded-bl-md font-label-caps text-[9px] font-semibold">
-                          Recommended
+                          {t("recommended")}
                         </div>
                       )}
                       {isSelected && (
@@ -307,7 +307,7 @@ export const RecordDetailScreen: React.FC = () => {
                             {cand.id}
                           </span>
                           <span className="font-label-caps text-[9px] text-on-surface bg-surface-container-high px-1 py-0.5 rounded border border-border-standard uppercase">
-                            {cand.discipline}
+                            {t(cand.discipline?.toLowerCase()) || cand.discipline}
                           </span>
                         </div>
                         {!isSelected && (
@@ -330,7 +330,7 @@ export const RecordDetailScreen: React.FC = () => {
                       {cand.rationale && (
                         <div className="bg-surface border border-primary/20 rounded p-1.5 mt-1.5">
                           <p className="font-body-sm text-body-sm text-on-surface-variant text-[11px] leading-normal">
-                            <strong className="text-on-surface">Rationale:</strong> {cand.rationale}
+                            <strong className="text-on-surface">{t("rationale")}:</strong> {cand.rationale}
                           </p>
                         </div>
                       )}
@@ -344,7 +344,7 @@ export const RecordDetailScreen: React.FC = () => {
                   className="w-full py-1.5 border border-dashed border-outline text-primary font-body-sm text-body-sm rounded-md hover:bg-surface-container-low transition-colors flex items-center justify-center gap-1.5 mt-1 cursor-pointer text-xs"
                 >
                   <span className="material-symbols-outlined text-[15px]" data-icon="search">search</span> 
-                  Browse Master Schedule (Full Match)
+                  {t('browseMasterSchedule')}
                 </button>
               </div>
             </div>
@@ -361,7 +361,7 @@ export const RecordDetailScreen: React.FC = () => {
                 onClick={handleConfirmCandidateMatch}
                 className="px-4 py-1.5 text-on-primary font-body-md text-body-md font-medium rounded-md hover:bg-primary-container transition-colors shadow-xs bg-[#1842aa] cursor-pointer text-xs"
               >
-                Confirm Match
+                {t('confirmMatch')}
               </button>
             </div>
           </div>
