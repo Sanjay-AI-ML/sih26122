@@ -408,7 +408,8 @@ function App() {
             } else if (item.type === "file" || item.type === "camera") {
               const formData = new FormData();
               if (item.content) {
-                const blob = new Blob([item.content], { type: "text/plain" });
+                const response = await fetch(item.content);
+                const blob = await response.blob();
                 formData.append("file", blob, item.name);
               } else {
                 const blob = new Blob(["Offline file entry"], { type: "text/plain" });
@@ -596,16 +597,13 @@ function App() {
             ]);
           };
 
-          if (file.name.endsWith(".txt") || file.name.endsWith(".csv")) {
-            const reader = new FileReader();
-            reader.onload = (evt) => {
-              fileItem.content = evt.target?.result;
-              saveAndMsg(fileItem);
-            };
-            reader.readAsText(file);
-          } else {
+          // Convert any file (binary or text) to Base64 Data URL to fit local storage safely
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            fileItem.content = evt.target?.result;
             saveAndMsg(fileItem);
-          }
+          };
+          reader.readAsDataURL(file);
           e.target.value = "";
           return;
         }
