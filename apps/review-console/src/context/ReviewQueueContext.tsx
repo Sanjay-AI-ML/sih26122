@@ -101,6 +101,12 @@ const consoleI18n: any = {
     "drilling": "Drilling",
     "prev": "Prev",
     "next": "Next",
+    "discard": "Discard",
+    "confirmmatch": "Confirm Match",
+    "inprogress": "In Progress",
+    "in_progress": "In Progress",
+    "excavation": "Excavation",
+    "trenchingprogress": "Trenching Progress",
     "recommended": "Recommended",
     "browseMasterSchedule": "Browse Master Schedule (Full Match)",
     "confirmMatch": "Confirm Match",
@@ -224,6 +230,12 @@ const consoleI18n: any = {
     "drilling": "ड्रिलिंग",
     "prev": "पिछला",
     "next": "अगला",
+    "discard": "त्यागें",
+    "confirmmatch": "मिलान की पुष्टि करें",
+    "inprogress": "प्रगति पर",
+    "in_progress": "प्रगति पर",
+    "excavation": "उत्खनन",
+    "trenchingprogress": "ट्रेंचिंग प्रगति",
     "recommended": "अनुशंसित",
     "browseMasterSchedule": "मुख्य शेड्यूल ब्राउज़ करें (पूर्ण मिलान)",
     "confirmMatch": "मिलान की पुष्टि करें",
@@ -357,7 +369,11 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [isTextEnlarged, setIsTextEnlarged] = useState(false);
   const [language, setLanguage] = useState<'EN' | 'HI'>('EN');
   const t = useCallback((key: string) => {
-    return consoleI18n[language][key] || key;
+    if (!key) return key;
+    const targetKey = key.toLowerCase().replace(/_|\s|-/g, '');
+    const currentDict = consoleI18n[language] || {};
+    const match = Object.entries(currentDict).find(([k]) => k.toLowerCase().replace(/_|\s|-/g, '') === targetKey);
+    return match ? (match[1] as string) : key;
   }, [language]);
 
   const tf = useCallback((key: string, vars: Record<string, string>) => {

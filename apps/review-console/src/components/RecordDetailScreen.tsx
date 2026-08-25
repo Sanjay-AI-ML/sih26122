@@ -220,10 +220,10 @@ export const RecordDetailScreen: React.FC = () => {
                           className={`hover:bg-primary-fixed/30 transition-colors ${field.hasWarning ? 'bg-warning/5' : ''}`}
                         >
                           <td className={`py-2 px-2.5 font-body-sm text-body-sm text-on-surface-variant align-middle ${field.hasWarning ? 'border-l-2 border-warning pl-[8px]' : ''}`}>
-                            {t(field.fieldName?.toLowerCase().replace(/ /g, '')) || field.fieldName}
+                            {t(field.fieldName)}
                           </td>
                           <td className={`py-2 px-2.5 font-body-sm text-body-sm align-middle ${isTagField ? 'font-technical-data text-technical-data text-tertiary-container font-medium' : 'text-on-surface font-medium'}`}>
-                            {field.extractedValue}
+                            {t(field.extractedValue)}
                           </td>
                           <td className="py-2 px-2.5 align-middle">
                             {isDisciplineField ? (
@@ -234,7 +234,7 @@ export const RecordDetailScreen: React.FC = () => {
                             ) : isTagField ? (
                               <div className="inline-flex items-center gap-1.5">
                                 <span className="font-technical-data text-technical-data text-on-surface border border-border-standard px-1 py-0.5 rounded bg-surface text-xs">
-                                  {field.systemMapping}
+                                  {t(field.systemMapping)}
                                 </span>
                                 {field.hasWarning && (
                                   <span className="material-symbols-outlined text-[14px] text-warning" data-icon="help" title="Low confidence match">help</span>
@@ -247,14 +247,14 @@ export const RecordDetailScreen: React.FC = () => {
                               </div>
                             ) : isProgressField ? (
                               <div className="flex items-center gap-1.5">
-                                <span className="font-technical-data text-technical-data text-on-surface w-7">{field.systemMapping}</span>
+                                <span className="font-technical-data text-technical-data text-on-surface w-7">{t(field.systemMapping)}</span>
                                 <div className="h-1.5 w-20 bg-surface-variant rounded-full overflow-hidden">
                                   <div className="h-full bg-primary" style={{ width: `${field.progressPercent || 85}%` }}></div>
                                 </div>
                               </div>
                             ) : (
                               <span className="font-technical-data text-technical-data text-on-surface">
-                                {field.systemMapping}
+                                {t(field.systemMapping)}
                               </span>
                             )}
                           </td>
@@ -355,13 +355,13 @@ export const RecordDetailScreen: React.FC = () => {
                 onClick={handleDiscard}
                 className="px-3 py-1.5 border border-outline text-on-surface font-body-md text-body-md rounded-md hover:bg-surface-container-highest transition-colors cursor-pointer text-xs"
               >
-                Discard
+                {t('discard')}
               </button>
               <button 
                 onClick={handleConfirmCandidateMatch}
                 className="px-4 py-1.5 text-on-primary font-body-md text-body-md font-medium rounded-md hover:bg-primary-container transition-colors shadow-xs bg-[#1842aa] cursor-pointer text-xs"
               >
-                {t('confirmMatch')}
+                {t('confirmmatch')}
               </button>
             </div>
           </div>
