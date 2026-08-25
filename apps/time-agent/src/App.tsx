@@ -355,6 +355,35 @@ function App() {
                     body: JSON.stringify({ event: event, match: matchData })
                   });
                   successCount++;
+                  
+                  const confBand = matchData.confidence_band ? matchData.confidence_band.toUpperCase() : "LOW";
+                  setMessages((prev: any[]) => [
+                    ...prev,
+                    {
+                      id: Date.now() + Math.random(),
+                      type: "user",
+                      text: item.text,
+                      time: item.time
+                    },
+                    {
+                      id: Date.now() + Math.random(),
+                      type: "bot",
+                      text: t("parsing") || "Time Agent is parsing report...",
+                      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                    },
+                    {
+                      id: Date.now() + Math.random(),
+                      type: "card",
+                      activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
+                      discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
+                      tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
+                      start: event.event_date || "-",
+                      finish: "-",
+                      linked: matchData.top_activity_id ? t("linkedTo") + ": " + matchData.top_activity_id : "No match",
+                      conf: Math.round((matchData.confidence_score || 0) * 100) + "% - " + confBand,
+                      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                    }
+                  ]);
                 }
               }
             } else if (item.type === "file") {
@@ -384,6 +413,35 @@ function App() {
                       body: JSON.stringify({ event: event, match: matchData })
                     });
                     successCount++;
+
+                    const confBand = matchData.confidence_band ? matchData.confidence_band.toUpperCase() : "LOW";
+                    setMessages((prev: any[]) => [
+                      ...prev,
+                      {
+                        id: Date.now() + Math.random(),
+                        type: "user",
+                        text: "Uploaded file: " + item.name,
+                        time: item.time
+                      },
+                      {
+                        id: Date.now() + Math.random(),
+                        type: "bot",
+                        text: "Extracted " + data.total_events + " event(s) from " + item.name + ". Processing match...",
+                        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                      },
+                      {
+                        id: Date.now() + Math.random(),
+                        type: "card",
+                        activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
+                        discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
+                        tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
+                        start: event.event_date || "-",
+                        finish: "-",
+                        linked: matchData.top_activity_id ? t("linkedTo") + ": " + matchData.top_activity_id : "No match",
+                        conf: Math.round((matchData.confidence_score || 0) * 100) + "% - " + confBand,
+                        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                      }
+                    ]);
                   }
                 }
               }
