@@ -7,7 +7,8 @@ export const CreateActivityModal: React.FC = () => {
     isCreateActivityModalOpen,
     setIsCreateActivityModalOpen,
     createMasterActivity,
-    activeScheduleItem
+    activeScheduleItem,
+    t
   } = useReviewQueue();
 
   const [wbsPath, _setWbsPath] = useState('01.05.03 | Piping Main Header | Numaligarh');
@@ -65,8 +66,8 @@ export const CreateActivityModal: React.FC = () => {
         {/* Header */}
         <div className="flex items-start justify-between px-3 sm:px-4 py-2.5 sm:py-3 border-b border-border-standard bg-surface">
           <div>
-            <h2 className="font-h2 text-h2 text-primary font-bold">Create New Activity</h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Define a new node in the master schedule</p>
+            <h2 className="font-h2 text-h2 text-primary font-bold">{t('createActivityTitle')}</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">{t('createActivitySubtitle')}</p>
           </div>
           <button 
             onClick={() => setIsCreateActivityModalOpen(false)}
@@ -96,7 +97,7 @@ export const CreateActivityModal: React.FC = () => {
               {/* Activity Name */}
               <div className="sm:col-span-2">
                 <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 text-[10px]" htmlFor="activity-name">
-                  ACTIVITY NAME
+                  {t('activityNameLabel')}
                 </label>
                 <input 
                   value={activityName}
@@ -111,7 +112,7 @@ export const CreateActivityModal: React.FC = () => {
 
               {/* Level Toggle */}
               <div className="flex flex-col justify-end">
-                <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 text-[10px]">LEVEL</label>
+                <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 text-[10px]">{t('levelLabel')}</label>
                 <div className="flex h-8 bg-surface-container-low rounded border border-border-standard p-0.5">
                   <button 
                     type="button"
@@ -194,7 +195,7 @@ export const CreateActivityModal: React.FC = () => {
               {/* Responsible Team */}
               <div className="sm:col-span-2">
                 <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 text-[10px]" htmlFor="responsible-team">
-                  RESPONSIBLE TEAM
+                  {t('responsibleTeamLabel')}
                 </label>
                 <input 
                   value={responsibleTeam}
@@ -209,7 +210,7 @@ export const CreateActivityModal: React.FC = () => {
               {/* Resources Allocated */}
               <div className="sm:col-span-2">
                 <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 text-[10px]">
-                  RESOURCES ALLOCATED
+                  {t('resourcesAllocatedLabel')}
                 </label>
                 <div className="flex flex-wrap gap-1.5 mb-1.5 p-1.5 min-h-[40px] bg-surface-container-low border border-border-standard rounded">
                   {resources.map((res, index) => {
@@ -271,7 +272,7 @@ export const CreateActivityModal: React.FC = () => {
                     onClick={() => setIsAddingResource(true)}
                     className="font-body-sm text-body-sm text-primary font-medium hover:underline flex items-center gap-1 cursor-pointer text-xs"
                   >
-                    <span className="material-symbols-outlined text-[14px]" data-icon="add">add</span> Add Resource
+                    <span className="material-symbols-outlined text-[14px]" data-icon="add">add</span> {t('addResource')}
                   </button>
                 )}
               </div>
@@ -282,7 +283,7 @@ export const CreateActivityModal: React.FC = () => {
               <div className="absolute left-0 top-0 bottom-0 w-1 bg-warning"></div>
               <div className="flex items-center gap-1.5 mb-1">
                 <span className="material-symbols-outlined text-warning text-[14px]" data-icon="assignment_turned_in">assignment_turned_in</span>
-                <span className="font-label-caps text-label-caps text-[#8B7322] text-[10px]">FIELD REPORT CONTEXT</span>
+                <span className="font-label-caps text-label-caps text-[#8B7322] text-[10px]">{t('fieldReportContext')}</span>
               </div>
               <p className="font-body-sm text-body-sm text-on-surface italic text-xs leading-relaxed">
                 "{activeScheduleItem?.sourceText || 'Pump P-1102 alignment done. Ready for final bolting and grout pouring tomorrow morning. Crane required for casing placement.'}"

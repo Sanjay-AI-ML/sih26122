@@ -3,7 +3,7 @@ import { useReviewQueue } from '../context/ReviewQueueContext';
 import type { DisciplineType, InputFormatType } from "../types";
 
 export const NewReportModal: React.FC = () => {
-  const { isNewReportModalOpen, setIsNewReportModalOpen, addNewReport } = useReviewQueue();
+  const { isNewReportModalOpen, setIsNewReportModalOpen, addNewReport, t } = useReviewQueue();
 
   const [activityPhrase, setActivityPhrase] = useState('');
   const [discipline, setDiscipline] = useState<DisciplineType>('Piping');
@@ -50,8 +50,8 @@ export const NewReportModal: React.FC = () => {
       <div className="relative bg-surface rounded-md w-full max-w-[540px] shadow-xl border border-border-standard z-50 flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out] max-h-[92vh]">
         <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 border-b border-border-standard bg-surface">
           <div>
-            <h2 className="font-h2 text-h2 text-primary font-bold">Submit Field Report</h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Log daily progress updates into the review queue</p>
+            <h2 className="font-h2 text-h2 text-primary font-bold">{t('newReport')}</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">{t('queueSubtitle')}</p>
           </div>
           <button 
             onClick={() => setIsNewReportModalOpen(false)}
@@ -65,7 +65,7 @@ export const NewReportModal: React.FC = () => {
           <div className="p-3 sm:p-4 overflow-y-auto flex flex-col gap-3 custom-scrollbar">
             <div>
               <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 text-[10px]">
-                ACTIVITY DESCRIPTION / REPORT TEXT
+                ACTIVITY {t('descriptionCol')}
               </label>
               <textarea 
                 value={activityPhrase}
@@ -193,7 +193,7 @@ export const NewReportModal: React.FC = () => {
               type="submit"
               className="px-4 py-1.5 rounded font-body-sm text-body-sm font-medium text-on-primary bg-primary hover:bg-primary-container transition-colors shadow-xs cursor-pointer text-xs"
             >
-              Submit to Queue
+              {t('approveBtn')}
             </button>
           </div>
         </form>

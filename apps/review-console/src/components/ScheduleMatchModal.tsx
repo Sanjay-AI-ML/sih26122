@@ -10,7 +10,8 @@ export const ScheduleMatchModal: React.FC = () => {
     confirmScheduleMatch,
     setIsCreateActivityModalOpen,
     selectedCandidate,
-    setSelectedCandidate
+    setSelectedCandidate,
+    t
   } = useReviewQueue();
 
   const [searchFilter, setSearchFilter] = useState('');
@@ -44,8 +45,8 @@ export const ScheduleMatchModal: React.FC = () => {
         {/* Header */}
         <div className="flex justify-between items-center px-3 sm:px-4 py-2 sm:py-2.5 border-b border-border-standard bg-surface-container-low">
           <div>
-            <h2 className="font-h3 text-h3 text-primary font-bold">Schedule Match</h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Planner's Decision Module</p>
+            <h2 className="font-h3 text-h3 text-primary font-bold">{t("scheduleMatch")}</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Planner's {t('plannerDecisionModule')}</p>
           </div>
           <button 
             onClick={() => setIsScheduleModalOpen(false)}
@@ -68,7 +69,7 @@ export const ScheduleMatchModal: React.FC = () => {
                   value={searchFilter}
                   onChange={(e) => setSearchFilter(e.target.value)}
                   className="w-full pl-8 pr-10 py-1.5 bg-surface border border-border-standard rounded font-body-sm text-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary placeholder-on-surface-variant transition-colors" 
-                  placeholder="Search by activity name or ID..." 
+                  placeholder={t("searchPlaceholder")} 
                   type="text"
                 />
                 <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -198,13 +199,13 @@ export const ScheduleMatchModal: React.FC = () => {
                   onClick={handleOpenCreateActivity}
                   className="flex-1 bg-transparent border border-outline text-on-surface font-body-sm text-body-sm py-1 px-2 rounded hover:bg-surface-container-high transition-colors cursor-pointer text-center text-xs"
                 >
-                  Create New Activity
+                  {t('createActivityTitle')}
                 </button>
                 <button 
                   onClick={() => setIsScheduleModalOpen(false)}
                   className="flex-1 bg-transparent text-on-surface-variant font-body-sm text-body-sm py-1 px-2 rounded hover:bg-surface-container-high transition-colors cursor-pointer text-center text-xs"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
               </div>
             </div>

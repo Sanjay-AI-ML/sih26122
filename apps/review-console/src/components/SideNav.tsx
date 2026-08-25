@@ -15,8 +15,7 @@ export const SideNav: React.FC = () => {
     setIsNewReportModalOpen,
     isMobileSidebarOpen,
     setIsMobileSidebarOpen,
-    showToast
-  } = useReviewQueue();
+    showToast, t } = useReviewQueue();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -106,20 +105,20 @@ export const SideNav: React.FC = () => {
               className="w-full bg-primary hover:bg-primary-container text-on-primary font-body-sm text-body-sm py-1.5 px-3 rounded-md flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xs cursor-pointer"
             >
               <span className="material-symbols-outlined text-[16px]">add</span>
-              New Report
+              {t('newReport')}
             </button>
           </div>
 
           {/* Status Chips Summary */}
           <div className="flex flex-col gap-1">
             <div className="flex justify-between items-center px-1 mb-0.5">
-              <h2 className="font-label-caps text-label-caps text-outline uppercase tracking-wider text-[9.5px]">Queue Status</h2>
+              <h2 className="font-label-caps text-label-caps text-outline uppercase tracking-wider text-[9.5px]">{t("queueStatus")}</h2>
               {activeStatusFilter && (
                 <button 
                   onClick={() => setActiveStatusFilter(null)}
                   className="text-[9.5px] text-primary hover:underline font-medium cursor-pointer"
                 >
-                  Reset
+                  {t("reset")}
                 </button>
               )}
             </div>
@@ -135,7 +134,7 @@ export const SideNav: React.FC = () => {
               >
                 <div className="flex items-center gap-1.5 text-success">
                   <span className="material-symbols-outlined text-[15px]">check_circle</span>
-                  <span className="font-body-sm text-body-sm font-medium">Auto-Approved</span>
+                  <span className="font-body-sm text-body-sm font-medium">{t("autoApproved")}</span>
                 </div>
                 <span className="font-technical-data text-technical-data text-success font-semibold">{counts.autoApproved}</span>
               </div>
@@ -151,7 +150,7 @@ export const SideNav: React.FC = () => {
               >
                 <div className="flex items-center gap-1.5 text-yellow-800">
                   <span className="material-symbols-outlined text-[15px] text-warning">pending_actions</span>
-                  <span className="font-body-sm text-body-sm font-medium text-yellow-800">Review</span>
+                  <span className="font-body-sm text-body-sm font-medium text-yellow-800">{t("review")}</span>
                 </div>
                 <span className="font-technical-data text-technical-data text-yellow-800 font-semibold">{counts.review}</span>
               </div>
@@ -167,7 +166,7 @@ export const SideNav: React.FC = () => {
               >
                 <div className="flex items-center gap-1.5 text-danger">
                   <span className="material-symbols-outlined text-[15px]">error</span>
-                  <span className="font-body-sm text-body-sm font-medium">Flagged</span>
+                  <span className="font-body-sm text-body-sm font-medium">{t("flagged")}</span>
                 </div>
                 <span className="font-technical-data text-technical-data text-danger font-semibold">{counts.flagged}</span>
               </div>
@@ -183,7 +182,7 @@ export const SideNav: React.FC = () => {
               >
                 <div className="flex items-center gap-1.5 text-primary">
                   <span className="material-symbols-outlined text-[15px]">hourglass_top</span>
-                  <span className="font-body-sm text-body-sm font-medium">In Progress</span>
+                  <span className="font-body-sm text-body-sm font-medium">{t("inProgress")}</span>
                 </div>
                 <span className="font-technical-data text-technical-data text-primary font-semibold">{counts.inProgress}</span>
               </div>
@@ -193,13 +192,13 @@ export const SideNav: React.FC = () => {
           {/* Disciplines Filter Section */}
           <div className="flex flex-col gap-1">
             <div className="flex justify-between items-center px-1 mb-0.5">
-              <h2 className="font-label-caps text-label-caps text-outline uppercase tracking-wider text-[9.5px]">Disciplines</h2>
+              <h2 className="font-label-caps text-label-caps text-outline uppercase tracking-wider text-[9.5px]">{t("disciplines")}</h2>
               {activeDisciplineFilter && (
                 <button 
                   onClick={() => setActiveDisciplineFilter(null)}
                   className="text-[9.5px] text-primary hover:underline font-medium cursor-pointer"
                 >
-                  Clear
+                  {t("reset")}
                 </button>
               )}
             </div>
@@ -215,7 +214,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">settings_input_component</span>
-                  Piping
+                  {t('piping')}
                 </button>
               </li>
               {/* Civil */}
@@ -229,7 +228,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">foundation</span>
-                  Civil
+                  {t('civil')}
                 </button>
               </li>
               {/* Electrical */}
@@ -243,7 +242,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">bolt</span>
-                  Electrical
+                  {t('electrical')}
                 </button>
               </li>
               {/* Instrumentation */}
@@ -257,7 +256,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">precision_manufacturing</span>
-                  Instrumentation
+                  {t('instrumentation')}
                 </button>
               </li>
               {/* Drilling */}
@@ -271,7 +270,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">build</span>
-                  Drilling
+                  {t('mechanical')}
                 </button>
               </li>
               {/* Production */}
@@ -285,7 +284,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">oil_barrel</span>
-                  Production
+                  {t('production')}
                 </button>
               </li>
               {/* Exploration */}
@@ -299,7 +298,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">explore</span>
-                  Exploration
+                  {t('exploration')}
                 </button>
               </li>
             </ul>
@@ -308,13 +307,13 @@ export const SideNav: React.FC = () => {
           {/* Input Format Filters */}
           <div className="flex flex-col gap-1">
             <div className="flex justify-between items-center px-1 mb-0.5">
-              <h2 className="font-label-caps text-label-caps text-outline uppercase tracking-wider text-[9.5px]">Input Format</h2>
+              <h2 className="font-label-caps text-label-caps text-outline uppercase tracking-wider text-[9.5px]">{t("inputFormat")}</h2>
               {activeInputFormatFilter && (
                 <button 
                   onClick={() => setActiveInputFormatFilter(null)}
                   className="text-[9.5px] text-primary hover:underline font-medium cursor-pointer"
                 >
-                  Clear
+                  {t("reset")}
                 </button>
               )}
             </div>
@@ -329,7 +328,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">description</span>
-                  DPR
+                  {t("dprText")}
                 </button>
               </li>
               <li>
@@ -342,7 +341,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">table_chart</span>
-                  Spreadsheet
+                  {t("spreadsheet")}
                 </button>
               </li>
               <li>
@@ -355,7 +354,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">document_scanner</span>
-                  Scan
+                  {t("scanPDF")}
                 </button>
               </li>
               <li>
@@ -368,7 +367,7 @@ export const SideNav: React.FC = () => {
                   }`}
                 >
                   <span className="material-symbols-outlined text-[16px]">mic</span>
-                  Voice
+                  {t("voice")}
                 </button>
               </li>
             </ul>
@@ -377,7 +376,7 @@ export const SideNav: React.FC = () => {
           {/* Confidence Mix Bar */}
           <div className="px-1 pt-0.5">
             <div className="flex justify-between items-end mb-1">
-              <span className="font-label-caps text-label-caps text-outline text-[9.5px]">System Confidence</span>
+              <span className="font-label-caps text-label-caps text-outline text-[9.5px]">{t("systemConfidence")}</span>
               <span className="font-technical-data text-[9.5px] text-on-surface-variant font-medium">Avg 92%</span>
             </div>
             <div className="w-full h-1.5 rounded-full overflow-hidden flex bg-surface-container-high">
@@ -394,7 +393,7 @@ export const SideNav: React.FC = () => {
               className="w-full text-left flex items-center gap-2 px-2 py-1 text-on-surface-variant hover:bg-surface-container transition-all font-body-sm text-body-sm rounded-md cursor-pointer"
             >
               <span className="material-symbols-outlined text-[16px]">settings</span>
-              Settings
+              {t("settingsTitle")}
             </button>
 
             {/* Profile Card */}
@@ -408,7 +407,7 @@ export const SideNav: React.FC = () => {
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnhinY23br8Izv51EOYXz7YjIrwrLKmrO6eIuwmQHNdOx1Fy5CMIk0uRdWClCv-ToZs6sFGknua8wj4thwcnwcvmAGmPvCWsfDlwjDe_fcIwLV3w2wgdsEAReRbAON9KRXAGmfqcjy0XPCLu_EZN05cidU-2klFcpqL129ZRMo2TChtF1kDBa4UU0jol7kE-OP4fJMd2wofIcsDPD9ULU50EY3BDCu7BIwM3xiqZmG6-nctue-c7A_"
               />
               <div className="flex flex-col min-w-0">
-                <span className="font-body-sm text-body-sm font-semibold truncate text-on-surface leading-tight">A. Sharma</span>
+                <span className="font-body-sm text-body-sm font-semibold truncate text-on-surface leading-tight">{t("reviewerName")}</span>
                 <span className="font-label-caps text-[8.5px] text-outline truncate leading-tight mt-0.5">Chief Engineer</span>
               </div>
             </div>

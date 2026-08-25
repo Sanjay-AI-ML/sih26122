@@ -9,6 +9,178 @@ interface ToastState {
   type?: 'success' | 'info' | 'error';
 }
 
+
+const consoleI18n: any = {
+  "EN": {
+    "accessibilityHelp": "Accessibility Help",
+    "sitemap": "Sitemap",
+    "reviewConsole": "Review Console",
+    "newReport": "New Report",
+    "queueStatus": "Queue Status",
+    "reset": "Reset",
+    "autoApproved": "Auto-Approved",
+    "review": "Review",
+    "flagged": "Flagged",
+    "inProgress": "In Progress",
+    "disciplines": "Disciplines",
+    "inputFormat": "Input Format",
+    "dprText": "DPR Text",
+    "spreadsheet": "Spreadsheet",
+    "scanPDF": "Scan / PDF",
+    "voice": "Voice",
+    "systemConfidence": "System Confidence",
+    "reviewerName": "S.K. (Planner)",
+    "reviewQueue": "Review Queue",
+    "queueSubtitle": "Verify and link field updates to schedule nodes",
+    "searchPlaceholder": "Search descriptions, event IDs, WBS...",
+    "export": "Export",
+    "sortByLabel": "Sort By",
+    "newest": "Newest",
+    "oldest": "Oldest",
+    "highestConfidence": "Highest Confidence",
+    "lowestConfidence": "Lowest Confidence",
+    "eventIdCol": "EVENT ID",
+    "descriptionCol": "DESCRIPTION",
+    "confidenceCol": "CONFIDENCE",
+    "scheduleActivityCol": "SCHEDULE ACTIVITY",
+    "actionsCol": "ACTIONS",
+    "approveBtn": "Approve",
+    "discardBtn": "Discard",
+    "linkBtn": "Link",
+    "noItemsFound": "No items match the active filters.",
+    "createActivityTitle": "Create New Activity",
+    "createActivitySubtitle": "Define a new node in the master schedule",
+    "activityNameLabel": "ACTIVITY NAME",
+    "levelLabel": "LEVEL",
+    "disciplineLabel": "DISCIPLINE",
+    "plannedStartLabel": "PLANNED START",
+    "plannedFinishLabel": "PLANNED FINISH",
+    "responsibleTeamLabel": "RESPONSIBLE TEAM",
+    "resourcesAllocatedLabel": "RESOURCES ALLOCATED",
+    "addResource": "Add Resource",
+    "fieldReportContext": "FIELD REPORT CONTEXT",
+    "cancel": "Cancel",
+    "exportTitle": "Export Report",
+    "exportFormatLabel": "EXPORT FORMAT",
+    "dateRangeLabel": "DATE RANGE",
+    "from": "From",
+    "to": "To",
+    "columnsToExportLabel": "COLUMNS TO EXPORT",
+    "matchingProgressMsg": "Exporting entries matching current filters.",
+    "reviewingLabel": "Reviewing",
+    "sourceExcerpt": "Source Excerpt",
+    "extractedFields": "Extracted Fields",
+    "eventType": "Event Type",
+    "tagLineId": "Tag/Line ID",
+    "location": "Location",
+    "date": "Date",
+    "quantity": "Quantity",
+    "contractor": "Contractor",
+    "scheduleMatchCandidates": "Schedule Match Candidates",
+    "score": "Score",
+    "rationale": "Rationale",
+    "discardRecord": "Discard Record",
+    "openScheduleMatch": "Open Schedule Match",
+    "plannerDecisionModule": "Planner's Decision Module",
+    "selectedActivityDetails": "SELECTED ACTIVITY DETAILS",
+    "confirmSend": "Confirm & Send",
+    "piping": "Piping",
+    "civil": "Civil",
+    "electrical": "Electrical",
+    "hse": "HSE",
+    "instrumentation": "Instrumentation",
+    "static_rotating": "Static/Rotating",
+    "mechanical": "Mechanical",
+    "all": "All",
+    "allDisciplines": "All Disciplines",
+    "allFormats": "All Formats"
+  },
+  "HI": {
+    "accessibilityHelp": "अभिगम्यता सहायता",
+    "sitemap": "साइटमैप",
+    "reviewConsole": "समीक्षा कंसोल",
+    "newReport": "नया रिपोर्ट",
+    "queueStatus": "कतार स्थिति",
+    "reset": "रीसेट",
+    "autoApproved": "स्वतः स्वीकृत",
+    "review": "समीक्षा",
+    "flagged": "फ्लैग किया गया",
+    "inProgress": "प्रगति पर",
+    "disciplines": "विषय / अनुशासन",
+    "inputFormat": "इनपुट स्वरूप",
+    "dprText": "डीपीआर पाठ",
+    "spreadsheet": "स्प्रेडशीट",
+    "scanPDF": "स्कैन / पीडीएफ",
+    "voice": "आवाज",
+    "systemConfidence": "प्रणाली विश्वास",
+    "reviewerName": "एस.के. (योजनाकार)",
+    "reviewQueue": "समीक्षा कतार",
+    "queueSubtitle": "फ़ील्ड अपडेट सत्यापित करें और शेड्यूल नोड्स से जोड़ें",
+    "searchPlaceholder": "विवरण, ईवेंट आईडी, WBS खोजें...",
+    "export": "निर्यात करें",
+    "sortByLabel": "इसके अनुसार क्रमबद्ध करें",
+    "newest": "नवीनतम",
+    "oldest": "सबसे पुराना",
+    "highestConfidence": "उच्चतम विश्वास",
+    "lowestConfidence": "न्यूनतम विश्वास",
+    "eventIdCol": "ईवेंट आईडी",
+    "descriptionCol": "विवरण",
+    "confidenceCol": "विश्वास",
+    "scheduleActivityCol": "शेड्यूल गतिविधि",
+    "actionsCol": "कार्रवाई",
+    "approveBtn": "मंज़ूर करें",
+    "discardBtn": "अस्वीकार करें",
+    "linkBtn": "लिंक करें",
+    "noItemsFound": "कोई भी आइटम सक्रिय फ़िल्टर से मेल नहीं खाता।",
+    "createActivityTitle": "नया गतिविधि बनाएं",
+    "createActivitySubtitle": "मुख्य शेड्यूल में एक नया नोड परिभाषित करें",
+    "activityNameLabel": "गतिविधि का नाम",
+    "levelLabel": "स्तर",
+    "disciplineLabel": "अनुशासन",
+    "plannedStartLabel": "नियोजित प्रारंभ",
+    "plannedFinishLabel": "नियोजित समाप्ति",
+    "responsibleTeamLabel": "जिम्मेदार टीम",
+    "resourcesAllocatedLabel": "आवंटित संसाधन",
+    "addResource": "संसाधन जोड़ें",
+    "fieldReportContext": "फ़ील्ड रिपोर्ट संदर्भ",
+    "cancel": "रद्द करें",
+    "exportTitle": "रिपोर्ट निर्यात करें",
+    "exportFormatLabel": "निर्यात स्वरूप",
+    "dateRangeLabel": "दिनांक सीमा",
+    "from": "से",
+    "to": "तक",
+    "columnsToExportLabel": "निर्यात करने के लिए कॉलम",
+    "matchingProgressMsg": "सक्रिय फ़िल्टर से मेल खाने वाली प्रविष्टियों को निर्यात किया जा रहा है।",
+    "reviewingLabel": "समीक्षा की जा रही है",
+    "sourceExcerpt": "स्रोत अंश",
+    "extractedFields": "निकाले गए फ़ील्ड",
+    "eventType": "ईवेंट प्रकार",
+    "tagLineId": "टैग/लाइन आईडी",
+    "location": "स्थान",
+    "date": "दिनांक",
+    "quantity": "मात्रा",
+    "contractor": "ठेकेदार",
+    "scheduleMatchCandidates": "शेड्यूल मिलान उम्मीदवार",
+    "score": "स्कोर",
+    "rationale": "तर्क",
+    "discardRecord": "रिकॉर्ड त्यागें",
+    "openScheduleMatch": "शेड्यूल मिलान खोलें",
+    "plannerDecisionModule": "योजनाकार का निर्णय मॉड्यूल",
+    "selectedActivityDetails": "चयनित गतिविधि विवरण",
+    "confirmSend": "पुष्टि करें और भेजें",
+    "piping": "पाइपिंग",
+    "civil": "सिविल",
+    "electrical": "विद्युत",
+    "hse": "एचएसई",
+    "instrumentation": "इंस्ट्रूमेंटेशन",
+    "static_rotating": "स्थैतिक/घूर्णन",
+    "mechanical": "मेकेनिकल",
+    "all": "सभी",
+    "allDisciplines": "सभी विषय / अनुशासन",
+    "allFormats": "सभी स्वरूप"
+  }
+};
+
 interface ReviewQueueContextType {
   items: QueueItem[];
   filteredItems: QueueItem[];
@@ -59,6 +231,8 @@ interface ReviewQueueContextType {
   toggleTextEnlarged: () => void;
   language: 'EN' | 'HI';
   toggleLanguage: () => void;
+  t: (key: string) => string;
+  tf: (key: string, vars: Record<string, string>) => string;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (open: boolean) => void;
   toggleMobileSidebar: () => void;
@@ -104,6 +278,17 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [isHighContrast, setIsHighContrast] = useState(false);
   const [isTextEnlarged, setIsTextEnlarged] = useState(false);
   const [language, setLanguage] = useState<'EN' | 'HI'>('EN');
+  const t = useCallback((key: string) => {
+    return consoleI18n[language][key] || key;
+  }, [language]);
+
+  const tf = useCallback((key: string, vars: Record<string, string>) => {
+    let str = t(key);
+    Object.entries(vars).forEach(([k, v]) => {
+      str = str.replace(new RegExp(`{${k}}`, 'g'), v);
+    });
+    return str;
+  }, [t]);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   const toggleMobileSidebar = useCallback(() => {
@@ -508,6 +693,8 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
         toggleTextEnlarged,
         language,
         toggleLanguage,
+        t,
+        tf,
         isMobileSidebarOpen,
         setIsMobileSidebarOpen,
         toggleMobileSidebar,

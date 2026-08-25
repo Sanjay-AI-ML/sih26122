@@ -10,6 +10,7 @@ export const TopAppBar: React.FC = () => {
     toggleLanguage, 
     language, 
     showToast,
+    t,
     toggleMobileSidebar,
     isMobileSidebarOpen
   } = useReviewQueue();
@@ -39,7 +40,7 @@ export const TopAppBar: React.FC = () => {
             Kadam
             {location.pathname !== '/' && (
               <span className="text-[11px] font-normal text-on-surface-variant bg-surface-container px-2 py-0.5 rounded border border-border-standard hidden sm:inline-block">
-                Review Console
+                {t('reviewConsole')}
               </span>
             )}
           </button>
@@ -52,13 +53,13 @@ export const TopAppBar: React.FC = () => {
           onClick={() => showToast('Accessibility guidelines compliant (GIGW 2.0)', undefined, 'info')}
           className="hidden md:inline-block font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors px-2 py-1 rounded cursor-pointer"
         >
-          {language === 'EN' ? 'Accessibility Help' : 'अभिगम्यता सहायता'}
+          {t('accessibilityHelp')}
         </button>
         <button 
           onClick={() => showToast('Sitemap: / (Queue), /record/:id (Review), /create (New Activity), /export (Export)', undefined, 'info')}
           className="hidden sm:inline-block font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-high transition-colors px-2 py-1 rounded cursor-pointer"
         >
-          {language === 'EN' ? 'Sitemap' : 'साइटमैप'}
+          {t('sitemap')}
         </button>
 
         {/* Trailing Icons */}

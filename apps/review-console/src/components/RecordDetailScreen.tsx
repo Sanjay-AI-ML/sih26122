@@ -12,7 +12,8 @@ export const RecordDetailScreen: React.FC = () => {
     setIsScheduleModalOpen,
     setActiveScheduleItem,
     setSelectedCandidate,
-    confirmScheduleMatch
+    confirmScheduleMatch,
+    t
   } = useReviewQueue();
 
   const [activeFormatTab, setActiveFormatTab] = useState<'dpr' | 'spreadsheet' | 'scan' | 'voice'>('dpr');
@@ -29,7 +30,7 @@ export const RecordDetailScreen: React.FC = () => {
             onClick={() => navigate('/')} 
             className="px-4 py-1.5 bg-primary text-on-primary rounded text-body-sm font-medium cursor-pointer"
           >
-            Back to Queue
+            {t('cancel')}
           </button>
         </div>
       </main>
@@ -76,7 +77,7 @@ export const RecordDetailScreen: React.FC = () => {
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="description">description</span>
             <h2 className="font-h2 text-h2 text-primary flex items-center flex-wrap gap-1 sm:gap-2">
-              <span>Reviewing:</span>
+              <span>{t('reviewingLabel')}</span>
               <span className="font-technical-data text-technical-data text-on-surface font-bold">
                 {item.id}
               </span>
@@ -107,7 +108,7 @@ export const RecordDetailScreen: React.FC = () => {
                     : 'border-b-2 border-transparent text-on-surface-variant hover:text-on-surface'
                 }`}
               >
-                DPR Text
+                {t('dprText')}
               </button>
               <button 
                 onClick={() => setActiveFormatTab('spreadsheet')}
@@ -117,7 +118,7 @@ export const RecordDetailScreen: React.FC = () => {
                     : 'border-b-2 border-transparent text-on-surface-variant hover:text-on-surface'
                 }`}
               >
-                Spreadsheet
+                {t('spreadsheet')}
               </button>
               <button 
                 onClick={() => setActiveFormatTab('scan')}
@@ -127,7 +128,7 @@ export const RecordDetailScreen: React.FC = () => {
                     : 'border-b-2 border-transparent text-on-surface-variant hover:text-on-surface'
                 }`}
               >
-                Scan
+                {t('scanPDF')}
               </button>
               <button 
                 onClick={() => setActiveFormatTab('voice')}
@@ -137,13 +138,13 @@ export const RecordDetailScreen: React.FC = () => {
                     : 'border-b-2 border-transparent text-on-surface-variant hover:text-on-surface'
                 }`}
               >
-                <span className="material-symbols-outlined text-[15px]" data-icon="mic">mic</span> Voice
+                <span className="material-symbols-outlined text-[15px]" data-icon="mic">mic</span> {t('voice')}
               </button>
             </div>
 
-            {/* Source Excerpt */}
+            {/* {t('sourceExcerpt')} */}
             <div className="flex flex-col gap-1.5">
-              <h3 className="font-h3 text-h3 text-on-surface font-semibold">Source Excerpt</h3>
+              <h3 className="font-h3 text-h3 text-on-surface font-semibold">{t('sourceExcerpt')}</h3>
               <div className="bg-source-excerpt border border-warning/30 rounded-md p-3">
                 {activeFormatTab === 'dpr' && (
                   <p className="font-body-lg text-body-lg text-on-surface leading-relaxed">
@@ -169,7 +170,7 @@ export const RecordDetailScreen: React.FC = () => {
                   <div className="flex items-center gap-3 p-2 bg-white/60 rounded border border-warning/20">
                     <span className="material-symbols-outlined text-[28px] text-primary">document_scanner</span>
                     <div>
-                      <div className="font-medium text-body-sm text-on-surface">{item.formatTabs?.scanUrl || `Daily_Report_Scan_${item.eventId}.pdf`}</div>
+                      <div className="font-medium text-body-sm text-on-surface">{item.formatTabs?.scanUrl || `Daily_Report_{t('scanPDF')}_${item.eventId}.pdf`}</div>
                       <div className="font-technical-data text-[10px] text-outline">Verified OCR extraction · 300 DPI Monochrome</div>
                     </div>
                   </div>
@@ -188,10 +189,10 @@ export const RecordDetailScreen: React.FC = () => {
               </div>
             </div>
 
-            {/* Extracted Fields Table */}
+            {/* {t('extractedFields')} Table */}
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between items-end mb-0.5">
-                <h3 className="font-h3 text-h3 text-on-surface font-semibold">Extracted Fields</h3>
+                <h3 className="font-h3 text-h3 text-on-surface font-semibold">{t('extractedFields')}</h3>
                 <div className="inline-flex items-center gap-1 px-2 py-1 rounded bg-warning/20 border border-warning/30 text-tertiary-container font-label-caps text-label-caps text-[10px] shadow-2xs">
                   <span className="material-symbols-outlined text-[12px]" data-icon="error">error</span>
                   Needs Review · {item.confidenceScore}% confidence
@@ -201,9 +202,9 @@ export const RecordDetailScreen: React.FC = () => {
                 <table className="w-full text-left border-collapse min-w-[380px]">
                   <thead className="bg-panel-accent border-b border-border-standard">
                     <tr>
-                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">Field</th>
-                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">Extracted Value</th>
-                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">System Mapping</th>
+                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('tag')}</th>
+                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('structured')}</th>
+                      <th className="py-1.5 px-2.5 font-label-caps text-label-caps text-on-surface-variant text-[10px]">{t('scheduleActivityCol')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border-standard font-body-sm text-body-sm">
@@ -228,7 +229,7 @@ export const RecordDetailScreen: React.FC = () => {
                             {isDisciplineField ? (
                               <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface font-body-sm text-body-sm border border-border-standard text-xs">
                                 <span className="material-symbols-outlined text-[14px] text-primary" data-icon="settings_input_component">settings_input_component</span>
-                                {field.systemMapping}
+                                {t(field.systemMapping?.toLowerCase()) || field.systemMapping}
                               </div>
                             ) : isTagField ? (
                               <div className="inline-flex items-center gap-1.5">
@@ -242,7 +243,7 @@ export const RecordDetailScreen: React.FC = () => {
                             ) : isStatusField ? (
                               <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-success/10 text-[#2C5B0F] border border-success/30 font-label-caps text-label-caps text-[10px]">
                                 <span className="w-1.5 h-1.5 rounded-full bg-[#2C5B0F]"></span>
-                                {field.systemMapping}
+                                {t(field.systemMapping?.toLowerCase()) || field.systemMapping}
                               </div>
                             ) : isProgressField ? (
                               <div className="flex items-center gap-1.5">
@@ -271,7 +272,7 @@ export const RecordDetailScreen: React.FC = () => {
             <div className="p-3 sm:p-4 flex flex-col gap-3 flex-1 overflow-y-auto custom-scrollbar">
               <h3 className="font-h3 text-h3 text-on-surface flex items-center gap-1.5 font-semibold">
                 <span className="material-symbols-outlined text-primary text-[18px]" data-icon="compare_arrows">compare_arrows</span>
-                Schedule Match Candidates
+                {t('scheduleMatchCandidates')}
               </h3>
               <div className="flex flex-col gap-2.5">
                 {item.candidates.map((cand, idx) => {
@@ -337,7 +338,7 @@ export const RecordDetailScreen: React.FC = () => {
                   );
                 })}
 
-                {/* Open Schedule Match / Browse Master Schedule */}
+                {/* {t('openScheduleMatch')} / Browse Master Schedule */}
                 <button 
                   onClick={() => handleOpenScheduleMatchModal(selectedCandidateIndex)}
                   className="w-full py-1.5 border border-dashed border-outline text-primary font-body-sm text-body-sm rounded-md hover:bg-surface-container-low transition-colors flex items-center justify-center gap-1.5 mt-1 cursor-pointer text-xs"

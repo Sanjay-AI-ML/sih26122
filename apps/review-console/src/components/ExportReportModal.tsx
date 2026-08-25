@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useReviewQueue } from '../context/ReviewQueueContext';
 
 export const ExportReportModal: React.FC = () => {
-  const { isExportModalOpen, setIsExportModalOpen, exportData, items } = useReviewQueue();
+  const { isExportModalOpen, setIsExportModalOpen, exportData, items, t } = useReviewQueue();
   const [exportFormat, setExportFormat] = useState<'CSV' | 'Excel' | 'PDF'>('CSV');
   const [selectedColumns, setSelectedColumns] = useState<string[]>([
     'Event ID',
@@ -47,8 +47,8 @@ export const ExportReportModal: React.FC = () => {
       <div className="relative bg-surface rounded-md w-full max-w-[480px] shadow-xl border border-border-standard z-50 flex flex-col overflow-hidden animate-[fadeIn_0.2s_ease-out] max-h-[92vh]">
         <div className="flex items-center justify-between px-3 sm:px-4 py-2.5 sm:py-3 border-b border-border-standard bg-surface">
           <div>
-            <h2 className="font-h2 text-h2 text-primary font-bold">Export Review Queue</h2>
-            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">Generate compliance report for Oil India Limited</p>
+            <h2 className="font-h2 text-h2 text-primary font-bold">{t('exportTitle')}</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">{t('matchingProgressMsg')}</p>
           </div>
           <button 
             onClick={() => setIsExportModalOpen(false)}
@@ -62,7 +62,7 @@ export const ExportReportModal: React.FC = () => {
           {/* Format selection */}
           <div>
             <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1.5 text-[10px]">
-              EXPORT FILE FORMAT
+              {t('exportFormatLabel')}
             </label>
             <div className="grid grid-cols-3 gap-2">
               {(['CSV', 'Excel', 'PDF'] as const).map(fmt => (
@@ -88,7 +88,7 @@ export const ExportReportModal: React.FC = () => {
           {/* Included Columns */}
           <div>
             <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1.5 text-[10px]">
-              INCLUDED COLUMNS ({selectedColumns.length}/{availableCols.length})
+              {t('columnsToExportLabel')} ({selectedColumns.length}/{availableCols.length})
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 bg-surface-container-low p-2.5 rounded border border-border-standard">
               {availableCols.map(col => {

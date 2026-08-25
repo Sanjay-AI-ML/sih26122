@@ -18,7 +18,8 @@ export const ReviewQueueScreen: React.FC = () => {
     setActiveDisciplineFilter,
     viewMode,
     setViewMode,
-    setIsExportModalOpen
+    setIsExportModalOpen,
+    t
   } = useReviewQueue();
 
   const navigate = useNavigate();
@@ -48,13 +49,13 @@ export const ReviewQueueScreen: React.FC = () => {
   const getInputIcon = (format: InputFormatType) => {
     switch (format) {
       case 'dpr':
-        return <span className="material-symbols-outlined text-[18px]" title="DPR">description</span>;
+        return <span className="material-symbols-outlined text-[18px]" title={t("dprText")}>description</span>;
       case 'spreadsheet':
-        return <span className="material-symbols-outlined text-[18px]" title="Spreadsheet">table_chart</span>;
+        return <span className="material-symbols-outlined text-[18px]" title={t("spreadsheet")}>table_chart</span>;
       case 'scan':
-        return <span className="material-symbols-outlined text-[18px]" title="Scan">document_scanner</span>;
+        return <span className="material-symbols-outlined text-[18px]" title={t("scanPDF")}>document_scanner</span>;
       case 'voice':
-        return <span className="material-symbols-outlined text-[18px]" title="Voice Note">mic</span>;
+        return <span className="material-symbols-outlined text-[18px]" title={t("voice")}>mic</span>;
       case 'telemetry':
         return <span className="material-symbols-outlined text-[18px]" title="Telemetry">sensors</span>;
       case 'mobile':
@@ -69,27 +70,27 @@ export const ReviewQueueScreen: React.FC = () => {
     switch (status) {
       case 'auto_approved':
         return (
-          <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-green-100 text-success" title="Auto-Approved">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-green-100 text-success" title={t("autoApproved")}>
             <span className="material-symbols-outlined text-[14px]">check_circle</span>
           </span>
         );
       case 'flagged':
         return (
-          <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-danger" title="Flagged">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-red-100 text-danger" title={t("flagged")}>
             <span className="material-symbols-outlined text-[14px]">error</span>
           </span>
         );
       case 'in_progress':
       case 'pending':
         return (
-          <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-blue-100 text-primary" title="In Progress">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-blue-100 text-primary" title={t("inProgress")}>
             <span className="material-symbols-outlined text-[14px]">hourglass_top</span>
           </span>
         );
       case 'review':
       default:
         return (
-          <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-yellow-100 text-yellow-800" title="Awaiting Review">
+          <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-yellow-100 text-yellow-800" title={t("review")}>
             <span className="material-symbols-outlined text-[14px]">pending_actions</span>
           </span>
         );
@@ -101,8 +102,8 @@ export const ReviewQueueScreen: React.FC = () => {
       {/* Header Area */}
       <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-4 pb-3 border-b border-border-standard gap-3">
         <div>
-          <h2 className="font-h1 text-h1 text-on-surface tracking-tight font-bold">Review Queue</h2>
-          <p className="font-body-sm text-body-sm text-outline mt-0.5">Manage and verify field progress reports.</p>
+          <h2 className="font-h1 text-h1 text-on-surface tracking-tight font-bold">{t('reviewQueue')}</h2>
+          <p className="font-body-sm text-body-sm text-outline mt-0.5">{t('queueSubtitle')}</p>
         </div>
         {/* Actions & Search */}
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
@@ -117,7 +118,7 @@ export const ReviewQueueScreen: React.FC = () => {
                 setCurrentPage(1);
               }}
               className="pl-8 pr-10 py-1 border border-border-standard rounded font-body-sm text-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-full sm:w-60 bg-surface-container-lowest text-on-surface transition-all" 
-              placeholder="Search Activity (Cmd+K)" 
+              placeholder={t("searchPlaceholder")} 
               type="text"
             />
             {searchQuery && (
@@ -136,7 +137,7 @@ export const ReviewQueueScreen: React.FC = () => {
             className="border border-outline hover:bg-surface-container text-on-surface font-body-sm text-body-sm py-1 px-3 rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer whitespace-nowrap shadow-2xs"
           >
             <span className="material-symbols-outlined text-[16px]">download</span>
-            <span className="hidden xs:inline-block">Export</span>
+            <span className="hidden xs:inline-block">{t('export')}</span>
           </button>
         </div>
       </header>
@@ -154,11 +155,11 @@ export const ReviewQueueScreen: React.FC = () => {
               }}
               className="appearance-none flex items-center gap-1 pl-2.5 pr-7 py-1 bg-surface-container hover:bg-surface-container-high border border-border-standard rounded font-body-sm text-body-sm text-on-surface transition-colors cursor-pointer outline-none text-xs"
             >
-              <option value="all">Status: All</option>
-              <option value="auto_approved">Status: Auto-Approved</option>
-              <option value="review">Status: Review</option>
-              <option value="flagged">Status: Flagged</option>
-              <option value="in_progress">Status: In Progress</option>
+              <option value="all">{`Status: ${t("all")}`}</option>
+              <option value="auto_approved">{`Status: ${t("autoApproved")}`}</option>
+              <option value="review">{`Status: ${t("review")}`}</option>
+              <option value="flagged">{`Status: ${t("flagged")}`}</option>
+              <option value="in_progress">{`Status: ${t("inProgress")}`}</option>
             </select>
             <span className="material-symbols-outlined text-[15px] absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">
               arrow_drop_down
@@ -172,10 +173,10 @@ export const ReviewQueueScreen: React.FC = () => {
               onChange={(e) => setSortBy(e.target.value)}
               className="appearance-none flex items-center gap-1 pl-2.5 pr-7 py-1 bg-surface-container hover:bg-surface-container-high border border-border-standard rounded font-body-sm text-body-sm text-on-surface transition-colors cursor-pointer outline-none text-xs"
             >
-              <option value="newest">Sort: Age (Newest)</option>
-              <option value="oldest">Sort: Age (Oldest)</option>
-              <option value="priority">Sort: Priority</option>
-              <option value="confidence">Sort: Confidence</option>
+              <option value="newest">{`Sort: ${t("newest")}`}</option>
+              <option value="oldest">{`Sort: ${t("oldest")}`}</option>
+              <option value="priority">{`Sort: ${t("priority")}`}</option>
+              <option value="confidence">{`Sort: ${t("confidence")}`}</option>
             </select>
             <span className="material-symbols-outlined text-[15px] absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">
               arrow_drop_down
@@ -192,7 +193,7 @@ export const ReviewQueueScreen: React.FC = () => {
               }}
               className="appearance-none flex items-center gap-1 pl-2.5 pr-7 py-1 bg-surface-container hover:bg-surface-container-high border border-border-standard rounded font-body-sm text-body-sm text-on-surface transition-colors cursor-pointer outline-none text-xs"
             >
-              <option value="all">Priority: All</option>
+              <option value="all">{`Priority: ${t("all")}`}</option>
               <option value="High">Priority: High</option>
               <option value="Medium">Priority: Medium</option>
               <option value="Low">Priority: Low</option>
@@ -272,7 +273,7 @@ export const ReviewQueueScreen: React.FC = () => {
                   <tr>
                     <td colSpan={7} className="py-10 text-center text-outline">
                       <span className="material-symbols-outlined text-[32px] text-outline mb-1">inbox</span>
-                      <p className="text-body-sm">No field progress records match the current filter criteria.</p>
+                      <p className="text-body-sm">{t('noItemsFound')}</p>
                       <button 
                         onClick={() => {
                           setActiveStatusFilter(null);
@@ -282,7 +283,7 @@ export const ReviewQueueScreen: React.FC = () => {
                         }}
                         className="mt-2 text-primary text-body-sm font-medium hover:underline cursor-pointer"
                       >
-                        Reset all filters
+                        {t('reset')}
                       </button>
                     </td>
                   </tr>
@@ -313,7 +314,7 @@ export const ReviewQueueScreen: React.FC = () => {
                         </td>
                         <td className="py-2 px-3">
                           <span className="px-1.5 py-0.5 border border-border-standard rounded text-[10.5px] bg-surface-container">
-                            {item.discipline}
+                            {t(item.discipline?.toLowerCase()) || item.discipline}
                           </span>
                         </td>
                         <td className="py-2 px-3 text-outline text-[11px]">
