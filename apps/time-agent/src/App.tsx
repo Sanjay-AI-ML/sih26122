@@ -44,6 +44,16 @@ const i18n: any = {
     "resetDefaults": "RESET TO DEFAULTS",
     "upload": "Upload Report or Attachment",
     "takePicture": "Take Picture",
+    "noProgressUpdate": "That does not look like a field progress update. Please describe the specific work completed so I can log it.",
+    "noActivitiesExtracted": "No activities could be extracted from {filename}.",
+    "extractedEventsProcessing": "Extracted {count} event(s) from {filename}. Processing match...",
+    "moreEventsQueued": "{count} more event(s) queued in the Review Console.",
+    "uploadError": "Upload error: {error}",
+    "backendError": "Backend error: {error}. Ensure ports 8001 and 8002 are running.",
+    "syncQueueCleared": "Offline sync queue cleared.",
+    "high": "High",
+    "medium": "Medium",
+    "low": "Low",
     "clearQueue": "Clear Queue",
     "cancel": "Cancel",
     "records": "records",
@@ -114,6 +124,16 @@ const i18n: any = {
     "resetDefaults": "डिफ़ॉल्ट पर रीसेट करें",
     "upload": "रिपोर्ट या अटैचमेंट अपलोड करें",
     "takePicture": "तस्वीर लें",
+    "noProgressUpdate": "वह फ़ील्ड प्रगति अपडेट जैसा नहीं लग रहा है। कृपया पूरी की गई विशिष्ट गतिविधि का वर्णन करें ताकि मैं इसे लॉग कर सकूं।",
+    "noActivitiesExtracted": "{filename} से कोई भी गतिविधि निकाली नहीं जा सकी।",
+    "extractedEventsProcessing": "{filename} से {count} गतिविधि निकाली गईं। मिलान प्रक्रिया चालू है...",
+    "moreEventsQueued": "{count} और गतिविधि समीक्षा कंसोल में कतारबद्ध हैं।",
+    "uploadError": "अपलोड त्रुटि: {error}",
+    "backendError": "बैकएंड त्रुटि: {error}। सुनिश्चित करें कि पोर्ट 8001 और 8002 चल रहे हैं।",
+    "syncQueueCleared": "ऑफ़लाइन सिंक कतार साफ कर दी गई है।",
+    "high": "उच्च",
+    "medium": "मध्यम",
+    "low": "निम्न",
     "clearQueue": "कतार साफ करें",
     "cancel": "रद्द करें",
     "records": "रिकॉर्ड",
@@ -237,31 +257,31 @@ function App() {
           if (!res.ok) throw new Error("Upload HTTP " + res.status);
           const data = await res.json();
           if (!data.events || data.events.length === 0) {
-            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "No activities could be extracted from capture.", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "noActivitiesExtracted", vars: { filename: "capture" }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
           } else {
-            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "Extracted " + data.total_events + " event(s) from capture. Processing match...", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "extractedEventsProcessing", vars: { count: String(data.total_events), filename: "capture" }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
             const event = data.events[0];
             const matchRes = await fetch("http://localhost:8002/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(event) });
             if (matchRes.ok) {
               const matchData = await matchRes.json();
-              const confBand = matchData.confidence_band ? matchData.confidence_band.toUpperCase() : "LOW";
               setMessages((prev: any[]) => [...prev, {
                 id: Date.now() + 2, type: "card",
                 activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
                 discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
                 tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
                 start: event.event_date || "-", finish: "-",
-                linked: matchData.top_activity_id ? t("linkedTo") + ": " + matchData.top_activity_id : "No match",
-                conf: Math.round((matchData.confidence_score || 0) * 100) + "% - " + confBand,
+                linkedActivityId: matchData.top_activity_id || null,
+                confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
+                confidenceBand: matchData.confidence_band || 'low',
                 time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
               }]);
               if (data.total_events > 1) {
-                setMessages((prev: any[]) => [...prev, { id: Date.now() + 3, type: "bot", text: (data.total_events - 1) + " more event(s) queued in the Review Console.", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+                setMessages((prev: any[]) => [...prev, { id: Date.now() + 3, type: "bot", text: "moreEventsQueued", vars: { count: String(data.total_events - 1) }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
               }
             }
           }
         } catch (err: any) {
-          setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "Upload error: " + err.message, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+          setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "uploadError", vars: { error: err.message }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
         } finally {
           setIsTyping(false);
         }
@@ -299,7 +319,7 @@ function App() {
         setMessages((prev: any[]) => [...prev, {
           id: Date.now(),
           type: "bot",
-          text: "Offline sync queue cleared.",
+          text: "syncQueueCleared",
           time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
         }]);
       };
@@ -375,7 +395,6 @@ function App() {
                   });
                   successCount++;
                   
-                  const confBand = matchData.confidence_band ? matchData.confidence_band.toUpperCase() : "LOW";
                   setMessages((prev: any[]) => [
                     ...prev,
                     {
@@ -387,7 +406,7 @@ function App() {
                     {
                       id: Date.now() + Math.random(),
                       type: "bot",
-                      text: t("parsing") || "Time Agent is parsing report...",
+                      text: "parsing",
                       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                     },
                     {
@@ -398,8 +417,9 @@ function App() {
                       tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
                       start: event.event_date || "-",
                       finish: "-",
-                      linked: matchData.top_activity_id ? t("linkedTo") + ": " + matchData.top_activity_id : "No match",
-                      conf: Math.round((matchData.confidence_score || 0) * 100) + "% - " + confBand,
+                      linkedActivityId: matchData.top_activity_id || null,
+                      confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
+                      confidenceBand: matchData.confidence_band || 'low',
                       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                     }
                   ]);
@@ -434,7 +454,6 @@ function App() {
                     });
                     successCount++;
 
-                    const confBand = matchData.confidence_band ? matchData.confidence_band.toUpperCase() : "LOW";
                     setMessages((prev: any[]) => [
                       ...prev,
                       {
@@ -446,7 +465,8 @@ function App() {
                       {
                         id: Date.now() + Math.random(),
                         type: "bot",
-                        text: "Extracted " + data.total_events + " event(s) from " + item.name + ". Processing match...",
+                        text: "extractedEventsProcessing",
+                        vars: { count: String(data.total_events), filename: item.name },
                         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                       },
                       {
@@ -457,8 +477,9 @@ function App() {
                         tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
                         start: event.event_date || "-",
                         finish: "-",
-                        linked: matchData.top_activity_id ? t("linkedTo") + ": " + matchData.top_activity_id : "No match",
-                        conf: Math.round((matchData.confidence_score || 0) * 100) + "% - " + confBand,
+                        linkedActivityId: matchData.top_activity_id || null,
+                        confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
+                        confidenceBand: matchData.confidence_band || 'low',
                         time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                       }
                     ]);
@@ -480,7 +501,7 @@ function App() {
           setMessages((prev: any[]) => [...prev, {
             id: Date.now() + 1,
             type: "bot",
-            text: tf("syncSuccessMsg", { count: String(successCount) }),
+            text: "syncSuccessMsg", vars: { count: String(successCount) },
             time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
           }]);
         }
@@ -537,7 +558,7 @@ function App() {
           if (!ingestRes.ok) throw new Error("Ingest HTTP " + ingestRes.status);
           const ingestData = await ingestRes.json();
           if (!ingestData.events || ingestData.events.length === 0) {
-            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "That does not look like a field progress update. Please describe the specific work completed so I can log it.", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "noProgressUpdate", vars: undefined, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
             return;
           }
           const event = ingestData.events[0];
@@ -555,19 +576,19 @@ function App() {
               body: JSON.stringify({ event: event, match: matchData })
             });
           } catch(e) { console.error("Queue fail", e); }
-          const confBand = matchData.confidence_band ? matchData.confidence_band.toUpperCase() : "LOW";
           setMessages((prev: any[]) => [...prev, {
             id: Date.now() + 1, type: "card",
             activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
                 discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
                 tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
             start: event.event_date || "-", finish: "-",
-            linked: matchData.top_activity_id ? t("linkedTo") + ": " + matchData.top_activity_id : "No schedule match found",
-            conf: Math.round((matchData.confidence_score || 0) * 100) + "% - " + confBand,
+            linkedActivityId: matchData.top_activity_id || null,
+            confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
+            confidenceBand: matchData.confidence_band || 'low',
             time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
           }]);
         } catch (err: any) {
-          setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "Backend error: " + err.message + ". Ensure ports 8001 and 8002 are running.", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+          setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "backendError", vars: { error: err.message }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
         } finally {
           setIsTyping(false);
         }
@@ -617,31 +638,31 @@ function App() {
           if (!res.ok) throw new Error("Upload HTTP " + res.status);
           const data = await res.json();
           if (!data.events || data.events.length === 0) {
-            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "No activities could be extracted from " + file.name + ".", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "noActivitiesExtracted", vars: { filename: file.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
           } else {
-            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "Extracted " + data.total_events + " event" + (data.total_events > 1 ? "s" : "") + " from " + file.name + ". Processing match...", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "extractedEventsProcessing", vars: { count: String(data.total_events), filename: file.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
             const event = data.events[0];
             const matchRes = await fetch("http://localhost:8002/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(event) });
             if (matchRes.ok) {
               const matchData = await matchRes.json();
-              const confBand = matchData.confidence_band ? matchData.confidence_band.toUpperCase() : "LOW";
               setMessages((prev: any[]) => [...prev, {
                 id: Date.now() + 2, type: "card",
                 activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
                 discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
                 tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
                 start: event.event_date || "-", finish: "-",
-                linked: matchData.top_activity_id ? t("linkedTo") + ": " + matchData.top_activity_id : "No match",
-                conf: Math.round((matchData.confidence_score || 0) * 100) + "% - " + confBand,
+                linkedActivityId: matchData.top_activity_id || null,
+                confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
+                confidenceBand: matchData.confidence_band || 'low',
                 time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
               }]);
               if (data.total_events > 1) {
-                setMessages((prev: any[]) => [...prev, { id: Date.now() + 3, type: "bot", text: (data.total_events - 1) + " more event(s) queued in the Review Console.", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+                setMessages((prev: any[]) => [...prev, { id: Date.now() + 3, type: "bot", text: "moreEventsQueued", vars: { count: String(data.total_events - 1) }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
               }
             }
           }
         } catch (err: any) {
-          setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "Upload error: " + err.message, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+          setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "uploadError", vars: { error: err.message }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
         } finally {
           setIsTyping(false);
           e.target.value = "";
@@ -793,7 +814,9 @@ function App() {
                   if (m.type === "bot") {
                     return (
                       <div key={m.id} className="self-start max-w-[85%]">
-                        <div className="bg-[#f6f3f2] border border-[#CCCCCC] p-3 rounded-lg text-xs text-black">{i18n["EN"][m.text] ? t(m.text) : m.text}</div>
+                        <div className="bg-[#f6f3f2] border border-[#CCCCCC] p-3 rounded-lg text-xs text-black">
+                          {m.vars ? tf(m.text, m.vars) : (i18n["EN"][m.text] ? t(m.text) : m.text)}
+                        </div>
                         <span className="text-[9px] text-[#666666] ml-1">{m.time}</span>
                       </div>
                     );
@@ -801,7 +824,9 @@ function App() {
                   if (m.type === "user") {
                     return (
                       <div key={m.id} className="self-end max-w-[85%]">
-                        <div className="bg-[#1b1b1b] text-white p-3 rounded-lg text-xs">{i18n["EN"][m.text] ? t(m.text) : m.text}</div>
+                        <div className="bg-[#1b1b1b] text-white p-3 rounded-lg text-xs">
+                          {m.vars ? tf(m.text, m.vars) : (i18n["EN"][m.text] ? t(m.text) : m.text)}
+                        </div>
                         <span className="text-[9px] text-[#666666] mr-1 text-right block">{m.time}</span>
                       </div>
                     );
@@ -821,7 +846,7 @@ function App() {
                             </div>
                             <span className="text-[9px] text-[#666666]">{m.duration}</span>
                           </div>
-                          <div className="border-t border-[#E1B91B]/30 pt-1 text-black font-medium">"{i18n["EN"][m.text] ? t(m.text) : m.text}"</div>
+                          <div className="border-t border-[#E1B91B]/30 pt-1 text-black font-medium">"{m.vars ? tf(m.text, m.vars) : (i18n["EN"][m.text] ? t(m.text) : m.text)}"</div>
                           <div className="flex items-center gap-1 text-[9px]">
                             <span className="bg-[#E1B91B]/20 text-[#715b00] px-1 rounded font-bold">HI-EN</span>
                             <span className="text-[#666666] italic">{t("transcribed")}</span>
@@ -837,10 +862,12 @@ function App() {
                         <div className="bg-white border border-[#CCCCCC] border-l-4 border-l-[#51A71D] rounded-lg shadow-sm overflow-hidden">
                           <div className="bg-[#f6f3f2] px-3 py-2 border-b border-[#CCCCCC] flex justify-between items-center">
                             <span className="font-bold text-xs text-black">{t("structured")}</span>
-                            <span className="bg-[#51A71D]/15 text-[#51A71D] text-[9px] font-bold px-2 py-0.5 rounded">{m.conf}</span>
+                            <span className="bg-[#51A71D]/15 text-[#51A71D] text-[9px] font-bold px-2 py-0.5 rounded">
+                              {m.confidenceScore}% - {t(m.confidenceBand?.toLowerCase() || 'low')}
+                            </span>
                           </div>
                           <div className="p-3 text-xs flex flex-col gap-1.5">
-                            <div className="grid grid-cols-3"><span className="text-[#666666] text-[10px]">{t("activity")}</span><span className="col-span-2 font-semibold">{m.activity}</span></div>
+                            <div className="grid grid-cols-3"><span className="text-[#666666] text-[10px]">{t("activity")}</span><span className="col-span-2 font-semibold">{t(m.activity) || m.activity}</span></div>
                             <div className="grid grid-cols-3"><span className="text-[#666666] text-[10px]">{t("discipline")}</span><span className="col-span-2">{t(m.discipline?.toLowerCase() || "")?.toUpperCase() || m.discipline}</span></div>
                             <div className="grid grid-cols-3"><span className="text-[#666666] text-[10px]">{t("tag")}</span><span className="col-span-2 font-mono text-[#1842AA]">{m.tag}</span></div>
                             <div className="border-t border-[#f0eded] pt-2 mt-1 grid grid-cols-2">
@@ -849,7 +876,10 @@ function App() {
                             </div>
                           </div>
                           <div className="bg-[#1842AA]/5 border-t border-[#1842AA]/15 p-2.5 flex justify-between items-center text-[#1842AA] font-bold text-xs cursor-pointer hover:bg-[#1842AA]/10">
-                            <div className="flex items-center gap-1.5"><span className="material-symbols-outlined text-sm">link</span>{m.linked}</div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="material-symbols-outlined text-sm">link</span>
+                              {m.linkedActivityId ? `${t("linkedTo")}: ${m.linkedActivityId}` : t("noMatchFound")}
+                            </div>
                             <span className="material-symbols-outlined text-sm">chevron_right</span>
                           </div>
                         </div>
@@ -986,7 +1016,7 @@ function App() {
                   setMessages((prev: any[]) => [...prev, {
                     id: Date.now(),
                     type: "bot",
-                    text: tf("shiftSwitchedTo", { shift: newShift }),
+                    text: "shiftSwitchedTo", vars: { shift: newShift },
                     time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                   }]);
                 }} className="flex items-center gap-2 py-2 text-xs font-semibold text-black hover:bg-gray-50 px-2 rounded">
