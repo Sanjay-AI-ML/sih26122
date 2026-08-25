@@ -80,7 +80,7 @@ class IngestionEngine:
             else:
                 text = str(file_content)
 
-            return self.text_parser.parse(
+            return self.llm_extractor.extract_with_llm(
                 text=text,
                 source_document=filename,
                 default_date=default_date

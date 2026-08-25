@@ -1,0 +1,8 @@
+ERMHDR	19.12.0	2026-08-25	admin
+%T	PROJECT
+%F	proj_id	proj_short_name
+%R	1	PROJ-101
+%T	TASK
+%F	task_id	task_name	status_code
+%R	ACT-100	Hydrotest of Main Cooling Line	Completed
+%R	ACT-101	Erection of Structural Steel for Boiler	In Progress

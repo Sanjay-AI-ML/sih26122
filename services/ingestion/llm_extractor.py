@@ -51,6 +51,18 @@ Rules:
 1. NEVER invent tags, quantities, or dates not present in the text.
 2. If Hinglish phrases like "finish ho gaya", "done", "completed" appear, map event_type to "finish".
 3. Return ONLY the JSON object. Do not include markdown preamble.
+4. CRITICAL: If the input is conversational (e.g. "hi", "hello", "good morning", "thanks") or lacks ANY actual field work, return exactly {"events": []}. Do NOT hallucinate an activity phrase.
+
+Examples:
+Input: "EV-8491C Material tally count verification Civil 95% Auto-Approved Oct 24, 08:30 AM Unlinked"
+Output: {"events": [{"activity_phrase": "Material tally count verification", "discipline": "civil", "tag_or_line_id": "EV-8491C", "location": null, "event_type": "progress", "event_date": "2026-10-24", "quantity": 95, "unit": "%", "contractor": null, "delay_reason": null, "source_excerpt": "Material tally count verification Civil 95%", "raw_confidence_hint": 0.95}]}
+
+Input: "material Tally account verification"
+Output: {"events": [{"activity_phrase": "material Tally account verification", "discipline": "civil", "tag_or_line_id": null, "location": null, "event_type": "unspecified", "event_date": null, "quantity": null, "unit": null, "contractor": null, "delay_reason": null, "source_excerpt": "material Tally account verification", "raw_confidence_hint": 0.85}]}
+
+Input: "link joint inspection at Sector C"
+Output: {"events": [{"activity_phrase": "link joint inspection", "discipline": "piping", "tag_or_line_id": null, "location": "Sector C", "event_type": "unspecified", "event_date": null, "quantity": null, "unit": null, "contractor": null, "delay_reason": null, "source_excerpt": "link joint inspection at Sector C", "raw_confidence_hint": 0.9}]}
+
 """
 
 
@@ -63,10 +75,10 @@ class LLMExtractor:
         self,
         base_url: Optional[str] = None,
         model_name: Optional[str] = None,
-        timeout: float = 4.0
+        timeout: float = 60.0
     ):
         self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        self.model_name = model_name or os.getenv("LLM_MODEL_NAME", "qwen2.5:3b")
+        self.model_name = model_name or os.getenv("LLM_MODEL_NAME", "llama3.2:latest")
         self.timeout = timeout
 
     def is_available(self) -> bool:
@@ -88,6 +100,18 @@ class LLMExtractor:
         """
         if not text or not text.strip():
             return []
+            
+        # Pre-filter conversational junk (like "hi", "hello")
+        text_lower = text.lower()
+        action_verbs = ["done", "complet", "start", "finish", "progress", "install", "erect", "weld", "inspect", "test", "pour", "excavat", "align", "shift", "mobiliz", "demobiliz", "clear", "ongoing", "lay", "fabricat", "paint", "coat"]
+        has_action = any(v in text_lower for v in action_verbs)
+        has_disc = any(d in text_lower for d in ["piping", "civil", "electrical", "instrumentation", "mechanical", "hse", "safety"])
+        has_numbers = any(char.isdigit() for char in text_lower)
+        
+        # If it's very short and has no actions, disciplines, or numbers, it's just chat
+        if len(text_lower.strip()) < 10 and not has_action and not has_disc and not has_numbers:
+            return []
+
 
         payload = {
             "model": self.model_name,
@@ -139,6 +163,12 @@ class LLMExtractor:
         events_list = data.get("events", []) if isinstance(data, dict) else (data if isinstance(data, list) else [])
         validated_events: List[ExtractedEvent] = []
 
+
+        def _clean_val(v):
+            if v is None: return None
+            if isinstance(v, str) and v.strip().lower() == "null": return None
+            return v
+
         fallback_date = default_date or date.today().isoformat()
 
         for item in events_list:
@@ -160,27 +190,27 @@ class LLMExtractor:
                 event_type = EventTypeEnum.PROGRESS
 
             # Date fallback
-            ev_date = item.get("event_date") or fallback_date
+            ev_date = _clean_val(item.get("event_date")) or fallback_date
 
             try:
                 event = ExtractedEvent(
-                    activity_phrase=item.get("activity_phrase") or "Field Activity",
+                    activity_phrase=_clean_val(item.get("activity_phrase")) or "Field Activity",
                     discipline=discipline,
-                    tag_or_line_id=item.get("tag_or_line_id"),
-                    location=item.get("location"),
+                    tag_or_line_id=_clean_val(item.get("tag_or_line_id")),
+                    location=_clean_val(item.get("location")),
                     event_type=event_type,
                     event_date=str(ev_date),
-                    quantity=float(item["quantity"]) if item.get("quantity") is not None else None,
-                    unit=item.get("unit"),
-                    contractor=item.get("contractor"),
-                    delay_reason=item.get("delay_reason"),
+                    quantity=float(item["quantity"]) if _clean_val(item.get("quantity")) is not None else None,
+                    unit=_clean_val(item.get("unit")),
+                    contractor=_clean_val(item.get("contractor")),
+                    delay_reason=_clean_val(item.get("delay_reason")),
                     source_document=source_document,
-                    source_excerpt=item.get("source_excerpt") or item.get("activity_phrase") or "",
+                    source_excerpt=_clean_val(item.get("source_excerpt")) or _clean_val(item.get("activity_phrase")) or "",
                     input_format=InputFormatEnum.FREE_TEXT,
-                    raw_confidence_hint=float(item.get("raw_confidence_hint", 0.85))
+                    raw_confidence_hint=float(item.get("raw_confidence_hint") or 0.85)
                 )
                 validated_events.append(event)
-            except (ValidationError, ValueError):
+            except (ValidationError, ValueError, TypeError):
                 continue
 
         return validated_events

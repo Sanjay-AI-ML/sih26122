@@ -46,15 +46,48 @@ class AnalyticsEngine:
         self._sync_data()
         try:
             query = """
-                SELECT 
+                                SELECT 
                     COUNT(*) as total_events,
-                    SUM(CASE WHEN was_ambiguous = TRUE THEN 1 ELSE 0 END) as ambiguous_events,
-                    SUM(CASE WHEN confidence_band = 'high' THEN 1 ELSE 0 END) as auto_suggested
+                    SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
+                    SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected,
+                    SUM(CASE WHEN was_ambiguous = TRUE THEN 1 ELSE 0 END) as ambiguous
                 FROM audit_log
             """
             result_df = self.con.execute(query).fetchdf()
             return result_df.to_dict(orient="records")[0] if not result_df.empty else {}
         except duckdb.CatalogException:
             return {}
+
+    def get_discipline_breakdown(self):
+        """Returns approved event count grouped by discipline."""
+        self._sync_data()
+        try:
+            query = """
+                SELECT discipline, COUNT(*) as count
+                FROM audit_log
+                WHERE status = 'approved'
+                GROUP BY discipline
+                ORDER BY count DESC
+            """
+            result_df = self.con.execute(query).fetchdf()
+            return result_df.to_dict(orient="records")
+        except duckdb.CatalogException:
+            return []
+
+    def get_daily_trend(self):
+        """Returns approved event count grouped by event_date for trend charts."""
+        self._sync_data()
+        try:
+            query = """
+                SELECT event_date, COUNT(*) as count
+                FROM audit_log
+                WHERE status = 'approved'
+                GROUP BY event_date
+                ORDER BY event_date ASC
+            """
+            result_df = self.con.execute(query).fetchdf()
+            return result_df.to_dict(orient="records")
+        except duckdb.CatalogException:
+            return []
 
 analytics_engine = AnalyticsEngine()

@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, ConfigDict
 
@@ -16,6 +17,14 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Pydantic models for API requests/responses
 class ApprovalRequest(BaseModel):
     activity_id: str
@@ -28,7 +37,7 @@ class ApprovalRequest(BaseModel):
     was_ambiguous: bool
     source_document: str
     source_excerpt: str
-    approved_by: str
+    approved_by: Optional[str] = None
 
 class AuditLogResponse(ApprovalRequest):
     model_config = ConfigDict(from_attributes=True)
@@ -36,7 +45,36 @@ class AuditLogResponse(ApprovalRequest):
     status: str
     approved_at: Optional[datetime]
 
+
+# ---------------------------------------------------------
+# Temporary In-Memory Queue (For Time Agent -> Review Console Handoff)
+# ---------------------------------------------------------
+pending_queue = []
+
+class QueueItemRequest(BaseModel):
+    event: dict
+    match: dict
+
+@app.post("/queue/add")
+def add_to_queue(item: QueueItemRequest):
+    import uuid
+    item_id = str(uuid.uuid4())
+    record = {"queue_id": item_id, "event": item.event, "match": item.match}
+    pending_queue.insert(0, record)
+    return {"status": "added", "id": item_id}
+
+@app.get("/queue/pending")
+def get_queue():
+    return pending_queue
+
+@app.delete("/queue/{item_id}")
+def remove_from_queue(item_id: str):
+    global pending_queue
+    pending_queue = [q for q in pending_queue if q["queue_id"] != item_id]
+    return {"status": "removed"}
+
 @app.post("/audit/approve", response_model=AuditLogResponse)
+
 def approve_event(request: ApprovalRequest, db: Session = Depends(get_db)):
     """Logs an approved match from the planner UI into the database."""
     log_entry = AuditLog(
@@ -90,3 +128,7 @@ def get_history(limit: int = 50, db: Session = Depends(get_db)):
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("services.writeback.app:app", host="0.0.0.0", port=8003, reload=True)

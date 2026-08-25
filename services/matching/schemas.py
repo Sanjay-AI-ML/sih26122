@@ -23,6 +23,7 @@ class Candidate(BaseModel):
     activity_id: str
     activity_name: str
     score: float = Field(ge=0.0, le=1.0)
+    tag: Optional[str] = None
     rationale: str
 
 class MatchResult(BaseModel):
@@ -30,6 +31,7 @@ class MatchResult(BaseModel):
     top_activity_id: Optional[str]
     candidates: List[Candidate]
     confidence_score: float = Field(ge=0.0, le=1.0)
+    tag: Optional[str] = None
     confidence_band: ConfidenceBand
     is_ambiguous: bool
     ambiguity_reason: Optional[str] = None

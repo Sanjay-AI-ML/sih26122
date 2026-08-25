@@ -140,7 +140,19 @@ class TextParser:
         cleaned_phrase = re.sub(r"^(?:\d+[\.\)]|[a-zA-Z][\.\)]|\-|\*)\s*", "", source_excerpt).strip()
 
         # 1. Tag or Line ID Extraction
+
+        # Conversational / Small Talk Filter
+        # If the phrase doesn't have a known tag, and doesn't contain basic construction verbs, drop it.
+        action_verbs = ["done", "complet", "start", "finish", "progress", "install", "erect", "weld", "inspect", "test", "pour", "excavat", "align", "shift", "mobiliz", "demobiliz", "clear", "ongoing", "lay", "fabricat", "paint", "coat"]
         tag_or_line_id = self._extract_tag_or_line_id(cleaned_phrase)
+        
+        has_action = any(v in cleaned_phrase.lower() for v in action_verbs)
+        # We also check for disciplines just in case
+        has_disc = any(d in cleaned_phrase.lower() for d in ["piping", "civil", "electrical", "instrumentation", "mechanical", "hse", "safety"])
+        
+        if not tag_or_line_id and not has_action and not has_disc:
+            return None
+
 
         # 2. Discipline Classification
         discipline = self._classify_discipline(cleaned_phrase, tag_or_line_id, fallback_discipline)

@@ -8,7 +8,7 @@ from typing import List, Optional, Union
 from pypdf import PdfReader
 
 from shared.schemas.extracted_event import ExtractedEvent
-from services.ingestion.parsers.text_parser import TextParser
+from services.ingestion.llm_extractor import LLMExtractor
 from services.ingestion.parsers.scan_parser import ScanParser
 
 
@@ -19,7 +19,7 @@ class PDFParser:
     """
 
     def __init__(self):
-        self.text_parser = TextParser()
+        self.llm_extractor = LLMExtractor()
         self.scan_parser = ScanParser()
 
     def parse_file(
@@ -49,7 +49,7 @@ class PDFParser:
 
         # If digital text exists, parse with TextParser
         if extracted_text.strip():
-            return self.text_parser.parse(
+            return self.llm_extractor.extract_with_llm(
                 text=extracted_text,
                 source_document=filename,
                 default_date=default_date

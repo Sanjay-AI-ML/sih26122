@@ -1,0 +1,6 @@
+activity_id,activity_name,discipline,tag,wbs_path,planned_start,planned_finish
+ACT-001,Welding joint inspection at Sector 4B,piping,EV-8492A,Sector4B/Piping,2026-10-24,2026-10-25
+ACT-002,Hydrotesting of pipeline segment C,piping,PL-102C,Sector4B/Piping,2026-10-26,2026-10-28
+ACT-003,Foundation pouring for rotary pump,civil,P-200A,Sector2/Civil,2026-08-20,2026-08-21
+ACT-004,Cable laying for control room,electrical,CB-500,Sector1/Elec,2026-09-01,2026-09-05
+ACT-005,Valve installation and alignment,mechanical,V-901,Sector4B/Mech,2026-10-10,2026-10-11

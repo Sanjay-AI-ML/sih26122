@@ -75,6 +75,7 @@ class MatchingEngine:
             scored_candidates.append(Candidate(
                 activity_id=activity.activity_id,
                 activity_name=activity.activity_name,
+                tag=activity.tag,
                 score=score,
                 rationale=", ".join(rationale_parts)
             ))

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PrimaveraProject>
+    <Project>
+        <Id>PROJ-101</Id>
+        <Name>Refinery Expansion</Name>
+        <Activities>
+            <Activity>
+                <Id>ACT-100</Id>
+                <Name>Hydrotest of Main Cooling Line</Name>
+                <Discipline>Piping</Discipline>
+                <StartDate>2026-09-01</StartDate>
+                <FinishDate>2026-09-05</FinishDate>
+                <PercentComplete>100</PercentComplete>
+            </Activity>
+            <Activity>
+                <Id>ACT-101</Id>
+                <Name>Erection of Structural Steel for Boiler</Name>
+                <Discipline>Civil</Discipline>
+                <StartDate>2026-09-06</StartDate>
+                <FinishDate>2026-09-15</FinishDate>
+                <PercentComplete>50</PercentComplete>
+            </Activity>
+        </Activities>
+    </Project>
+</PrimaveraProject>

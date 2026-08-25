@@ -1,4 +1,4 @@
-﻿"""
+"""
 Optical Character Recognition (OCR) Parser for Scanned Diaries (SIH26122 - Member A).
 Extracts text from paper log photos (.png, .jpg, .jpeg) using EasyOCR/Tesseract/PaddleOCR
 and extracts structured ExtractedEvents.
@@ -12,37 +12,42 @@ from typing import List, Optional, Union
 from PIL import Image
 
 from shared.schemas.extracted_event import ExtractedEvent, InputFormatEnum, DisciplineEnum, EventTypeEnum
-from services.ingestion.parsers.text_parser import TextParser
+from services.ingestion.llm_extractor import LLMExtractor
 
 
 class OCRParser:
     """
     Image and scanned paper diary OCR processor.
+    Uses EasyOCR (preferred) or pytesseract to extract text, then passes it through LLMExtractor.
     """
 
     def __init__(self):
-        self.text_parser = TextParser()
+        self.llm_extractor = LLMExtractor()
         self._reader = None
         self._ocr_checked = False
 
     def _get_ocr_reader(self):
-        """Lazy-loads EasyOCR or Tesseract reader."""
+        """Lazy-loads EasyOCR or pytesseract reader on first call."""
         if self._ocr_checked:
             return self._reader
         self._ocr_checked = True
 
         try:
             import easyocr
-            self._reader = easyocr.Reader(["en"], gpu=False)
+            self._reader = easyocr.Reader(["en"], gpu=False, verbose=False)
             return self._reader
         except ImportError:
-            try:
-                import pytesseract
-                self._reader = "pytesseract"
-                return self._reader
-            except ImportError:
-                self._reader = None
-                return None
+            pass
+
+        try:
+            import pytesseract
+            self._reader = "pytesseract"
+            return self._reader
+        except ImportError:
+            pass
+
+        self._reader = None
+        return None
 
     def parse_image(
         self,
@@ -51,11 +56,19 @@ class OCRParser:
         default_date: Optional[str] = None
     ) -> List[ExtractedEvent]:
         """
-        Runs OCR on the given image and extracts structured events.
+        Runs OCR on the given image, then extracts structured events via LLM.
+        Raises RuntimeError if no OCR engine is installed so the API returns a 500
+        with a clear message instead of silently returning garbage.
         """
-        extracted_text = ""
         reader = self._get_ocr_reader()
 
+        if reader is None:
+            raise RuntimeError(
+                "No OCR engine available. Install easyocr (`pip install easyocr`) "
+                "or pytesseract (`pip install pytesseract`) and ensure Tesseract is on PATH."
+            )
+
+        extracted_text = ""
         try:
             if isinstance(image_input, (bytes, io.BytesIO)):
                 img_bytes = image_input if isinstance(image_input, bytes) else image_input.getvalue()
@@ -66,8 +79,9 @@ class OCRParser:
             if reader == "pytesseract":
                 import pytesseract
                 extracted_text = pytesseract.image_to_string(image)
-            elif reader is not None and hasattr(reader, "readtext"):
-                # EasyOCR
+
+            elif hasattr(reader, "readtext"):
+                # EasyOCR — needs a temp file on disk
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmp:
                     image.save(tmp.name)
                     tmp_name = tmp.name
@@ -77,24 +91,28 @@ class OCRParser:
                 finally:
                     if os.path.exists(tmp_name):
                         os.remove(tmp_name)
+
+        except RuntimeError:
+            raise
         except Exception as e:
-            print(f"OCR processing note for {filename}: {e}")
+            raise RuntimeError(f"OCR failed for {filename}: {e}") from e
 
-        # If OCR extracted readable text, parse it with TextParser
-        if extracted_text and len(extracted_text.strip()) > 10:
-            events = self.text_parser.parse(
-                text=extracted_text,
-                source_document=filename,
-                default_date=default_date
-            )
-            scan_events = []
-            for ev in events:
-                d = ev.model_dump()
-                d["input_format"] = InputFormatEnum.SCAN
-                d["raw_confidence_hint"] = min(0.75, d.get("raw_confidence_hint", 0.75))
-                scan_events.append(ExtractedEvent(**d))
-            return scan_events
+        if not extracted_text or not extracted_text.strip():
+            # Image was too degraded for the OCR engine to read
+            return []
 
-        # Fallback to manual review stub for degraded images
-        from services.ingestion.parsers.scan_parser import ScanParser
-        return ScanParser().parse(file_input=image_input, filename=filename, default_date=default_date)
+        # Pass extracted text through the LLM structured extractor
+        events = self.llm_extractor.extract_with_llm(
+            text=extracted_text,
+            source_document=filename,
+            default_date=default_date
+        )
+
+        # Tag events as coming from a scan
+        scan_events = []
+        for ev in events:
+            d = ev.model_dump()
+            d["input_format"] = InputFormatEnum.SCAN
+            d["raw_confidence_hint"] = min(0.75, d.get("raw_confidence_hint", 0.75))
+            scan_events.append(ExtractedEvent(**d))
+        return scan_events
