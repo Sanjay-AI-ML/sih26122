@@ -386,10 +386,10 @@ export const SideNav: React.FC = () => {
             </div>
           </div>
 
-          {/* Footer / Settings & Profile */}
+          {/* Footer / {t('settingsTitle')} & Profile */}
           <div className="border-t border-border-standard pt-2 flex flex-col gap-1.5 mt-auto">
             <button 
-              onClick={() => showToast('Planner Console Settings: v2.4.1 (OIL Enterprise Build)', undefined, 'info')}
+              onClick={() => showToast(`Planner Console ${t('settingsTitle')}: v2.4.1 (OIL Enterprise Build)`, undefined, 'info')}
               className="w-full text-left flex items-center gap-2 px-2 py-1 text-on-surface-variant hover:bg-surface-container transition-all font-body-sm text-body-sm rounded-md cursor-pointer"
             >
               <span className="material-symbols-outlined text-[16px]">settings</span>
@@ -398,7 +398,7 @@ export const SideNav: React.FC = () => {
 
             {/* Profile Card */}
             <div 
-              onClick={() => showToast('A. Sharma (Chief Engineer) - Oil India Ltd. Duliajan Field Ops', undefined, 'info')}
+              onClick={() => showToast(`A. Sharma (${t('chiefEngineer')}) - Oil India Ltd. Duliajan Field Ops`, undefined, 'info')}
               className="flex items-center gap-2 px-2 py-1.5 border border-border-standard rounded-md bg-surface-container-lowest cursor-pointer hover:bg-surface-container transition-colors shadow-2xs"
             >
               <img 
@@ -408,7 +408,7 @@ export const SideNav: React.FC = () => {
               />
               <div className="flex flex-col min-w-0">
                 <span className="font-body-sm text-body-sm font-semibold truncate text-on-surface leading-tight">{t("reviewerName")}</span>
-                <span className="font-label-caps text-[8.5px] text-outline truncate leading-tight mt-0.5">Chief Engineer</span>
+                <span className="font-label-caps text-[8.5px] text-outline truncate leading-tight mt-0.5">{t('chiefEngineer')}</span>
               </div>
             </div>
           </div>

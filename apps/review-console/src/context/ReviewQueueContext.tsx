@@ -93,7 +93,14 @@ const consoleI18n: any = {
     "mechanical": "Mechanical",
     "all": "All",
     "allDisciplines": "All Disciplines",
-    "allFormats": "All Formats"
+    "allFormats": "All Formats",
+    "chiefEngineer": "Chief Engineer",
+    "settingsTitle": "Settings",
+    "compliance": "Compliance",
+    "exploration": "Exploration",
+    "drilling": "Drilling",
+    "prev": "Prev",
+    "next": "Next"
   },
   "HI": {
     "accessibilityHelp": "अभिगम्यता सहायता",
@@ -177,7 +184,14 @@ const consoleI18n: any = {
     "mechanical": "मेकेनिकल",
     "all": "सभी",
     "allDisciplines": "सभी विषय / अनुशासन",
-    "allFormats": "सभी स्वरूप"
+    "allFormats": "सभी स्वरूप",
+    "chiefEngineer": "मुख्य अभियंता",
+    "settingsTitle": "सेटिंग्स",
+    "compliance": "अनुपालन",
+    "exploration": "अन्वेषण",
+    "drilling": "ड्रिलिंग",
+    "prev": "पिछला",
+    "next": "अगला"
   }
 };
 

@@ -19,7 +19,8 @@ export const ReviewQueueScreen: React.FC = () => {
     viewMode,
     setViewMode,
     setIsExportModalOpen,
-    t
+    t,
+    language
   } = useReviewQueue();
 
   const navigate = useNavigate();
@@ -259,13 +260,13 @@ export const ReviewQueueScreen: React.FC = () => {
             <table className="w-full text-left border-collapse min-w-[760px]">
               <thead className="sticky top-0 bg-[#F5F5F5] border-b border-border-standard z-20">
                 <tr>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-12 text-center text-[10px]">Status</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-24 text-[10px]">Event ID</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-14 text-center text-[10px]">Input</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider text-[10px]">Activity Description</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-28 text-[10px]">Discipline</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-28 text-[10px]">Timestamp</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-14 text-center text-[10px]">Action</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-12 text-center text-[10px]">{t("queueStatus")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-24 text-[10px]">{t("eventIdCol")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-14 text-center text-[10px]">{t("inputFormat")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider text-[10px]">{t("descriptionCol")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-28 text-[10px]">{t("disciplines")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-28 text-[10px]">{t("date")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-14 text-center text-[10px]">{t("actionsCol")}</th>
                 </tr>
               </thead>
               <tbody className="font-body-sm text-body-sm text-on-surface divide-y divide-border-standard">
@@ -342,7 +343,7 @@ export const ReviewQueueScreen: React.FC = () => {
           {/* Table Pagination/Footer */}
           <div className="border-t border-border-standard bg-surface-container px-3 py-1.5 flex flex-col sm:flex-row justify-between items-center text-body-sm text-outline font-body-sm gap-2">
             <span className="text-[11px]">
-              Showing {totalEntries === 0 ? 0 : startIndex + 1} to {Math.min(startIndex + itemsPerPage, totalEntries)} of {totalEntries} entries
+              {language === 'EN' ? `Showing ${totalEntries === 0 ? 0 : startIndex + 1} to ${Math.min(startIndex + itemsPerPage, totalEntries)} of ${totalEntries} entries` : `${totalEntries} प्रविष्टियों में से ${totalEntries === 0 ? 0 : startIndex + 1} से ${Math.min(startIndex + itemsPerPage, totalEntries)} दिखाई जा रही हैं`}
             </span>
             <div className="flex gap-1">
               <button 
@@ -350,7 +351,7 @@ export const ReviewQueueScreen: React.FC = () => {
                 disabled={currentPage === 1}
                 className="px-2 py-0.5 border border-border-standard rounded bg-surface-container-lowest hover:bg-surface-container-high disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-xs"
               >
-                Prev
+                {t("prev")}
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
                 <button
@@ -370,7 +371,7 @@ export const ReviewQueueScreen: React.FC = () => {
                 disabled={currentPage === totalPages || totalPages === 0}
                 className="px-2 py-0.5 border border-border-standard rounded bg-surface-container-lowest hover:bg-surface-container-high disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed text-xs"
               >
-                Next
+                {t("next")}
               </button>
             </div>
           </div>
@@ -399,25 +400,25 @@ export const ReviewQueueScreen: React.FC = () => {
                     {isFlagged && (
                       <>
                         <span className="material-symbols-outlined text-danger text-[18px]" data-icon="error" style={{ fontVariationSettings: "'FILL' 1" }}>error</span>
-                        <span className="bg-secondary-fixed-dim text-on-secondary-container px-1.5 py-0.5 rounded font-label-caps text-[9px] uppercase font-semibold">FLAGGED</span>
+                        <span className="bg-secondary-fixed-dim text-on-secondary-container px-1.5 py-0.5 rounded font-label-caps text-[9px] uppercase font-semibold">{t("flagged").toUpperCase()}</span>
                       </>
                     )}
                     {isReview && (
                       <>
                         <span className="material-symbols-outlined text-warning text-[18px]" data-icon="warning" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
-                        <span className="bg-tertiary-fixed-dim text-on-tertiary-container px-1.5 py-0.5 rounded font-label-caps text-[9px] uppercase font-semibold">REVIEW</span>
+                        <span className="bg-tertiary-fixed-dim text-on-tertiary-container px-1.5 py-0.5 rounded font-label-caps text-[9px] uppercase font-semibold">{t("review").toUpperCase()}</span>
                       </>
                     )}
                     {isPending && (
                       <>
                         <span className="material-symbols-outlined text-primary text-[18px]" data-icon="pending" style={{ fontVariationSettings: "'FILL' 1" }}>pending</span>
-                        <span className="bg-surface-container-high text-on-surface-variant px-1.5 py-0.5 rounded font-label-caps text-[9px] uppercase font-semibold">PENDING</span>
+                        <span className="bg-surface-container-high text-on-surface-variant px-1.5 py-0.5 rounded font-label-caps text-[9px] uppercase font-semibold">{t("inProgress").toUpperCase()}</span>
                       </>
                     )}
                     {isApproved && (
                       <>
                         <span className="material-symbols-outlined text-success text-[18px]" data-icon="check_circle" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-                        <span className="bg-green-100 text-success px-1.5 py-0.5 rounded font-label-caps text-[9px] uppercase font-semibold">AUTO-APPROVED</span>
+                        <span className="bg-green-100 text-success px-1.5 py-0.5 rounded font-label-caps text-[9px] uppercase font-semibold">{t("autoApproved").toUpperCase()}</span>
                       </>
                     )}
                   </div>
@@ -429,14 +430,14 @@ export const ReviewQueueScreen: React.FC = () => {
                     {item.activityDescription}
                   </h3>
                   <div className="inline-block bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[11px]">
-                    {item.discipline}
+                    {t(item.discipline?.toLowerCase()) || item.discipline}
                   </div>
                 </div>
 
                 <div className="mt-auto pt-2 border-t border-border-standard flex justify-between items-center text-on-surface-variant font-body-sm text-[11px]">
                   <div className="flex items-center gap-1">
                     {getInputIcon(item.inputFormat)}
-                    <span className="capitalize">{item.inputFormat}</span>
+                    <span className="capitalize">{t(item.inputFormat)}</span>
                   </div>
                   <span>{item.timestamp}</span>
                 </div>
