@@ -63,31 +63,31 @@ export const TopAppBar: React.FC = () => {
         </button>
 
         {/* Trailing Icons */}
-        <div className="flex items-center space-x-1 sm:space-x-2 border-l border-border-standard pl-2 sm:pl-3">
+        <div className="flex items-center space-x-1.5 sm:space-x-2 border-l border-border-standard pl-2 sm:pl-3 h-full">
           <button 
             onClick={toggleTextEnlarged}
             aria-label="Increase Text Size" 
             title="Toggle Text Size (A+)"
-            className="p-1 sm:p-1.5 rounded text-primary hover:bg-surface-container-high transition-colors active:opacity-80 flex items-center justify-center font-bold cursor-pointer"
+            className="h-8 w-8 rounded text-primary hover:bg-surface-container-high transition-colors active:opacity-80 flex items-center justify-center font-bold cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px] sm:text-[20px]" data-icon="text_increase">text_increase</span>
+            <span className="material-symbols-outlined text-[18px] sm:text-[20px] flex items-center justify-center" data-icon="text_increase">text_increase</span>
           </button>
           <button 
             onClick={toggleHighContrast}
             aria-label="High Contrast Mode" 
             title="Toggle High Contrast Mode"
-            className={`p-1 sm:p-1.5 rounded transition-colors active:opacity-80 cursor-pointer ${isHighContrast ? 'bg-primary text-on-primary' : 'text-primary hover:bg-surface-container-high'}`}
+            className={`h-8 w-8 rounded transition-colors active:opacity-80 flex items-center justify-center cursor-pointer ${isHighContrast ? 'bg-primary text-on-primary' : 'text-primary hover:bg-surface-container-high'}`}
           >
-            <span className="material-symbols-outlined text-[18px] sm:text-[20px]" data-icon="contrast">contrast</span>
+            <span className="material-symbols-outlined text-[18px] sm:text-[20px] flex items-center justify-center" data-icon="contrast">contrast</span>
           </button>
           <button 
             onClick={toggleLanguage}
             aria-label="Change Language" 
             title={`Current Language: ${language} (Click to switch)`}
-            className="p-1 sm:p-1.5 rounded text-primary hover:bg-surface-container-high transition-colors active:opacity-80 flex items-center gap-1 text-xs font-semibold cursor-pointer"
+            className="h-8 px-2 rounded text-primary hover:bg-surface-container-high transition-colors active:opacity-80 flex items-center justify-center gap-1 text-xs font-semibold cursor-pointer"
           >
-            <span className="material-symbols-outlined text-[18px] sm:text-[20px]" data-icon="language">language</span>
-            <span className="text-[10px] font-technical-data">{language}</span>
+            <span className="material-symbols-outlined text-[18px] sm:text-[20px] flex items-center justify-center" data-icon="language">language</span>
+            <span className="text-[10px] font-technical-data leading-none flex items-center">{language}</span>
           </button>
         </div>
       </div>
