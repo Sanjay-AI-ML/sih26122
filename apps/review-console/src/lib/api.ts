@@ -7,10 +7,10 @@
 //   8004 → Analytics  (/analytics/stats, /analytics/s-curve)
 // ============================================================
 
-const INGEST  = 'http://localhost:8001';
-const MATCH   = 'http://localhost:8002';
-const WRITE   = 'http://localhost:8003';
-const ANALYT  = 'http://localhost:8004';
+const INGEST  = 'http://127.0.0.1:8001';
+const MATCH   = 'http://127.0.0.1:8002';
+const WRITE   = 'http://127.0.0.1:8003';
+const ANALYT  = 'http://127.0.0.1:8004';
 
 // ── Ingestion ────────────────────────────────────────────────
 export interface IngestEvent {
@@ -156,4 +156,14 @@ export async function getSCurve(): Promise<{ date: string; planned: number; actu
   const res = await fetch(`${ANALYT}/analytics/s-curve`);
   if (!res.ok) throw new Error(`S-Curve failed: ${res.status}`);
   return res.json();
+}
+export async function getPendingQueue(): Promise<any[]> {
+  const res = await fetch(`${WRITE}/queue/pending`);
+  if (!res.ok) throw new Error(`Failed to fetch pending queue: ${res.status}`);
+  return res.json();
+}
+
+export async function removeFromQueue(queueId: string): Promise<void> {
+  const res = await fetch(`${WRITE}/queue/${queueId}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(`Failed to delete from queue: ${res.status}`);
 }

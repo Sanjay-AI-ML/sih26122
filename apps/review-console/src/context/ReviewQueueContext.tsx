@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
 import type { QueueItem, NewReportInput, CreateActivityInput, StatusType, DisciplineType, InputFormatType, ScheduleCandidate } from "../types";
 import { initialQueueItems } from '../data/mockData';
-import { ingestText, matchEvent, writebackApprove, writebackReject, addScheduleActivity } from '../lib/api';
+import { ingestText, matchEvent, writebackApprove, writebackReject, addScheduleActivity, getPendingQueue, removeFromQueue } from '../lib/api';
 import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 
@@ -154,7 +154,16 @@ const consoleI18n: any = {
     "Exact match with procurement schedule item.": "Exact match with procurement schedule item.",
     "Matches flagged calibration protocol for anomalous sensors.": "Matches flagged calibration protocol for anomalous sensors."
   },
-  "HI": {
+    "HI": {
+    "Mud log entries combined for depth intervals 4000m-4200m. System requests discrete logs.": "4000m-4200m गहराई अंतराल के लिए मड लॉग प्रविष्टियों को मिलाया गया। सिस्टम असतत लॉग का अनुरोध करता है।",
+    "scaffoldingerectionatboiler": "बॉयलर पर मचान लगाना",
+    "erectionofstructuralsteelforboiler": "बॉयलर के लिए स्ट्रक्चरल स्टील लगाना",
+    "cablepullingfortransformer": "ट्रांसफार्मर के लिए केबल खींचना",
+    "hydrotestofmaincoolingline": "मुख्य कूलिंग लाइन का हाइड्रोटेस्ट",
+    "installed5newvalvesinthecoolingwaterpipeline": "कूलिंग वाटर पाइपलाइन में 5 नए वाल्व लगाए गए",
+    "installed5newvalvesinthecoolingwaterpipeline.": "कूलिंग वाटर पाइपलाइन में 5 नए वाल्व लगाए गए",
+    "safetywalkdowncompletednoincidentsreported": "सुरक्षा निरीक्षण पूरा हुआ। किसी घटना की सूचना नहीं।",
+    "safetywalkdowncompleted.noincidentsreported.": "सुरक्षा निरीक्षण पूरा हुआ। किसी घटना की सूचना नहीं।",
     "accessibilityHelp": "अभिगम्यता सहायता",
     "sitemap": "साइटमैप",
     "reviewConsole": "समीक्षा कंसोल",
@@ -372,6 +381,64 @@ const ReviewQueueContext = createContext<ReviewQueueContextType | undefined>(und
 
 export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [items, setItems] = useState<QueueItem[]>(initialQueueItems);
+
+  // Poll for live queue updates from the Writeback service
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const pending = await getPendingQueue();
+        if (pending && pending.length > 0) {
+          setItems(prevItems => {
+            const newItems = [...prevItems];
+            let changed = false;
+            pending.forEach((p: any) => {
+              if (!newItems.find(i => i.id === p.queue_id)) {
+                changed = true;
+                const statusType = p.match.confidence_band === 'high' ? 'review' 
+                                 : p.match.is_ambiguous ? 'flagged' : 'review';
+                newItems.unshift({
+                  id: p.queue_id,
+                  eventId: `EV-${p.queue_id.substring(0,6).toUpperCase()}`,
+                  status: statusType,
+                  statusLabel: statusType === 'flagged' ? 'Needs Review' : 'Pending Verification',
+                  activityPhrase: p.event.activity_phrase,
+                  activityDescription: p.event.activity_phrase,
+                  discipline: p.event.discipline || 'Civil',
+                  inputFormat: p.event.input_format || 'dpr',
+                  timestamp: new Date().toLocaleTimeString(),
+                  date: p.event.event_date || new Date().toISOString().slice(0, 10),
+                  confidenceScore: Math.round(p.match.confidence_score * 100),
+                  sourceText: p.event.source_excerpt || p.event.activity_phrase,
+                  extractedFields: [
+                    { fieldName: 'Discipline', extractedValue: p.event.discipline, systemMapping: p.event.discipline },
+                    { fieldName: 'Quantity', extractedValue: String(p.event.quantity || '-'), systemMapping: 'Qty' }
+                  ],
+                  candidates: p.match.candidates.map((c: any) => ({
+                    id: c.activity_id,
+                    wbsPath: 'Extracted / Match',
+                    discipline: p.event.discipline || 'Civil',
+                    title: c.activity_name,
+                    plannedStart: '2026-08-01',
+                    plannedFinish: '2026-08-30',
+                    durationDays: 30,
+                    responsibility: 'Contractor',
+                    resources: [],
+                    matchScore: c.score,
+                    rationale: c.rationale,
+                    isRecommended: c.activity_id === p.match.top_activity_id
+                  }))
+                });
+              }
+            });
+            return changed ? newItems : prevItems;
+          });
+        }
+      } catch (err) {
+        console.error("Failed to poll queue", err);
+      }
+    }, 3000);
+    return () => clearInterval(interval);
+  }, []);
   const [activeDisciplineFilter, setActiveDisciplineFilter] = useState<DisciplineType | null>(null);
   const [activeStatusFilter, setActiveStatusFilter] = useState<string | null>(null);
   const [activeInputFormatFilter, setActiveInputFormatFilter] = useState<InputFormatType | null>(null);
@@ -493,7 +560,7 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
       prevItems.map(item => {
         if (item.id === itemId || item.eventId === itemId) {
           // Fire-and-forget writeback to backend
-          writebackApprove({
+          removeFromQueue(item.id).catch(() => {}); writebackApprove({
             activity_id: candidate.id,
             discipline: item.discipline,
             event_date: item.date || new Date().toISOString().split('T')[0],
@@ -523,7 +590,7 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const discardItem = useCallback((itemId: string) => {
     const item = items.find(i => i.id === itemId || i.eventId === itemId);
     if (item) {
-      writebackReject({
+      removeFromQueue(item.id).catch(() => {}); writebackReject({
         activity_id: item.linkedActivity || item.candidates[0]?.id || 'DISCARDED',
         discipline: item.discipline,
         event_date: item.date || new Date().toISOString().split('T')[0],

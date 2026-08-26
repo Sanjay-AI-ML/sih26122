@@ -71,9 +71,9 @@ export const RecordDetailScreen: React.FC = () => {
       </div>
 
       {/* Detail View Panel Overlay */}
-      <main className="absolute inset-x-0 bottom-0 top-[1%] sm:top-[2%] bg-surface-container-lowest border-t border-border-standard shadow-lg rounded-t-lg flex flex-col z-10 transition-transform duration-300 ease-in-out">
+      <main className="absolute inset-x-0 bottom-0 top-[1%] sm:top-[2%] bg-surface-container-lowest border-t border-border-standard premium-shadow rounded-t-2xl flex flex-col z-10 transition-transform duration-300 ease-in-out animate-slide-up">
         {/* Header */}
-        <header className="flex justify-between items-center px-3 sm:px-4 py-2.5 sm:py-3 border-b border-border-standard bg-surface">
+        <header className="flex justify-between items-center px-4 sm:px-6 py-3 sm:py-4 border-b border-border-standard glass-header z-20">
           <div className="flex items-center gap-2">
             <span aria-hidden="true" className="material-symbols-outlined text-on-surface-variant text-[18px]" data-icon="description">description</span>
             <h2 className="font-h2 text-h2 text-primary flex items-center flex-wrap gap-1 sm:gap-2">

@@ -9,10 +9,10 @@ import type {
   SCurvePoint,
 } from '../types/schema';
 
-const INGESTION = import.meta.env.VITE_INGESTION_URL ?? 'http://localhost:8001';
-const MATCHING = import.meta.env.VITE_MATCHING_URL ?? 'http://localhost:8002';
-const WRITEBACK = import.meta.env.VITE_WRITEBACK_URL ?? 'http://localhost:8003';
-const ANALYTICS = import.meta.env.VITE_ANALYTICS_URL ?? 'http://localhost:8004';
+const INGESTION = import.meta.env.VITE_INGESTION_URL ?? 'http://127.0.0.1:8001';
+const MATCHING = import.meta.env.VITE_MATCHING_URL ?? 'http://127.0.0.1:8002';
+const WRITEBACK = import.meta.env.VITE_WRITEBACK_URL ?? 'http://127.0.0.1:8003';
+const ANALYTICS = import.meta.env.VITE_ANALYTICS_URL ?? 'http://127.0.0.1:8004';
 
 async function post<T>(url: string, body: unknown): Promise<T> {
   const res = await fetch(url, {

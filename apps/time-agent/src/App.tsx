@@ -439,50 +439,42 @@ function App() {
               if (res.ok) {
                 const data = await res.json();
                 if (data.events && data.events.length > 0) {
-                  const event = data.events[0];
-                  const matchRes = await fetch("http://localhost:8002/match", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(event)
-                  });
-                  if (matchRes.ok) {
-                    const matchData = await matchRes.json();
-                    await fetch("http://localhost:8003/queue/add", {
+                  for (let i = 0; i < data.events.length; i++) {
+                    const event = data.events[i];
+                    const matchRes = await fetch("http://127.0.0.1:8002/match", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ event: event, match: matchData })
+                      body: JSON.stringify(event)
                     });
-                    successCount++;
-
-                    setMessages((prev: any[]) => [
-                      ...prev,
-                      {
-                        id: Date.now() + Math.random(),
-                        type: "user",
-                        text: "Uploaded file: " + item.name,
-                        time: item.time
-                      },
-                      {
-                        id: Date.now() + Math.random(),
-                        type: "bot",
-                        text: "extractedEventsProcessing",
-                        vars: { count: String(data.total_events), filename: item.name },
-                        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                      },
-                      {
-                        id: Date.now() + Math.random(),
-                        type: "card",
-                        activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
-                        discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
-                        tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
-                        start: event.event_date || "-",
-                        finish: "-",
-                        linkedActivityId: matchData.top_activity_id || null,
-                        confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
-                        confidenceBand: matchData.confidence_band || 'low',
-                        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                    if (matchRes.ok) {
+                      const matchData = await matchRes.json();
+                      await fetch("http://127.0.0.1:8003/queue/add", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ event: event, match: matchData })
+                      });
+                      successCount++;
+                      
+                      if (i === 0) {
+                        setMessages((prev: any[]) => [
+                          ...prev,
+                          { id: Date.now() + Math.random(), type: "user", text: "Uploaded file: " + item.name, time: item.time },
+                          { id: Date.now() + Math.random(), type: "bot", text: "extractedEventsProcessing", vars: { count: String(data.total_events), filename: item.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) },
+                          {
+                            id: Date.now() + Math.random(),
+                            type: "card",
+                            activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
+                            discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
+                            tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
+                            start: event.event_date || "-", finish: "-",
+                            linkedActivityId: matchData.top_activity_id || null,
+                            confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
+                            confidenceBand: matchData.confidence_band || 'low',
+                            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                          }
+                        ]);
                       }
-                    ]);
+                    }
                   }
                 }
               }
@@ -606,7 +598,6 @@ function App() {
             size: file.size,
             time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
           };
-
           const saveAndMsg = (item: any) => {
             const newQueue = [...queue, item];
             setQueue(newQueue);
@@ -617,8 +608,6 @@ function App() {
               { id: Date.now() + 1, type: "bot", text: "offlineFileQueuedMsg", time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }
             ]);
           };
-
-          // Convert any file (binary or text) to Base64 Data URL to fit local storage safely
           const reader = new FileReader();
           reader.onload = (evt) => {
             fileItem.content = evt.target?.result;
@@ -633,32 +622,52 @@ function App() {
         formData.append("file", file);
         setIsTyping(true);
         setMessages((prev: any[]) => [...prev, { id: Date.now(), type: "user", text: "Uploading: " + file.name, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+        
         try {
           const res = await fetch("http://localhost:8001/ingest/file", { method: "POST", body: formData });
           if (!res.ok) throw new Error("Upload HTTP " + res.status);
           const data = await res.json();
+          
           if (!data.events || data.events.length === 0) {
             setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "noActivitiesExtracted", vars: { filename: file.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
           } else {
             setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "extractedEventsProcessing", vars: { count: String(data.total_events), filename: file.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
-            const event = data.events[0];
-            const matchRes = await fetch("http://localhost:8002/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(event) });
-            if (matchRes.ok) {
-              const matchData = await matchRes.json();
-              setMessages((prev: any[]) => [...prev, {
-                id: Date.now() + 2, type: "card",
-                activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
-                discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
-                tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
-                start: event.event_date || "-", finish: "-",
-                linkedActivityId: matchData.top_activity_id || null,
-                confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
-                confidenceBand: matchData.confidence_band || 'low',
-                time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-              }]);
-              if (data.total_events > 1) {
-                setMessages((prev: any[]) => [...prev, { id: Date.now() + 3, type: "bot", text: "moreEventsQueued", vars: { count: String(data.total_events - 1) }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+            
+            for (let i = 0; i < data.events.length; i++) {
+              const event = data.events[i];
+              const matchRes = await fetch("http://localhost:8002/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(event) });
+              
+              if (matchRes.ok) {
+                const matchData = await matchRes.json();
+                
+                try {
+                  await fetch("http://localhost:8003/queue/add", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ event: event, match: matchData })
+                  });
+                } catch(err) {
+                  console.error("Queue add failed", err);
+                }
+                
+                if (i === 0) {
+                  setMessages((prev: any[]) => [...prev, {
+                    id: Date.now() + 2, type: "card",
+                    activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
+                    discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
+                    tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
+                    start: event.event_date || "-", finish: "-",
+                    linkedActivityId: matchData.top_activity_id || null,
+                    confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
+                    confidenceBand: matchData.confidence_band || 'low',
+                    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                  }]);
+                }
               }
+            }
+            
+            if (data.events.length > 1) {
+              setMessages((prev: any[]) => [...prev, { id: Date.now() + 3, type: "bot", text: "moreEventsQueued", vars: { count: String(data.events.length - 1) }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
             }
           }
         } catch (err: any) {
@@ -1031,26 +1040,26 @@ function App() {
 
           {/* Bottom Composer on Home */}
           {screen === "home" && (
-            <div className="fixed bottom-14 left-0 w-full bg-white border-t border-[#CCCCCC] p-2.5 flex items-center justify-center z-30 shadow-sm">
+            <div className="fixed bottom-14 left-0 w-full glass-header p-2.5 flex items-center justify-center z-30">
               <div className="w-full max-w-2xl flex items-center gap-2">
                 <input
                   value={inputText}
                   onChange={e => setInputText(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && handleSend()}
                   placeholder={isRecording ? t("listening") : t("typeMessage")}
-                  className="flex-1 bg-[#f6f3f2] border border-[#CCCCCC] rounded-lg h-10 px-3 text-xs text-black outline-none focus:border-black transition-colors"
+                  className="flex-1 bg-white/80 border border-gray-300 rounded-full h-11 px-4 text-sm text-black outline-none focus:border-[#1842AA] focus:ring-2 focus:ring-[#1842AA]/20 transition-all premium-shadow"
                 />
                 <input type="file" id="file-upload-input" className="hidden" accept=".txt,.csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.wav,.mp3,.docx,.xer,.xml" onChange={handleFileUpload} />
-                <label htmlFor="file-upload-input" className="w-10 h-10 rounded-lg border border-[#CCCCCC] bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 shrink-0 transition-colors" title={t("upload")}>
+                <label htmlFor="file-upload-input" className="w-11 h-11 rounded-full border border-gray-200 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 hover-elevate shrink-0 transition-all" title={t("upload")}>
                   <span className="material-symbols-outlined text-xl text-[#666666]">attach_file</span>
                 </label>
-                <button onClick={startCamera} title={t("takePicture")} className="w-10 h-10 rounded-lg border border-[#CCCCCC] bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 shrink-0 transition-colors">
+                <button onClick={startCamera} title={t("takePicture")} className="w-11 h-11 rounded-full border border-gray-200 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 hover-elevate shrink-0 transition-all">
                   <span className="material-symbols-outlined text-xl text-[#666666]">photo_camera</span>
                 </button>
-                <button onClick={toggleMic} title={t("startRec")} className={"w-10 h-10 rounded-lg border flex items-center justify-center transition-colors shrink-0 " + (isRecording ? "bg-[#DA251C] text-white border-[#DA251C] animate-pulse" : "border-[#E1B91B] text-[#E1B91B] bg-white hover:bg-amber-50")}>
+                <button onClick={toggleMic} title={t("startRec")} className={"w-11 h-11 rounded-full border flex items-center justify-center transition-all shrink-0 hover-elevate " + (isRecording ? "bg-[#DA251C] text-white border-[#DA251C] animate-pulse-glow" : "border-[#E1B91B] text-[#E1B91B] bg-white hover:bg-amber-50")}>
                   <span className="material-symbols-outlined text-xl">mic</span>
                 </button>
-                <button onClick={handleSend} title={t("send")} className="w-10 h-10 bg-[#E1B91B] text-white rounded-lg flex items-center justify-center hover:bg-[#c9a312] shrink-0 transition-colors">
+                <button onClick={handleSend} title={t("send")} className="w-11 h-11 bg-gradient-to-br from-[#E1B91B] to-[#b39215] text-white rounded-full flex items-center justify-center hover-elevate premium-shadow shrink-0 transition-all">
                   <span className="material-symbols-outlined text-lg">send</span>
                 </button>
               </div>
@@ -1058,7 +1067,7 @@ function App() {
           )}
 
           {/* Bottom Nav Bar */}
-          <nav className="fixed bottom-0 left-0 w-full h-14 bg-white border-t border-[#CCCCCC] flex justify-around items-center px-4 z-40">
+          <nav className="fixed bottom-0 left-0 w-full h-14 bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around items-center px-4 z-40 premium-shadow">
             <div className="w-full max-w-2xl flex justify-between items-center">
               <button onClick={() => setScreen("home")} className={"flex-1 flex flex-col items-center justify-center h-12 text-xs transition-colors rounded-md " + (screen === "home" ? "font-bold text-black bg-[#f6f3f2]" : "text-[#666666] hover:text-black")}>
                 <span className="material-symbols-outlined text-xl">chat</span>
