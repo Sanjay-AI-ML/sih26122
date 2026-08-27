@@ -49,6 +49,7 @@ export interface QueueItem {
   timestamp: string;
   date: string;
   confidenceScore: number; // 0 to 100
+  delayReason?: string;
   tagId?: string;
   sourceText: string;
   formatTabs?: {

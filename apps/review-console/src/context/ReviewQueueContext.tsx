@@ -3,6 +3,7 @@ import type { QueueItem, NewReportInput, CreateActivityInput, StatusType, Discip
 import { initialQueueItems } from '../data/mockData';
 import { ingestText, matchEvent, writebackApprove, writebackReject, addScheduleActivity, getPendingQueue, removeFromQueue } from '../lib/api';
 import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 interface ToastState {
@@ -800,28 +801,19 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
       doc.setFontSize(10);
       doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 28);
       
-      let y = 40;
       const headers = Object.keys(rows[0]);
-      
-      // Draw Header Row
-      doc.setFont("helvetica", "bold");
-      headers.forEach((header, index) => {
-        doc.text(header.substring(0, 15), 14 + index * 26, y);
-      });
-      
-      y += 8;
-      doc.setFont("helvetica", "normal");
-      rows.forEach(row => {
-        if (y > 280) {
-          doc.addPage();
-          y = 20;
-        }
-        headers.forEach((header, index) => {
-          const val = String(row[header] || '');
-          doc.text(val.substring(0, 15), 14 + index * 26, y);
+        const body = rows.map(row => headers.map(h => String(row[h] || '')));
+        
+        autoTable(doc, {
+          head: [headers],
+          body: body,
+          startY: 35,
+          theme: 'grid',
+          styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+          headStyles: { fillColor: [26, 35, 126], textColor: [255, 255, 255], fontStyle: 'bold' },
+          alternateRowStyles: { fillColor: [245, 245, 245] },
+          margin: { top: 35, right: 14, bottom: 20, left: 14 }
         });
-        y += 8;
-      });
       
       doc.save(`${filenameBase}.pdf`);
     }
@@ -955,3 +947,5 @@ export const useReviewQueue = () => {
   }
   return context;
 };
+
+
