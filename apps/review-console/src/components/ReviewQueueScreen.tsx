@@ -5,7 +5,7 @@ import type { InputFormatType, StatusType } from "../types";
 
 export const ReviewQueueScreen: React.FC = () => {
   const {
-    filteredItems,
+        filteredItems,
     searchQuery,
     setSearchQuery,
     sortBy,

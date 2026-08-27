@@ -2,6 +2,8 @@ import React from 'react';
 import { useReviewQueue } from '../context/ReviewQueueContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import type { DisciplineType, InputFormatType } from "../types";
+import { MemoryRAGPanel } from "./MemoryRAGPanel";
+import { DelayRiskDashboard } from "./DelayRiskDashboard";
 
 export const SideNav: React.FC = () => {
   const {
@@ -15,11 +17,24 @@ export const SideNav: React.FC = () => {
     setIsNewReportModalOpen,
     isMobileSidebarOpen,
     setIsMobileSidebarOpen,
-    showToast, t } = useReviewQueue();
+    showToast, t, items } = useReviewQueue();
 
   const navigate = useNavigate();
   const location = useLocation();
 
+  const [isRAGOpen, setIsRAGOpen] = React.useState(false);
+  const [isAnalyticsOpen, setIsAnalyticsOpen] = React.useState(false);
+
+  const allItems = items || [];
+  const avgConfidence = allItems.length > 0 ? Math.round(allItems.reduce((acc, item) => acc + (item.confidenceScore || 0), 0) / allItems.length) : 0;
+  
+  let highConf = 0, medConf = 0, lowConf = 0;
+  if (allItems.length > 0) {
+    highConf = Math.round((allItems.filter(i => (i.confidenceScore || 0) >= 80).length / allItems.length) * 100);
+    medConf = Math.round((allItems.filter(i => (i.confidenceScore || 0) >= 50 && (i.confidenceScore || 0) < 80).length / allItems.length) * 100);
+    lowConf = 100 - highConf - medConf;
+  }
+  
   const closeMobileSidebar = () => {
     if (window.innerWidth < 1024) {
       setIsMobileSidebarOpen(false);
@@ -102,10 +117,32 @@ export const SideNav: React.FC = () => {
                 setIsNewReportModalOpen(true);
                 closeMobileSidebar();
               }}
-              className="w-full bg-primary hover:bg-primary-container text-on-primary font-body-sm text-body-sm py-1.5 px-3 rounded-md flex items-center justify-center gap-2 transition-all active:scale-95 shadow-xs cursor-pointer"
+              className="w-full bg-gradient-to-r from-blue-700 to-blue-600 hover:shadow-lg hover:-translate-y-0.5 text-white font-bold text-sm py-2 px-4 rounded-xl flex items-center justify-center gap-2 transition-all active:scale-95 shadow-sm cursor-pointer"
             >
               <span className="material-symbols-outlined text-[16px]">add</span>
               {t('newReport')}
+            </button>
+          </div>
+
+          {/* Institutional Memory & Analytics (SIH Polish) */}
+          <div className="flex flex-col gap-1 mt-2 mb-1 px-1">
+            <div className="flex justify-between items-center mb-0.5">
+              <h2 className="font-label-caps text-[9.5px] text-on-surface-variant uppercase tracking-wider font-semibold">Analytics & Memory</h2>
+            </div>
+            
+            <button 
+              onClick={() => setIsRAGOpen(true)}
+              className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors text-on-surface-variant hover:bg-surface-container"
+            >
+              <span className="material-symbols-outlined text-[16px] text-amber-600">psychology</span>
+              <span className="font-body-sm text-sm">Institutional Memory</span>
+            </button>
+            <button 
+              onClick={() => setIsAnalyticsOpen(true)}
+              className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors text-on-surface-variant hover:bg-surface-container"
+            >
+              <span className="material-symbols-outlined text-[16px] text-red-600">trending_up</span>
+              <span className="font-body-sm text-sm">Delay / Risk Analytics</span>
             </button>
           </div>
 
@@ -377,12 +414,12 @@ export const SideNav: React.FC = () => {
           <div className="px-1 pt-0.5">
             <div className="flex justify-between items-end mb-1">
               <span className="font-label-caps text-label-caps text-outline text-[9.5px]">{t("systemConfidence")}</span>
-              <span className="font-technical-data text-[9.5px] text-on-surface-variant font-medium">Avg 92%</span>
+              <span className="font-technical-data text-[9.5px] text-on-surface-variant font-medium">Avg {avgConfidence}%</span>
             </div>
             <div className="w-full h-1.5 rounded-full overflow-hidden flex bg-surface-container-high">
-              <div className="bg-success h-full" style={{ width: '70%' }} title="High Confidence (70%)"></div>
-              <div className="bg-warning h-full" style={{ width: '20%' }} title="Medium Confidence (20%)"></div>
-              <div className="bg-danger h-full" style={{ width: '10%' }} title="Low Confidence (10%)"></div>
+              <div className="bg-success h-full transition-all duration-500" style={{ width: `${highConf}%` }} title={`High Confidence (${highConf}%)`}></div>
+              <div className="bg-warning h-full transition-all duration-500" style={{ width: `${medConf}%` }} title={`Medium Confidence (${medConf}%)`}></div>
+              <div className="bg-danger h-full transition-all duration-500" style={{ width: `${lowConf}%` }} title={`Low Confidence (${lowConf}%)`}></div>
             </div>
           </div>
 
@@ -414,6 +451,8 @@ export const SideNav: React.FC = () => {
           </div>
         </div>
       </nav>
+      <MemoryRAGPanel isOpen={isRAGOpen} onClose={() => setIsRAGOpen(false)} />
+      <DelayRiskDashboard isOpen={isAnalyticsOpen} onClose={() => setIsAnalyticsOpen(false)} />
     </>
   );
 };

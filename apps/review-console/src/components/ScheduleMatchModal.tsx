@@ -41,9 +41,9 @@ export const ScheduleMatchModal: React.FC = () => {
   return (
     <div className="fixed inset-0 bg-inverse-surface/40 z-50 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-[fadeIn_0.2s_ease-out]">
       {/* Modal Container */}
-      <div className="bg-surface w-full max-w-4xl max-h-[92vh] rounded-md shadow-xl border border-border-standard flex flex-col overflow-hidden">
+      <div className="bg-surface w-full max-w-[1000px] max-h-[95vh] rounded-2xl premium-shadow border border-gray-200 flex flex-col overflow-hidden animate-slide-up">
         {/* Header */}
-        <div className="flex justify-between items-center px-3 sm:px-4 py-2 sm:py-2.5 border-b border-border-standard bg-surface-container-low">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-border-standard glass-header z-20">
           <div>
             <h2 className="font-h3 text-h3 text-primary font-bold">{t("schedulematch")}</h2>
             <p className="font-body-sm text-body-sm text-on-surface-variant text-xs">{t("plannerdecisionmodule")}</p>
@@ -133,22 +133,30 @@ export const ScheduleMatchModal: React.FC = () => {
 
               {currentSelected ? (
                 <div className="space-y-2.5">
-                  {/* Detail Block */}
-                  <div>
-                    <label className="font-label-caps text-label-caps text-outline block mb-0.5 text-[10px]">Schedule</label>
-                    <div className="flex gap-2 text-xs">
-                      <div className="flex-1">
-                        <div className="text-on-surface-variant text-[11px]">Planned Start</div>
-                        <div className="font-technical-data text-on-surface font-medium">{currentSelected.plannedStart}</div>
+                  {/* Visual Gantt Detail Block */}
+                  <div className="bg-white rounded-xl border border-gray-100 p-4 premium-shadow hover-elevate transition-all">
+                    <label className="font-label-caps text-label-caps tracking-widest text-gray-500 uppercase block mb-3 text-[10px] font-bold">Schedule Timeline</label>
+                    
+                    <div className="relative pt-6 pb-2">
+                      <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden flex">
+                        <div className="h-full bg-blue-600 rounded-full relative" style={{ width: '45%' }}>
+                          <span className="absolute -right-1.5 -top-1.5 w-3 h-3 bg-white border-2 border-blue-600 rounded-full shadow"></span>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <div className="text-on-surface-variant text-[11px]">Planned Finish</div>
-                        <div className="font-technical-data text-on-surface font-medium">{currentSelected.plannedFinish}</div>
+                      
+                      <div className="flex justify-between items-center mt-3 text-xs text-gray-500">
+                        <div className="flex flex-col">
+                           <span className="font-bold text-gray-800">{currentSelected.plannedStart}</span>
+                           <span className="text-[9px] uppercase">Planned Start</span>
+                        </div>
+                        <div className="flex flex-col items-center">
+                           <span className="font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold">{currentSelected.durationDays} Days</span>
+                        </div>
+                        <div className="flex flex-col text-right">
+                           <span className="font-bold text-gray-800">{currentSelected.plannedFinish}</span>
+                           <span className="text-[9px] uppercase">Planned Finish</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="mt-1 text-xs">
-                      <div className="text-on-surface-variant text-[11px]">Duration</div>
-                      <div className="font-medium text-on-surface">{currentSelected.durationDays} Days</div>
                     </div>
                   </div>
 
@@ -172,11 +180,11 @@ export const ScheduleMatchModal: React.FC = () => {
                   </div>
 
                   {/* Source Excerpt (Raw Data context) */}
-                  <div className="bg-source-excerpt p-2 rounded border border-warning/30 mt-2">
+                  <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 mt-4 premium-shadow">
                     <label className="font-label-caps text-label-caps text-tertiary block mb-0.5 flex items-center gap-1 text-[10px]">
                       <span className="material-symbols-outlined text-[12px]">description</span> Field Report Context
                     </label>
-                    <p className="font-technical-data text-[11px] text-tertiary-container italic leading-relaxed">
+                    <p className="font-technical-data text-[11px] text-yellow-800 italic leading-relaxed text-sm font-medium">
                       "{activeScheduleItem.sourceText}"
                     </p>
                   </div>
@@ -190,7 +198,7 @@ export const ScheduleMatchModal: React.FC = () => {
             <div className="p-2 sm:p-3 border-t border-border-standard bg-surface flex flex-col gap-2">
               <button 
                 onClick={handleConfirmAndSend}
-                className="w-full bg-primary text-on-primary font-body-md text-body-md py-1.5 px-3 rounded hover:bg-primary-container transition-colors flex justify-center items-center gap-1.5 shadow-xs cursor-pointer text-xs sm:text-sm font-medium"
+                className="w-full bg-gradient-to-r from-blue-700 to-blue-600 text-white font-body-md py-2.5 px-4 rounded-xl hover:shadow-lg transition-all flex justify-center items-center gap-2 cursor-pointer text-sm font-bold hover-elevate"
               >
                 <span className="material-symbols-outlined text-[16px]">send</span> Confirm &amp; Send
               </button>

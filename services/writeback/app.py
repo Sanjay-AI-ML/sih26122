@@ -70,6 +70,9 @@ def get_queue():
 @app.delete("/queue/{item_id}")
 def remove_from_queue(item_id: str):
     global pending_queue
+    if item_id == "ALL_CLEAR":
+        pending_queue.clear()
+        return {"status": "cleared"}
     pending_queue = [q for q in pending_queue if q["queue_id"] != item_id]
     return {"status": "removed"}
 

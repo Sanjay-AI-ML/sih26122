@@ -12,7 +12,7 @@ export const Toast: React.FC = () => {
       role="alert"
     >
       <div className="flex items-center gap-2">
-        <span className="material-symbols-outlined text-success text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
+        <span className="material-symbols-outlined text-green-600 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>
           check_circle
         </span>
         <span className="font-body-md text-body-md font-medium">
