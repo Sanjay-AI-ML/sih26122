@@ -189,26 +189,8 @@ export default function HomeScreen() {
 
   <div className="self-stretch px-3 py-2 bg-stone-50 border-b border-stone-300 inline-flex justify-between items-center overflow-hidden">
 
-    <div className="size- flex justify-start items-center gap-1">
-
-      <div className="h-8 min-w-8 px-2 pt-1.5 pb-2 rounded-xs outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex flex-col justify-center items-center">
-
-        <div className="text-center justify-center text-zinc-900 text-xs font-semibold font-['Poppins'] leading-4 tracking-tight">A-</div>
-
-      </div>
-
-      <div className="h-8 px-2 pt-1.5 pb-2 bg-stone-100 rounded-xs outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex flex-col justify-center items-center">
-
-        <div className="text-center justify-center text-zinc-900 text-xs font-semibold font-['Poppins'] leading-4 tracking-tight">Normal</div>
-
-      </div>
-
-      <div className="h-8 min-w-8 px-2 pt-1.5 pb-2 rounded-xs outline outline-1 outline-offset-[-1px] outline-stone-300 inline-flex flex-col justify-center items-center">
-
-        <div className="text-center justify-center text-zinc-900 text-xs font-semibold font-['Poppins'] leading-4 tracking-tight">A+</div>
-
-      </div>
-
+    <div className="size- flex justify-start items-center gap-2">
+      <span className="text-zinc-600 text-xs font-medium font-['Poppins']">Field Log</span>
     </div>
 
     <div className="size- flex justify-start items-center gap-4">
