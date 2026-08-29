@@ -917,7 +917,7 @@ function App() {
                     const isApproved = item.status === 'approved';
                     const color = isApproved ? '#51A71D' : '#DA251C';
                     return (
-                      <div key={idx} className="bg-white border border-[#CCCCCC] p-3 pl-4 rounded relative overflow-hidden shadow-sm">
+                      <div key={idx} className={"p-3 pl-4 rounded relative overflow-hidden shadow-sm transition-colors " + (isDarkMode ? "bg-slate-800 border border-slate-700 text-white" : "bg-white border border-[#CCCCCC]")}>
                         <div className="absolute left-0 top-0 bottom-0 w-1" style={{ backgroundColor: color }}></div>
                         <div className="flex justify-between items-center mb-1.5">
                           <span className="font-bold text-xs text-black truncate pr-2">{item.activity_id}</span>
@@ -943,15 +943,15 @@ function App() {
                     { label: t('rejected'), value: analyticsData?.rejected ?? '--', color: '#DA251C' },
                     { label: t('ambiguous'), value: analyticsData?.ambiguous ?? '--', color: '#E1B91B' },
                   ].map((stat, i) => (
-                    <div key={i} className="bg-white border border-[#CCCCCC] p-3 rounded shadow-sm">
-                      <div className="text-[11px] text-[#666666]">{stat.label}</div>
+                    <div key={i} className={"p-3 rounded shadow-sm transition-colors " + (isDarkMode ? "bg-slate-800 border border-slate-700 text-white" : "bg-white border border-[#CCCCCC]")}>
+                      <div className={"text-[11px] " + (isDarkMode ? "text-slate-400" : "text-[#666666]")}>{stat.label}</div>
                       <div className="text-2xl font-bold mt-1" style={{ color: stat.color }}>{stat.value}</div>
                     </div>
                   ))}
                 </div>
                 {analyticsData?.discipline_breakdown && (
-                  <div className="bg-white border border-[#CCCCCC] p-3 rounded shadow-sm">
-                    <div className="text-xs font-bold text-[#666666] mb-2">{t("byDiscipline")}</div>
+                  <div className={"p-3 rounded shadow-sm transition-colors " + (isDarkMode ? "bg-slate-800 border border-slate-700 text-white" : "bg-white border border-[#CCCCCC]")}>
+                    <div className={"text-xs font-bold mb-2 " + (isDarkMode ? "text-slate-300" : "text-[#666666]")}>{t("byDiscipline")}</div>
                     {analyticsData.discipline_breakdown.map((item: any, idx: number) => (
                       <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-[#f0eded] last:border-0">
                         <span className="capitalize">{t(item.discipline?.toLowerCase() || "")?.toUpperCase() || item.discipline}</span>
