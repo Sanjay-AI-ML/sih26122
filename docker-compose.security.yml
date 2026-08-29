@@ -1,0 +1,228 @@
+# ==============================================================================
+# Samanvay (SIH26122) Enterprise Zero-Trust Multi-Tier Network Architecture
+# Segregated Docker Networks: DMZ Public -> App Internal -> Isolated DB & AI
+# ==============================================================================
+version: '3.8'
+
+networks:
+  # Tier 1: Public DMZ Network (Edge ingress only)
+  dmz_public:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+
+  # Tier 2: Internal Application Network (Microservices & Gateway)
+  app_internal:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/24
+
+  # Tier 3: Isolated Database Network (internal: true - NO WAN / NO OUTSIDE ROUTING)
+  db_secure_private:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.22.0.0/24
+
+  # Tier 4: Isolated AI/LLM Compute Network (internal: true - NO WAN)
+  ai_isolated_private:
+    driver: bridge
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.23.0.0/24
+
+services:
+  # ----------------------------------------------------------------------------
+  # TIER 1: Edge Web Application Firewall (WAF) & Reverse Proxy
+  # ----------------------------------------------------------------------------
+  waf-gateway:
+    build:
+      context: ./infra/waf
+      dockerfile: Dockerfile
+    container_name: samanvay-waf-gateway
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - dmz_public
+      - app_internal
+    environment:
+      - NGINX_PORT=80
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    depends_on:
+      - ingestion
+      - matching
+      - writeback
+      - analytics
+      - bridge
+
+  # ----------------------------------------------------------------------------
+  # TIER 1: Frontend Single Page Applications (DMZ)
+  # ----------------------------------------------------------------------------
+  review-console:
+    build:
+      context: ./apps/review-console
+      dockerfile: Dockerfile
+    container_name: samanvay-review-console
+    restart: unless-stopped
+    networks:
+      - dmz_public
+    security_opt:
+      - no-new-privileges:true
+
+  time-agent:
+    build:
+      context: ./apps/time-agent
+      dockerfile: Dockerfile
+    container_name: samanvay-time-agent
+    restart: unless-stopped
+    networks:
+      - dmz_public
+    security_opt:
+      - no-new-privileges:true
+
+  # ----------------------------------------------------------------------------
+  # TIER 2: FastAPI Microservices (App Internal - No Host Ports Exposed)
+  # ----------------------------------------------------------------------------
+  ingestion:
+    build:
+      context: .
+      dockerfile: services/ingestion/Dockerfile
+    container_name: samanvay-ingestion-svc
+    restart: unless-stopped
+    networks:
+      - app_internal
+      - ai_isolated_private
+    environment:
+      - REQUIRE_GATEWAY_TOKEN=true
+      - INTERNAL_GATEWAY_SECRET=samanvay-internal-vpc-secret-2026
+      - WAF_RATE_LIMIT_PER_MIN=180
+      - OLLAMA_HOST=http://vllm-engine:11434
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  matching:
+    build:
+      context: .
+      dockerfile: services/matching/Dockerfile
+    container_name: samanvay-matching-svc
+    restart: unless-stopped
+    networks:
+      - app_internal
+      - ai_isolated_private
+    environment:
+      - REQUIRE_GATEWAY_TOKEN=true
+      - INTERNAL_GATEWAY_SECRET=samanvay-internal-vpc-secret-2026
+      - WAF_RATE_LIMIT_PER_MIN=180
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  writeback:
+    build:
+      context: .
+      dockerfile: services/writeback/Dockerfile
+    container_name: samanvay-writeback-svc
+    restart: unless-stopped
+    networks:
+      - app_internal
+      - db_secure_private
+    environment:
+      - REQUIRE_GATEWAY_TOKEN=true
+      - INTERNAL_GATEWAY_SECRET=samanvay-internal-vpc-secret-2026
+      - DATABASE_URL=postgresql://samanvay_user:SuperSecurePass2026@postgres-db:5432/samanvay_db
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      - postgres-db
+
+  analytics:
+    build:
+      context: .
+      dockerfile: services/analytics/Dockerfile
+    container_name: samanvay-analytics-svc
+    restart: unless-stopped
+    networks:
+      - app_internal
+      - db_secure_private
+    environment:
+      - REQUIRE_GATEWAY_TOKEN=true
+      - INTERNAL_GATEWAY_SECRET=samanvay-internal-vpc-secret-2026
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    depends_on:
+      - writeback
+
+  bridge:
+    build:
+      context: .
+      dockerfile: Dockerfile.bridge
+    container_name: samanvay-event-bridge
+    restart: unless-stopped
+    networks:
+      - app_internal
+    security_opt:
+      - no-new-privileges:true
+
+  # ----------------------------------------------------------------------------
+  # TIER 3: Zero-Trust Database Layer (NO PUBLIC ACCESS, NO HOST PORT BINDING)
+  # ----------------------------------------------------------------------------
+  postgres-db:
+    image: pgvector/pgvector:pg16
+    container_name: samanvay-postgres-secure
+    restart: unless-stopped
+    networks:
+      - db_secure_private
+    environment:
+      - POSTGRES_USER=samanvay_user
+      - POSTGRES_PASSWORD=SuperSecurePass2026
+      - POSTGRES_DB=samanvay_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    security_opt:
+      - no-new-privileges:true
+
+  redis-cache:
+    image: redis:7-alpine
+    container_name: samanvay-redis-secure
+    restart: unless-stopped
+    networks:
+      - db_secure_private
+    command: ["redis-server", "--requirepass", "RedisSecurePassword2026"]
+    security_opt:
+      - no-new-privileges:true
+
+  # ----------------------------------------------------------------------------
+  # TIER 4: Isolated AI / LLM Engine (NO INTERNET ROUTING, APP INTERNAL ONLY)
+  # ----------------------------------------------------------------------------
+  vllm-engine:
+    image: ollama/ollama:latest
+    container_name: samanvay-llm-engine
+    restart: unless-stopped
+    networks:
+      - ai_isolated_private
+    volumes:
+      - ollama_models:/root/.ollama
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  postgres_data:
+  ollama_models:

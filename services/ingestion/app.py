@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from shared.schemas.extracted_event import ExtractedEvent
+from shared.security.firewall import FirewallMiddleware, FirewallConfig
 from services.ingestion.engine import IngestionEngine
 from services.ingestion.config import (
     SERVICE_NAME,
@@ -22,6 +23,9 @@ app = FastAPI(
     description="SIH26122 Data Capture Layer for Oil India Limited infrastructure schedules",
     version=SERVICE_VERSION,
 )
+
+# Enable Layer 7 WAF & Zero-Trust Security Middleware
+app.add_middleware(FirewallMiddleware, config=FirewallConfig())
 
 # Enable CORS for React Review Console and Time Agent frontends
 app.add_middleware(

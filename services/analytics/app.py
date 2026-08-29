@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from shared.security.firewall import FirewallMiddleware, FirewallConfig
 from services.analytics.engine import analytics_engine
 
 app = FastAPI(
@@ -7,6 +8,9 @@ app = FastAPI(
     description="DuckDB-powered analytics over the institutional memory.",
     version="1.0.0"
 )
+
+# Enable Layer 7 WAF & Zero-Trust Security Middleware
+app.add_middleware(FirewallMiddleware, config=FirewallConfig())
 
 app.add_middleware(
     CORSMiddleware,

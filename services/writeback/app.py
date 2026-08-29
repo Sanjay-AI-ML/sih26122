@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, ConfigDict
 
+from shared.security.firewall import FirewallMiddleware, FirewallConfig
 from services.writeback.db import engine, Base, get_db
 from services.writeback.models import AuditLog
 
@@ -16,6 +17,9 @@ app = FastAPI(
     description="Handles appending approved events into SQLite OLTP logs.",
     version="1.0.0"
 )
+
+# Enable Layer 7 WAF & Zero-Trust Security Middleware
+app.add_middleware(FirewallMiddleware, config=FirewallConfig())
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,0 +1,126 @@
+# ==============================================================================
+# Samanvay (SIH26122) Kubernetes Zero-Trust Network Policies
+# Enforces Default-Deny and Explicit Microsegmentation
+# ==============================================================================
+
+# 1. Default Deny All Ingress and Egress in Namespace
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-all
+  namespace: samanvay
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+---
+# 2. Allow External Ingress ONLY to Edge WAF / Ingress Controller
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-waf-ingress
+  namespace: samanvay
+spec:
+  podSelector:
+    matchLabels:
+      app: samanvay-waf-gateway
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          tier: backend
+---
+# 3. Allow Backend FastAPI Microservices to be reached ONLY by Edge WAF
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-backend-from-waf
+  namespace: samanvay
+spec:
+  podSelector:
+    matchLabels:
+      tier: backend
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: samanvay-waf-gateway
+    ports:
+    - protocol: TCP
+      port: 8001
+    - protocol: TCP
+      port: 8002
+    - protocol: TCP
+      port: 8003
+    - protocol: TCP
+      port: 8004
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgres-db
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: vllm-engine
+    ports:
+    - protocol: TCP
+      port: 11434
+---
+# 4. Strictly Isolate PostgreSQL (Allowed ONLY from Writeback and Analytics Backend)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: isolate-postgres-db
+  namespace: samanvay
+spec:
+  podSelector:
+    matchLabels:
+      app: postgres-db
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: backend
+    ports:
+    - protocol: TCP
+      port: 5432
+---
+# 5. Strictly Isolate LLM Inference Engine (Allowed ONLY from Ingestion and Matching Backend)
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: isolate-vllm-engine
+  namespace: samanvay
+spec:
+  podSelector:
+    matchLabels:
+      app: vllm-engine
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          tier: backend
+    ports:
+    - protocol: TCP
+      port: 11434

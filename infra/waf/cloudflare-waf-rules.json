@@ -1,0 +1,64 @@
+{
+  "description": "Samanvay (SIH26122) Cloudflare WAF & Edge Security Ruleset Configuration",
+  "version": "2026.1.0",
+  "zone_settings": {
+    "security_level": "medium",
+    "ssl": "strict",
+    "tls_1_3": "on",
+    "always_use_https": "on",
+    "min_tls_version": "1.2",
+    "opportunistic_encryption": "on",
+    "automatic_https_rewrites": "on",
+    "brotli": "on",
+    "http2": "on",
+    "http3": "on",
+    "bot_fight_mode": "on"
+  },
+  "custom_rules": [
+    {
+      "description": "Block Known Vulnerability Scanners & Bad Bots",
+      "expression": "(http.user_agent contains \"sqlmap\" or http.user_agent contains \"nikto\" or http.user_agent contains \"masscan\" or http.user_agent contains \"wpscan\" or http.user_agent contains \"gobuster\")",
+      "action": "block"
+    },
+    {
+      "description": "Strict Rate Limit on DPR Ingestion Endpoints",
+      "expression": "(http.request.uri.path wildcard \"/api/v1/ingest/*\")",
+      "action": "rate_limit",
+      "ratelimit": {
+        "requests_per_period": 100,
+        "period_seconds": 60,
+        "action": "managed_challenge"
+      }
+    },
+    {
+      "description": "Mitigate SQL Injection in Query Strings",
+      "expression": "(raw.http.request.uri.query contains \"UNION+SELECT\" or raw.http.request.uri.query contains \"DROP+TABLE\" or raw.http.request.uri.query contains \"--\")",
+      "action": "block"
+    },
+    {
+      "description": "Mitigate Cross-Site Scripting (XSS) Patterns",
+      "expression": "(raw.http.request.uri.query contains \"<script\" or raw.http.request.uri.query contains \"javascript:\" or raw.http.request.uri.query contains \"onerror=\")",
+      "action": "block"
+    },
+    {
+      "description": "Geo-Fencing: Challenge Traffic Outside Primary Operating Regions",
+      "expression": "(not ip.geoip.country in {\"IN\" \"SG\" \"AE\" \"US\" \"GB\"})",
+      "action": "managed_challenge"
+    }
+  ],
+  "managed_rulesets": [
+    {
+      "name": "Cloudflare Managed Ruleset (OWASP Core Ruleset)",
+      "action": "block",
+      "sensitivity": "medium"
+    },
+    {
+      "name": "Cloudflare Exposed Credentials Check",
+      "action": "block"
+    },
+    {
+      "name": "Cloudflare Bot Management",
+      "action": "managed_challenge"
+    }
+  ]
+}

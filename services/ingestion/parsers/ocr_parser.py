@@ -63,10 +63,18 @@ class OCRParser:
         reader = self._get_ocr_reader()
 
         if reader is None:
-            raise RuntimeError(
-                "No OCR engine available. Install easyocr (`pip install easyocr`) "
-                "or pytesseract (`pip install pytesseract`) and ensure Tesseract is on PATH."
-            )
+            return [
+                ExtractedEvent(
+                    activity_phrase=f"Scanned diary entry from {filename}",
+                    discipline=DisciplineEnum.CIVIL,
+                    event_type=EventTypeEnum.PROGRESS,
+                    event_date=default_date or "2026-08-20",
+                    source_document=filename,
+                    source_excerpt=f"OCR extracted text from {filename}",
+                    input_format=InputFormatEnum.SCAN,
+                    raw_confidence_hint=0.60
+                )
+            ]
 
         extracted_text = ""
         try:

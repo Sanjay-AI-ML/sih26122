@@ -46,11 +46,12 @@ class AnalyticsEngine:
         self._sync_data()
         try:
             query = """
-                                SELECT 
+                SELECT 
                     COUNT(*) as total_events,
                     SUM(CASE WHEN status = 'approved' THEN 1 ELSE 0 END) as approved,
                     SUM(CASE WHEN status = 'rejected' THEN 1 ELSE 0 END) as rejected,
-                    SUM(CASE WHEN was_ambiguous = TRUE THEN 1 ELSE 0 END) as ambiguous
+                    SUM(CASE WHEN was_ambiguous = TRUE THEN 1 ELSE 0 END) as ambiguous_events,
+                    SUM(CASE WHEN confidence_band = 'high' THEN 1 ELSE 0 END) as auto_suggested
                 FROM audit_log
             """
             result_df = self.con.execute(query).fetchdf()

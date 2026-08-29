@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from shared.schemas.extracted_event import ExtractedEvent
+from shared.security.firewall import FirewallMiddleware, FirewallConfig
 from services.matching.schemas import MatchResult, ScheduleActivity, DisciplineEnum
 from services.matching.vector_store import vector_store
 from services.matching.engine import matching_engine
@@ -14,6 +15,9 @@ app = FastAPI(
     description="Resolves extracted field events to Primavera schedule activities.",
     version="1.0.0"
 )
+
+# Enable Layer 7 WAF & Zero-Trust Security Middleware
+app.add_middleware(FirewallMiddleware, config=FirewallConfig())
 
 app.add_middleware(
     CORSMiddleware,
