@@ -1,0 +1,7 @@
+<svg width="150" height="40" viewBox="0 0 150 40" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="20" cy="20" r="16" fill="#da251c" />
+  <circle cx="20" cy="20" r="11" fill="#ffffff" />
+  <circle cx="20" cy="20" r="6" fill="#51a71d" />
+  <text x="45" y="18" font-family="Arial, sans-serif" font-weight="900" font-size="14" fill="#002c85">ऑयल इंडिया</text>
+  <text x="45" y="32" font-family="Arial, sans-serif" font-weight="700" font-size="12" fill="#002c85">Oil India Limited</text>
+</svg>
