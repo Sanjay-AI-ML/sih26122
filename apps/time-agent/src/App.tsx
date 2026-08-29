@@ -718,12 +718,12 @@ function App() {
       return (
         <div className={"flex flex-col h-screen w-screen transition-colors duration-200 " + (isDarkMode ? "bg-slate-900 text-slate-100 " : "bg-[#fbf9f8] text-[#1b1c1c] ") + (highContrast ? "contrast-125 " : "") + (textSize === "xs" ? "text-xs" : textSize === "base" ? "text-base" : "text-sm")}>
           {/* Header */}
-          <header className="h-14 bg-white border-b border-[#CCCCCC] flex items-center justify-between px-3 shrink-0 z-20 shadow-sm">
+          <header className={"h-14 border-b flex items-center justify-between px-3 shrink-0 z-20 shadow-sm transition-colors " + (isDarkMode ? "bg-slate-900 border-slate-800 text-white" : "bg-white border-[#CCCCCC] text-black")}>
             <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setScreen("home")}>
               <OilIndiaLogo className="w-8 h-8" />
               <div className="flex flex-col">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-xs text-black leading-tight tracking-tight">{t("timeAgent")}</span>
+                  <span className={"font-bold text-xs leading-tight tracking-tight " + (isDarkMode ? "text-white" : "text-black")}>{t("timeAgent")}</span>
                   <span className="text-[9px] bg-[#E1B91B]/20 text-[#856b00] font-semibold px-1 rounded">OIL</span>
                 </div>
                 <span className="text-[10px] text-[#666666] leading-none">{tf("profileDetails", {shift})}</span>
@@ -745,7 +745,7 @@ function App() {
 
           {/* Accessibility bar on Home */}
           {screen === "home" && !isOffline && (
-            <div className="bg-[#fbf9f8] border-b border-[#CCCCCC] px-3 py-1.5 flex items-center justify-between shrink-0">
+            <div className={"border-b px-3 py-1.5 flex items-center justify-between shrink-0 transition-colors " + (isDarkMode ? "bg-slate-850 border-slate-800 text-slate-200" : "bg-[#fbf9f8] border-[#CCCCCC] text-[#666666]")}>
               <div className="flex gap-1">
                 {([["xs", t("fontSmall")], ["sm", t("fontNormal")], ["base", t("fontLarge")]] as [string,string][]).map(([sentinel, label]) => (
                   <button key={sentinel} onClick={() => setTextSize(sentinel as "xs"|"sm"|"base")} className={"px-2 py-0.5 border border-[#CCCCCC] rounded text-xs " + (textSize === sentinel ? "bg-[#eae8e7] font-bold" : "bg-white")}>
@@ -1045,20 +1045,20 @@ function App() {
 
           {/* Bottom Composer on Home */}
           {screen === "home" && (
-            <div className="fixed bottom-14 left-0 w-full glass-header p-2.5 flex items-center justify-center z-30">
+            <div className={"fixed bottom-14 left-0 w-full p-2.5 flex items-center justify-center z-30 transition-colors " + (isDarkMode ? "bg-slate-900/95 border-t border-slate-800 text-white backdrop-blur-md" : "glass-header bg-white/90 border-t border-[#CCCCCC]")}>
               <div className="w-full max-w-2xl flex items-center gap-2">
                 <input
                   value={inputText}
                   onChange={e => setInputText(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && handleSend()}
                   placeholder={isRecording ? t("listening") : t("typeMessage")}
-                  className="flex-1 bg-white/80 border border-gray-300 rounded-full h-11 px-4 text-sm text-black outline-none focus:border-[#1842AA] focus:ring-2 focus:ring-[#1842AA]/20 transition-all premium-shadow"
+                  className={"flex-1 rounded-full h-11 px-4 text-sm outline-none transition-all premium-shadow " + (isDarkMode ? "bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:border-[#E1B91B]" : "bg-white/80 border border-gray-300 text-black focus:border-[#1842AA]")}
                 />
                 <input type="file" id="file-upload-input" className="hidden" accept=".txt,.csv,.xlsx,.xls,.pdf,.jpg,.jpeg,.png,.wav,.mp3,.docx,.xer,.xml" onChange={handleFileUpload} />
-                <label htmlFor="file-upload-input" className="w-11 h-11 rounded-full border border-gray-200 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 hover-elevate shrink-0 transition-all" title={t("upload")}>
+                <label htmlFor="file-upload-input" className={"w-11 h-11 rounded-full border flex items-center justify-center cursor-pointer hover-elevate shrink-0 transition-all " + (isDarkMode ? "bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700" : "bg-white border-gray-200 text-[#666666] hover:bg-gray-50")} title={t("upload")}>
                   <span className="material-symbols-outlined text-xl text-[#666666]">attach_file</span>
                 </label>
-                <button onClick={startCamera} title={t("takePicture")} className="w-11 h-11 rounded-full border border-gray-200 bg-white flex items-center justify-center cursor-pointer hover:bg-gray-50 hover-elevate shrink-0 transition-all">
+                <button onClick={startCamera} title={t("takePicture")} className={"w-11 h-11 rounded-full border flex items-center justify-center cursor-pointer hover-elevate shrink-0 transition-all " + (isDarkMode ? "bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700" : "bg-white border-gray-200 text-[#666666] hover:bg-gray-50")}>
                   <span className="material-symbols-outlined text-xl text-[#666666]">photo_camera</span>
                 </button>
                 <button onClick={toggleMic} title={t("startRec")} className={"w-11 h-11 rounded-full border flex items-center justify-center transition-all shrink-0 hover-elevate " + (isRecording ? "bg-[#DA251C] text-white border-[#DA251C] animate-pulse-glow" : "border-[#E1B91B] text-[#E1B91B] bg-white hover:bg-amber-50")}>
@@ -1072,17 +1072,17 @@ function App() {
           )}
 
           {/* Bottom Nav Bar */}
-          <nav className="fixed bottom-0 left-0 w-full h-14 bg-white/95 backdrop-blur-md border-t border-gray-200 flex justify-around items-center px-4 z-40 premium-shadow">
+          <nav className={"fixed bottom-0 left-0 w-full h-14 backdrop-blur-md border-t flex justify-around items-center px-4 z-40 premium-shadow transition-colors " + (isDarkMode ? "bg-slate-900/95 border-slate-800 text-slate-200" : "bg-white/95 border-gray-200 text-gray-700")}>
             <div className="w-full max-w-2xl flex justify-between items-center">
-              <button onClick={() => setScreen("home")} className={"flex-1 flex flex-col items-center justify-center h-12 text-xs transition-colors rounded-md " + (screen === "home" ? "font-bold text-black bg-[#f6f3f2]" : "text-[#666666] hover:text-black")}>
+              <button onClick={() => setScreen("home")} className={"flex-1 flex flex-col items-center justify-center h-12 text-xs transition-colors rounded-md " + (screen === "home" ? (isDarkMode ? "font-bold text-amber-400 bg-slate-800" : "font-bold text-black bg-[#f6f3f2]") : (isDarkMode ? "text-slate-400 hover:text-white" : "text-[#666666] hover:text-black"))}>
                 <span className="material-symbols-outlined text-xl">chat</span>
                 <span className="text-[10px] mt-0.5">{t("fieldLog")}</span>
               </button>
-              <button onClick={() => setScreen("history")} className={"flex-1 flex flex-col items-center justify-center h-12 text-xs transition-colors rounded-md " + (screen === "history" ? "font-bold text-black bg-[#f6f3f2]" : "text-[#666666] hover:text-black")}>
+              <button onClick={() => setScreen("history")} className={"flex-1 flex flex-col items-center justify-center h-12 text-xs transition-colors rounded-md " + (screen === "history" ? (isDarkMode ? "font-bold text-amber-400 bg-slate-800" : "font-bold text-black bg-[#f6f3f2]") : (isDarkMode ? "text-slate-400 hover:text-white" : "text-[#666666] hover:text-black"))}>
                 <span className="material-symbols-outlined text-xl">history</span>
                 <span className="text-[10px] mt-0.5">{t("history")}</span>
               </button>
-              <button onClick={() => setScreen("analytics")} className={"flex-1 flex flex-col items-center justify-center h-12 text-xs transition-colors rounded-md " + (screen === "analytics" ? "font-bold text-black bg-[#f6f3f2]" : "text-[#666666] hover:text-black")}>
+              <button onClick={() => setScreen("analytics")} className={"flex-1 flex flex-col items-center justify-center h-12 text-xs transition-colors rounded-md " + (screen === "analytics" ? (isDarkMode ? "font-bold text-amber-400 bg-slate-800" : "font-bold text-black bg-[#f6f3f2]") : (isDarkMode ? "text-slate-400 hover:text-white" : "text-[#666666] hover:text-black"))}>
                 <span className="material-symbols-outlined text-xl">analytics</span>
                 <span className="text-[10px] mt-0.5">{t("analytics")}</span>
               </button>
