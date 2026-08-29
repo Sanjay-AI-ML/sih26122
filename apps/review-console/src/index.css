@@ -245,3 +245,91 @@ html.text-large {
 .premium-table tr:last-child td {
   border-bottom: none;
 }
+
+
+/* --- FULL DEEP DARK MODE ENGINE --- */
+html.dark {
+  color-scheme: dark;
+  --color-background: #0f172a;
+  --color-on-background: #f8fafc;
+  --color-surface: #1e293b;
+  --color-surface-dim: #0f172a;
+  --color-surface-bright: #334155;
+  --color-surface-variant: #334155;
+  --color-surface-container-lowest: #0f172a;
+  --color-surface-container-low: #1e293b;
+  --color-surface-container: #1e293b;
+  --color-surface-container-high: #334155;
+  --color-surface-container-highest: #475569;
+  --color-on-surface: #f8fafc;
+  --color-on-surface-variant: #cbd5e1;
+  --color-border-standard: #334155;
+  --color-outline: #94a3b8;
+  --color-outline-variant: #475569;
+  --color-source-excerpt: #1e293b;
+}
+
+html.dark body {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+html.dark .bg-surface,
+html.dark .bg-surface-container-lowest,
+html.dark .bg-surface-container-low,
+html.dark .bg-surface-container,
+html.dark .bg-white {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+html.dark .bg-background,
+html.dark .bg-\[\#fbf9f8\] {
+  background-color: #0f172a !important;
+}
+
+html.dark .border-outline-variant,
+html.dark .border-\[\#CCCCCC\],
+html.dark .border-border-standard,
+html.dark .border-[#CCCCCC] {
+  border-color: #334155 !important;
+}
+
+html.dark .text-on-surface,
+html.dark .text-\[\#1b1c1c\],
+html.dark .text-black {
+  color: #f8fafc !important;
+}
+
+html.dark .text-on-surface-variant,
+html.dark .text-\[\#666666\],
+html.dark .text-\[\#444653\] {
+  color: #94a3b8 !important;
+}
+
+html.dark input, 
+html.dark select, 
+html.dark textarea {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+html.dark .queue-row:hover {
+  background-color: #334155 !important;
+}
+
+html.dark .premium-table th {
+  background-color: #1e293b !important;
+  color: #cbd5e1 !important;
+  border-bottom-color: #334155 !important;
+}
+
+html.dark .premium-table td {
+  border-bottom-color: #334155 !important;
+  color: #f8fafc !important;
+}
+
+html.dark .premium-table tr:hover td {
+  background-color: #334155 !important;
+}

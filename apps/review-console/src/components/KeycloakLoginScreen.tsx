@@ -19,7 +19,7 @@ export const KeycloakLoginScreen: React.FC<KeycloakLoginScreenProps> = ({ onLogi
         </div>
 
         {/* Login Card */}
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
+        <div className="bg-slate-800 text-slate-100 border border-slate-700 border border-gray-200 rounded-2xl shadow-xl overflow-hidden">
           {/* Header */}
           <div className="p-6 border-b border-gray-100 text-center bg-slate-50/50">
             <img 
