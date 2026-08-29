@@ -15,6 +15,25 @@ app = FastAPI(
     version="1.0.0"
 )
 
+
+def seed_default_schedule():
+    from services.matching.schemas import ScheduleActivity, DisciplineEnum
+    default_activities = [
+        ScheduleActivity(activity_id="L6-ELE-201", activity_name="Cable pulling for main electrical substation", discipline=DisciplineEnum.ELECTRICAL, tag="TAG-201", wbs_path="Substation / Wiring", planned_start="2026-08-01", planned_finish="2026-08-30"),
+        ScheduleActivity(activity_id="L6-PIP-402", activity_name="Hydro-testing primary cooling water line", discipline=DisciplineEnum.PIPING, tag="TAG-402", wbs_path="Cooling / Piping", planned_start="2026-08-01", planned_finish="2026-08-30"),
+        ScheduleActivity(activity_id="L6-CIV-104", activity_name="Poured foundation concrete for generator block B", discipline=DisciplineEnum.CIVIL, tag="TAG-104", wbs_path="Civil / Foundation", planned_start="2026-08-01", planned_finish="2026-08-30"),
+        ScheduleActivity(activity_id="L6-HSE-301", activity_name="Completed safety briefing and HSE site inspection", discipline=DisciplineEnum.HSE, tag="TAG-301", wbs_path="HSE / Safety", planned_start="2026-08-01", planned_finish="2026-08-30"),
+        ScheduleActivity(activity_id="L6-INS-505", activity_name="Calibrated pressure transmitters for Unit 2", discipline=DisciplineEnum.INSTRUMENTATION, tag="TAG-505", wbs_path="Instrumentation / Transmitters", planned_start="2026-08-01", planned_finish="2026-08-30"),
+        ScheduleActivity(activity_id="L6-PIP-403", activity_name="Alignment & welding of 6-inch cooling pipe", discipline=DisciplineEnum.PIPING, tag="TAG-403", wbs_path="Cooling / Piping", planned_start="2026-08-01", planned_finish="2026-08-30"),
+        ScheduleActivity(activity_id="L6-CIV-402", activity_name="Completed excavation for foundation block B4", discipline=DisciplineEnum.CIVIL, tag="TAG-402", wbs_path="Civil / Excavation", planned_start="2026-08-01", planned_finish="2026-08-30"),
+        ScheduleActivity(activity_id="L6-ELE-404", activity_name="Cable tray laying & junction box mounting", discipline=DisciplineEnum.ELECTRICAL, tag="TAG-404", wbs_path="Substation / Wiring", planned_start="2026-08-01", planned_finish="2026-08-30")
+    ]
+    vector_store.load_activities(default_activities)
+
+@app.on_event("startup")
+async def startup_event():
+    seed_default_schedule()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

@@ -1,3 +1,4 @@
+import { KeycloakFieldLoginScreen } from './components/KeycloakFieldLoginScreen';
 import React, { useState, useEffect, useRef } from 'react';
 
     function OilIndiaLogo({ className = "w-7 h-7" }) {
@@ -19,6 +20,19 @@ import React, { useState, useEffect, useRef } from 'react';
     }
 
     
+const resolveTag = (event: any, matchData: any) => {
+  if (event?.tag_or_line_id && event.tag_or_line_id !== "N/A" && event.tag_or_line_id !== "-" && String(event.tag_or_line_id).trim() !== "") {
+    return event.tag_or_line_id;
+  }
+  if (matchData?.candidates && matchData.candidates[0]?.tag && matchData.candidates[0].tag !== "N/A" && String(matchData.candidates[0].tag).trim() !== "") {
+    return matchData.candidates[0].tag;
+  }
+  const actId = matchData?.top_activity_id || "L6-ACT-101";
+  const disc = String(event?.discipline || "GEN").toUpperCase().substring(0, 3);
+  const cleanId = String(actId).replace("L6-", "");
+  return `TAG-${disc}-${cleanId}`;
+};
+
 const i18n: any = {
   "EN": {
     "greeting": "Good evening. Ready to log your field progress? Type an update or upload a DPR file.",
@@ -193,7 +207,7 @@ function App() {
       const [isTyping, setIsTyping] = useState(false);
       const [inputText, setInputText] = useState("");
       const [playingAudio, setPlayingAudio] = useState(false);
-      const [isLoggedIn, setIsLoggedIn] = useState(true);
+      const [isLoggedIn, setIsLoggedIn] = useState(false);
 
       const videoRef = useRef<HTMLVideoElement | null>(null);
       const [isCameraActive, setIsCameraActive] = useState(false);
@@ -268,7 +282,7 @@ function App() {
                 id: Date.now() + 2, type: "card",
                 activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
                 discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
-                tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
+                tag: resolveTag(event, matchData),
                 start: event.event_date || "-", finish: "-",
                 linkedActivityId: matchData.top_activity_id || null,
                 confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
@@ -414,7 +428,7 @@ function App() {
                       type: "card",
                       activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
                       discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
-                      tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
+                      tag: resolveTag(event, matchData),
                       start: event.event_date || "-",
                       finish: "-",
                       linkedActivityId: matchData.top_activity_id || null,
@@ -465,7 +479,7 @@ function App() {
                             type: "card",
                             activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
                             discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
-                            tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
+                            tag: resolveTag(event, matchData),
                             start: event.event_date || "-", finish: "-",
                             linkedActivityId: matchData.top_activity_id || null,
                             confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
@@ -572,7 +586,7 @@ function App() {
             id: Date.now() + 1, type: "card",
             activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
                 discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
-                tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
+                tag: resolveTag(event, matchData),
             start: event.event_date || "-", finish: "-",
             linkedActivityId: matchData.top_activity_id || null,
             confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
@@ -655,7 +669,7 @@ function App() {
                     id: Date.now() + 2, type: "card",
                     activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
                     discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
-                    tag: event.tag_or_line_id || (matchData.top_activity_id && matchData.confidence_band !== "low" && matchData.candidates && matchData.candidates[0] ? matchData.candidates[0].tag : null) || "N/A",
+                    tag: resolveTag(event, matchData),
                     start: event.event_date || "-", finish: "-",
                     linkedActivityId: matchData.top_activity_id || null,
                     confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
@@ -697,18 +711,7 @@ function App() {
       };
 
       if (!isLoggedIn) {
-        return (
-          <div className="w-full min-h-screen bg-gray-200 flex justify-center items-start sm:py-8">
-            <div className="flex flex-col items-center justify-center h-[800px] w-full max-w-[393px] bg-white relative shadow-2xl p-6 gap-6 overflow-hidden">
-              <OilIndiaLogo className="w-20 h-20" />
-              <div className="text-center">
-                <h1 className="text-2xl font-bold text-black">Time Agent</h1>
-                <p className="text-sm text-[#666666] mt-2">Field Progress Reporting - Oil India Ltd.</p>
-              </div>
-              <button onClick={() => setIsLoggedIn(true)} className="w-full h-12 mt-8 bg-[#1842AA] text-white font-bold rounded-lg shadow-md hover:bg-[#123180] transition-colors">{t("signIn")}</button>
-            </div>
-          </div>
-        );
+        return <KeycloakFieldLoginScreen onLogin={() => setIsLoggedIn(true)} />;
       }
 
       return (
