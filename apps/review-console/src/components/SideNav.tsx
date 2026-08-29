@@ -433,19 +433,17 @@ export const SideNav: React.FC = () => {
               {t("settingsTitle")}
             </button>
 
-            {/* Profile Card */}
+            {/* Profile Card with Keycloak Role */}
             <div 
-              onClick={() => showToast(`A. Sharma (${t('chiefEngineer')}) - Oil India Ltd. Duliajan Field Ops`, undefined, 'info')}
-              className="flex items-center gap-2 px-2 py-1.5 border border-border-standard rounded-md bg-surface-container-lowest cursor-pointer hover:bg-surface-container transition-colors shadow-2xs"
+              onClick={() => showToast(`Keycloak IAM Active: P. Mehta [ROLE_PLANNER] - Oil India Master Office`, undefined, 'info')}
+              className="flex items-center gap-2 px-2.5 py-2 border border-blue-200 rounded-lg bg-blue-50/60 cursor-pointer hover:bg-blue-100/70 transition-colors shadow-2xs"
             >
-              <img 
-                alt="Profile" 
-                className="w-7 h-7 rounded-full object-cover border border-border-standard flex-shrink-0" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnhinY23br8Izv51EOYXz7YjIrwrLKmrO6eIuwmQHNdOx1Fy5CMIk0uRdWClCv-ToZs6sFGknua8wj4thwcnwcvmAGmPvCWsfDlwjDe_fcIwLV3w2wgdsEAReRbAON9KRXAGmfqcjy0XPCLu_EZN05cidU-2klFcpqL129ZRMo2TChtF1kDBa4UU0jol7kE-OP4fJMd2wofIcsDPD9ULU50EY3BDCu7BIwM3xiqZmG6-nctue-c7A_"
-              />
+              <div className="w-7 h-7 rounded-full bg-[#1842AA] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                PM
+              </div>
               <div className="flex flex-col min-w-0">
-                <span className="font-body-sm text-body-sm font-semibold truncate text-on-surface leading-tight">{t("reviewerName")}</span>
-                <span className="font-label-caps text-[8.5px] text-outline truncate leading-tight mt-0.5">{t('chiefEngineer')}</span>
+                <span className="font-body-sm text-xs font-bold truncate text-[#1842AA] leading-tight">P. Mehta</span>
+                <span className="font-mono text-[9px] font-bold bg-[#1842AA] text-white px-1.5 py-0.2 rounded w-fit mt-0.5">ROLE_PLANNER</span>
               </div>
             </div>
           </div>

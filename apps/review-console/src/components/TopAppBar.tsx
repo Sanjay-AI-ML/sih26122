@@ -2,7 +2,11 @@ import React from 'react';
 import { useReviewQueue } from '../context/ReviewQueueContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-export const TopAppBar: React.FC = () => {
+interface TopAppBarProps {
+  onLogout?: () => void;
+}
+
+export const TopAppBar: React.FC<TopAppBarProps> = ({ onLogout }) => {
   const { 
     toggleHighContrast, 
     isHighContrast, 
@@ -89,6 +93,17 @@ export const TopAppBar: React.FC = () => {
             <span className="material-symbols-outlined text-[18px] sm:text-[20px] flex items-center justify-center" data-icon="language">language</span>
             <span className="text-[10px] font-technical-data leading-none flex items-center">{language}</span>
           </button>
+
+          {onLogout && (
+            <button 
+              onClick={onLogout}
+              title="Sign Out Keycloak SSO"
+              className="h-7 px-2.5 rounded border border-blue-300 bg-blue-50 hover:bg-blue-100 text-indigo-700 font-bold text-[11px] transition-colors cursor-pointer flex items-center gap-1 ml-1"
+            >
+              <span className="material-symbols-outlined text-[14px]">logout</span>
+              Logout
+            </button>
+          )}
         </div>
       </div>
     </header>

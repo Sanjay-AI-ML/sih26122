@@ -1,3 +1,4 @@
+import { KeycloakLoginScreen } from './components/KeycloakLoginScreen';
 import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { ReviewQueueProvider, useReviewQueue } from './context/ReviewQueueContext';
@@ -35,9 +36,15 @@ const RouteHandler: React.FC = () => {
 };
 
 const AppContent: React.FC = () => {
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+
+  if (!isLoggedIn) {
+    return <KeycloakLoginScreen onLogin={() => setIsLoggedIn(true)} />;
+  }
+
   return (
     <div className="min-h-screen bg-background text-on-surface flex flex-col antialiased selection:bg-primary-fixed selection:text-primary">
-      <TopAppBar />
+      <TopAppBar onLogout={() => setIsLoggedIn(false)} />
       <div className="flex flex-1">
         <SideNav />
         <RouteHandler />
