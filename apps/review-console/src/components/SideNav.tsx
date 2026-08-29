@@ -130,6 +130,18 @@ export const SideNav: React.FC = () => {
               <h2 className="font-label-caps text-[9.5px] text-on-surface-variant uppercase tracking-wider font-semibold">Analytics & Memory</h2>
             </div>
             
+                        <button 
+              onClick={() => {
+                navigate('/primavera');
+                closeMobileSidebar();
+              }}
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors text-on-surface-variant hover:bg-surface-container ${
+                window.location.pathname === '/primavera' ? 'bg-blue-100 ring-1 ring-blue-500 font-bold text-blue-900' : ''
+              }`}
+            >
+              <span className="material-symbols-outlined text-[16px] text-blue-600">database</span>
+              <span className="font-body-sm text-sm font-semibold">Primavera P6 Master</span>
+            </button>
             <button 
               onClick={() => setIsRAGOpen(true)}
               className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors text-on-surface-variant hover:bg-surface-container"

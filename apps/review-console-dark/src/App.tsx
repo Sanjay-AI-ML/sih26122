@@ -5,6 +5,7 @@ import { ReviewQueueProvider, useReviewQueue } from './context/ReviewQueueContex
 import { TopAppBar } from './components/TopAppBar';
 import { SideNav } from './components/SideNav';
 import { ReviewQueueScreen } from './components/ReviewQueueScreen';
+import { PrimaveraP6Screen } from './components/PrimaveraP6Screen';
 import { RecordDetailScreen } from './components/RecordDetailScreen';
 import { ScheduleMatchModal } from './components/ScheduleMatchModal';
 import { CreateActivityModal } from './components/CreateActivityModal';
@@ -27,6 +28,7 @@ const RouteHandler: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<ReviewQueueScreen />} />
+      <Route path="/primavera" element={<PrimaveraP6Screen />} />
       <Route path="/record/:id" element={<RecordDetailScreen />} />
       <Route path="/create" element={<ReviewQueueScreen />} />
       <Route path="/export" element={<ReviewQueueScreen />} />
