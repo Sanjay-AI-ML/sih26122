@@ -333,3 +333,103 @@ html.dark .premium-table td {
 html.dark .premium-table tr:hover td {
   background-color: #334155 !important;
 }
+
+
+/* --- ABSOLUTE STRICT DARK MODE OVERRIDES --- */
+html.dark {
+  color-scheme: dark;
+}
+
+html.dark body,
+html.dark nav,
+html.dark header,
+html.dark main,
+html.dark section,
+html.dark article,
+html.dark aside,
+html.dark div.bg-surface,
+html.dark div.bg-surface-container,
+html.dark div.bg-surface-container-low,
+html.dark div.bg-surface-container-lowest,
+html.dark div.bg-surface-container-high,
+html.dark div.bg-[#fbf9f8],
+html.dark div.bg-white {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+
+/* Sidebar & Cards surface */
+html.dark nav,
+html.dark .bg-surface-container-low,
+html.dark .bg-surface-container,
+html.dark .bg-surface-container-high,
+html.dark .bg-surface-container-highest,
+html.dark .bg-white {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}
+
+/* Header & Logos */
+html.dark header {
+  background-color: #0f172a !important;
+  border-bottom-color: #334155 !important;
+}
+
+html.dark header .text-primary,
+html.dark nav .text-primary {
+  color: #38bdf8 !important; /* Bright sky blue for dark mode logo & buttons */
+}
+
+html.dark header .text-on-surface-variant {
+  color: #94a3b8 !important;
+}
+
+/* Table Headers & Rows */
+html.dark table thead,
+html.dark table thead tr,
+html.dark table thead th,
+html.dark .premium-table th {
+  background-color: #1e293b !important;
+  color: #cbd5e1 !important;
+  border-bottom: 2px solid #334155 !important;
+}
+
+html.dark table tbody tr,
+html.dark .queue-row {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-bottom: 1px solid #1e293b !important;
+}
+
+html.dark table tbody tr:nth-child(even),
+html.dark .queue-row:nth-child(even) {
+  background-color: #1e293b !important;
+}
+
+html.dark table tbody tr:hover,
+html.dark .queue-row:hover {
+  background-color: #334155 !important;
+}
+
+html.dark table td,
+html.dark table td *,
+html.dark .queue-row td,
+html.dark .queue-row td * {
+  color: #f8fafc !important;
+}
+
+html.dark table td .text-on-surface-variant,
+html.dark table td .text-outline,
+html.dark table td .text-[#666666] {
+  color: #94a3b8 !important;
+}
+
+/* Modals & Inputs */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-color: #334155 !important;
+}

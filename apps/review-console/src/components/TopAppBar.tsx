@@ -41,7 +41,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ onLogout }) => {
         <nav className="flex h-full items-center">
           <button 
             onClick={() => navigate('/')} 
-            className="font-h3 text-h3 text-primary font-bold tracking-tight cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2"
+            className={`font-h3 text-h3 font-bold tracking-tight cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 ${isDarkMode ? "text-sky-400" : "text-primary"}`}
           >
             Kadam
             {location.pathname !== '/' && (
@@ -74,7 +74,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ onLogout }) => {
             onClick={toggleTextEnlarged}
             aria-label="Increase Text Size" 
             title="Toggle Text Size (A+)"
-            className="h-8 w-8 rounded text-primary hover:bg-surface-container-high transition-colors active:opacity-80 flex items-center justify-center font-bold cursor-pointer"
+            className={`h-8 w-8 rounded transition-colors active:opacity-80 flex items-center justify-center font-bold cursor-pointer ${isDarkMode ? "text-slate-200 hover:bg-slate-800" : "text-primary hover:bg-surface-container-high"}`}
           >
             <span className="material-symbols-outlined text-[18px] sm:text-[20px] flex items-center justify-center" data-icon="text_increase">text_increase</span>
           </button>
@@ -91,7 +91,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ onLogout }) => {
             onClick={toggleHighContrast}
             aria-label="High Contrast Mode" 
             title="Toggle High Contrast Mode"
-            className={`h-8 w-8 rounded transition-colors active:opacity-80 flex items-center justify-center cursor-pointer ${isHighContrast ? 'bg-primary text-on-primary' : 'text-primary hover:bg-surface-container-high'}`}
+            className={`h-8 w-8 rounded transition-colors active:opacity-80 flex items-center justify-center cursor-pointer ${isHighContrast ? "bg-primary text-on-primary" : (isDarkMode ? "text-slate-200 hover:bg-slate-800" : "text-primary hover:bg-surface-container-high")}`}
           >
             <span className="material-symbols-outlined text-[18px] sm:text-[20px] flex items-center justify-center" data-icon="contrast">contrast</span>
           </button>
@@ -99,7 +99,7 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ onLogout }) => {
             onClick={toggleLanguage}
             aria-label="Change Language" 
             title={`Current Language: ${language} (Click to switch)`}
-            className="h-8 px-2 rounded text-primary hover:bg-surface-container-high transition-colors active:opacity-80 flex items-center justify-center gap-1 text-xs font-semibold cursor-pointer"
+            className={`h-8 px-2 rounded transition-colors active:opacity-80 flex items-center justify-center gap-1 text-xs font-semibold cursor-pointer ${isDarkMode ? "text-slate-200 hover:bg-slate-800" : "text-primary hover:bg-surface-container-high"}`}
           >
             <span className="material-symbols-outlined text-[18px] sm:text-[20px] flex items-center justify-center" data-icon="language">language</span>
             <span className="text-[10px] font-technical-data leading-none flex items-center">{language}</span>
