@@ -3,9 +3,9 @@
 **Intelligent Data Capture & Schedule-Linking Layer for Infrastructure Project Management**
 Problem Statement: SIH26122 · Organization: Oil India Limited · Category: Software · Theme: Smart Automation
 
-Setu is the planning-to-execution bridge: it ingests messy, discipline-wise field reports (free text, spreadsheets, scanned diaries, supervisor voice) and turns them into structured, auditable actual-progress data linked to the correct L5/L6 schedule activity — the layer Primavera/PAIMANA don't provide today.
+SAMANWAY is the planning-to-execution bridge: it ingests messy, discipline-wise field reports (free text, spreadsheets, scanned diaries, supervisor voice) and turns them into structured, auditable actual-progress data linked to the correct L5/L6 schedule activity — the layer Primavera/PAIMANA don't provide today.
 
-Full architecture, feature scope, and per-member build briefs: **[Setu Masterplan](https://claude.ai/code/artifact/26ff253e-8cdb-4f40-af8e-a84586f04948)** — read this before touching code. This README is the short version.
+Full architecture, feature scope, and per-member build briefs: **[SAMANWAY Masterplan](https://claude.ai/code/artifact/26ff253e-8cdb-4f40-af8e-a84586f04948)** — read this before touching code. This README is the short version.
 
 ---
 
@@ -13,7 +13,7 @@ Full architecture, feature scope, and per-member build briefs: **[Setu Masterpla
 
 Baseline schedules are precise (Primavera, L5/L6). Actual progress arrives as free-text daily reports, spreadsheets, diaries, and verbal updates that are never structurally linked back to the plan — so reconciliation is slow, error-prone, and the knowledge of what really happened is lost when the project closes.
 
-## What Setu does
+## What SAMANWAY does
 
 1. **Ingests** heterogeneous inputs — free text, spreadsheets, scanned diaries, voice — and extracts structured activity events with the source evidence attached.
 2. **Matches** each event to the correct L5/L6 schedule node using deterministic engineering identifiers first (tag numbers, discipline codes, dates), then semantic similarity — not naive fuzzy string matching.
