@@ -37,7 +37,8 @@ class MatchingEngine:
         query = f"{event.activity_phrase}"
         if event.tag_or_line_id:
             query += f" Tag: {event.tag_or_line_id}"
-        query += f" Discipline: {event.discipline.value}"
+        disc_str = getattr(event.discipline, "value", str(event.discipline)) if event.discipline else "unspecified"
+        query += f" Discipline: {disc_str}"
         
         raw_results = vector_store.search(query, k=50)
 
@@ -49,7 +50,9 @@ class MatchingEngine:
             rationale_parts = [f"Semantic similarity: {vec_score:.2f}"]
 
             # Deterministic: Discipline mismatch penalization
-            if activity.discipline != event.discipline:
+            event_disc = getattr(event.discipline, "value", str(event.discipline)).lower() if event.discipline else ""
+            act_disc = getattr(activity.discipline, "value", str(activity.discipline)).lower() if activity.discipline else ""
+            if event_disc and act_disc and event_disc != act_disc:
                 score *= 0.5  # Heavy penalty for wrong discipline
                 rationale_parts.append(f"Discipline mismatch (penalty)")
             else:

@@ -284,7 +284,7 @@ function App() {
                 discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
                 tag: resolveTag(event, matchData),
                 start: event.event_date || "-", finish: "-",
-                linkedActivityId: matchData.top_activity_id || null,
+                linkedActivityId: (matchData.confidence_band !== "low" && (matchData.confidence_score || 0) >= 0.5) ? (matchData.top_activity_id || null) : null,
                 confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
                 confidenceBand: matchData.confidence_band || 'low',
                 time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -431,7 +431,7 @@ function App() {
                       tag: resolveTag(event, matchData),
                       start: event.event_date || "-",
                       finish: "-",
-                      linkedActivityId: matchData.top_activity_id || null,
+                      linkedActivityId: (matchData.confidence_band !== "low" && (matchData.confidence_score || 0) >= 0.5) ? (matchData.top_activity_id || null) : null,
                       confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
                       confidenceBand: matchData.confidence_band || 'low',
                       time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -481,7 +481,7 @@ function App() {
                             discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
                             tag: resolveTag(event, matchData),
                             start: event.event_date || "-", finish: "-",
-                            linkedActivityId: matchData.top_activity_id || null,
+                            linkedActivityId: (matchData.confidence_band !== "low" && (matchData.confidence_score || 0) >= 0.5) ? (matchData.top_activity_id || null) : null,
                             confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
                             confidenceBand: matchData.confidence_band || 'low',
                             time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -588,7 +588,7 @@ function App() {
                 discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
                 tag: resolveTag(event, matchData),
             start: event.event_date || "-", finish: "-",
-            linkedActivityId: matchData.top_activity_id || null,
+            linkedActivityId: (matchData.confidence_band !== "low" && (matchData.confidence_score || 0) >= 0.5) ? (matchData.top_activity_id || null) : null,
             confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
             confidenceBand: matchData.confidence_band || 'low',
             time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
@@ -671,7 +671,7 @@ function App() {
                     discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
                     tag: resolveTag(event, matchData),
                     start: event.event_date || "-", finish: "-",
-                    linkedActivityId: matchData.top_activity_id || null,
+                    linkedActivityId: (matchData.confidence_band !== "low" && (matchData.confidence_score || 0) >= 0.5) ? (matchData.top_activity_id || null) : null,
                     confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
                     confidenceBand: matchData.confidence_band || 'low',
                     time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })

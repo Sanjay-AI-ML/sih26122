@@ -39,16 +39,16 @@ export const RecordDetailScreen: React.FC = () => {
 
   const handleOpenScheduleMatchModal = (candidateIndex?: number) => {
     setActiveScheduleItem(item);
-    if (typeof candidateIndex === 'number' && item.candidates[candidateIndex]) {
+    if (typeof candidateIndex === 'number' && item.candidates && item.candidates[candidateIndex]) {
       setSelectedCandidate(item.candidates[candidateIndex]);
-    } else if (item.candidates.length > 0) {
+    } else if (item.candidates && item.candidates.length > 0) {
       setSelectedCandidate(item.candidates[0]);
     }
     setIsScheduleModalOpen(true);
   };
 
   const handleConfirmCandidateMatch = () => {
-    const candidate = item.candidates[selectedCandidateIndex] || item.candidates[0];
+    const candidate = (item.candidates && (item.candidates[selectedCandidateIndex] || item.candidates[0])) || null;
     if (candidate) {
       confirmScheduleMatch(item.id, candidate);
       navigate('/');
@@ -275,7 +275,7 @@ export const RecordDetailScreen: React.FC = () => {
                 {t('scheduleMatchCandidates')}
               </h3>
               <div className="flex flex-col gap-2.5">
-                {item.candidates.map((cand, idx) => {
+                {(item.candidates || []).map((cand, idx) => {
                   const isSelected = selectedCandidateIndex === idx;
                   const isRecommended = cand.isRecommended;
 
