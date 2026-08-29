@@ -25,7 +25,7 @@ const SAMPLE_CRITICAL_PATH = [
 ];
 
 export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, onClose }) => {
-  const { setIsExportModalOpen, items } = useReviewQueue();
+  const { setIsExportModalOpen, items, isDarkMode } = useReviewQueue();
   const [searchQuery, setSearchQuery] = React.useState("");
 
   if (!isOpen) return null;
@@ -84,14 +84,14 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
   );
 
   return (
-    <div className="fixed inset-0 z-[150] bg-gray-50/95 backdrop-blur-sm flex justify-center overflow-y-auto">
+    <div className={"fixed inset-0 z-[150] flex justify-center overflow-y-auto transition-colors " + (isDarkMode ? "bg-slate-950/90 backdrop-blur-md text-white" : "bg-gray-50/95 backdrop-blur-sm text-gray-900")}>
       <div className="w-full max-w-7xl mx-auto p-8 pb-32 animate-fade-in mt-10">
         
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <div>
-            <h1 className="text-2xl font-bold text-[#1a237e] mb-1">Delay & Risk Analytics</h1>
-            <p className="text-gray-500 text-sm">Real-time variance, discipline bottlenecks, and critical path risk Discovery</p>
+            <h1 className={"text-2xl font-bold mb-1 " + (isDarkMode ? "text-white" : "text-[#1a237e]")}>Delay & Risk Analytics</h1>
+            <p className={"text-sm " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Real-time variance, discipline bottlenecks, and critical path risk Discovery</p>
           </div>
           <div className="flex gap-4">
             <button 
@@ -100,7 +100,7 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
             >
               <Download className="w-4 h-4" /> Export Report
             </button>
-            <button onClick={onClose} className="p-2 bg-white border border-gray-200 rounded-md hover:bg-gray-100 transition-colors cursor-pointer">
+            <button onClick={onClose} className={"p-2 rounded-md transition-colors cursor-pointer border " + (isDarkMode ? "bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700" : "bg-white border-gray-200 text-gray-600 hover:bg-gray-100")}>
               <X className="w-5 h-5 text-gray-600" />
             </button>
           </div>
@@ -108,9 +108,9 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
 
         {/* 4 Top KPI Cards */}
         <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+          <div className={"p-5 rounded-lg border shadow-sm transition-colors " + (isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200")}>
             <div className="flex justify-between items-start mb-2">
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Cumulative Schedule Variance</span>
+              <span className={"text-[10px] font-bold uppercase tracking-wider " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Cumulative Schedule Variance</span>
               <div className="p-1.5 bg-red-50 rounded-md">
                 <TrendingDown className="w-4 h-4 text-red-500" />
               </div>
@@ -118,40 +118,40 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
             <div className="text-2xl font-bold text-red-600">
               {scheduleVariance} Days
             </div>
-            <p className="text-[11px] text-gray-500 mt-1 font-medium">Critical Path Delay</p>
+            <p className={"text-[11px] mt-1 font-medium " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Critical Path Delay</p>
           </div>
           
-          <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+          <div className={"p-5 rounded-lg border shadow-sm transition-colors " + (isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200")}>
             <div className="flex justify-between items-start mb-2">
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Active Bottlenecks</span>
+              <span className={"text-[10px] font-bold uppercase tracking-wider " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Active Bottlenecks</span>
               <div className="p-1.5 bg-amber-50 rounded-md">
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
               </div>
             </div>
             <div className="text-2xl font-bold text-amber-500">{bottleneckCount}</div>
-            <p className="text-[11px] text-gray-500 mt-1 font-medium">Reported in Field Logs</p>
+            <p className={"text-[11px] mt-1 font-medium " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Reported in Field Logs</p>
           </div>
 
-          <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+          <div className={"p-5 rounded-lg border shadow-sm transition-colors " + (isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200")}>
             <div className="flex justify-between items-start mb-2">
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Predicted Risk Level</span>
+              <span className={"text-[10px] font-bold uppercase tracking-wider " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Predicted Risk Level</span>
               <div className={`p-1.5 ${riskBg} rounded-md`}>
                 <Activity className={`w-4 h-4 ${riskColor}`} />
               </div>
             </div>
             <div className={`text-2xl font-bold ${riskColor}`}>{riskLevel}</div>
-            <p className="text-[11px] text-gray-500 mt-1 font-medium">Requires Mitigation</p>
+            <p className={"text-[11px] mt-1 font-medium " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Requires Mitigation</p>
           </div>
 
-          <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+          <div className={"p-5 rounded-lg border shadow-sm transition-colors " + (isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200")}>
             <div className="flex justify-between items-start mb-2">
-              <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">AI Match Confidence</span>
+              <span className={"text-[10px] font-bold uppercase tracking-wider " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>AI Match Confidence</span>
               <div className="p-1.5 bg-green-50 rounded-md">
                 <BrainCircuit className="w-4 h-4 text-green-500" />
               </div>
             </div>
             <div className="text-2xl font-bold text-green-600">{avgConfidence}%</div>
-            <p className="text-[11px] text-gray-500 mt-1 font-medium">Calibrated Cosine Score</p>
+            <p className={"text-[11px] mt-1 font-medium " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Calibrated Cosine Score</p>
           </div>
         </div>
 
@@ -159,13 +159,13 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
         <div className="grid grid-cols-2 gap-8 mb-8">
           
           {/* Delay by Discipline */}
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div className={"p-6 rounded-lg border shadow-sm transition-colors " + (isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200")}>
             <div className="flex justify-between items-center mb-6">
               <div>
-                <h2 className="text-lg font-bold text-[#1a237e]">Delay by Discipline</h2>
-                <p className="text-xs text-gray-500">Cumulative variance across engineering packages</p>
+                <h2 className={"text-lg font-bold " + (isDarkMode ? "text-white" : "text-[#1a237e]")}>Delay by Discipline</h2>
+                <p className={"text-xs " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Cumulative variance across engineering packages</p>
               </div>
-              <span className="text-[10px] font-mono font-bold bg-blue-50 text-[#1a237e] px-2 py-1 rounded">P6 Baseline Comparison</span>
+              <span className={"text-[10px] font-mono font-bold px-2 py-1 rounded " + (isDarkMode ? "bg-slate-900 text-amber-400 border border-slate-700" : "bg-blue-50 text-[#1a237e]")}>P6 Baseline Comparison</span>
             </div>
             <div className="flex flex-col gap-4">
               {[
@@ -180,10 +180,10 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
                 return (
                   <div key={disc}>
                     <div className="flex justify-between mb-1">
-                      <span className="text-sm font-semibold text-gray-800">{disc}</span>
-                      <span className="text-sm font-bold text-gray-900">{delay} days delay</span>
+                      <span className={"text-sm font-semibold " + (isDarkMode ? "text-slate-200" : "text-gray-800")}>{disc}</span>
+                      <span className={"text-sm font-bold " + (isDarkMode ? "text-white" : "text-gray-900")}>{delay} days delay</span>
                     </div>
-                    <div className="w-full bg-gray-100 rounded-full h-2.5">
+                    <div className={"w-full rounded-full h-2.5 " + (isDarkMode ? "bg-slate-700" : "bg-gray-100")}>
                       <div className={`${color} h-2.5 rounded-full transition-all duration-1000`} style={{ width: `${Math.max(pct, 12)}%` }}></div>
                     </div>
                   </div>
@@ -193,22 +193,22 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
           </div>
 
           {/* Top Bottlenecks */}
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div className={"p-6 rounded-lg border shadow-sm transition-colors " + (isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200")}>
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5 text-amber-500" />
-                <h2 className="text-lg font-bold text-[#1a237e]">Top Reported Bottlenecks</h2>
+                <h2 className={"text-lg font-bold " + (isDarkMode ? "text-white" : "text-[#1a237e]")}>Top Reported Bottlenecks</h2>
               </div>
               <span className="text-xs text-gray-500 font-medium">Real-Time Field Memos</span>
             </div>
             <div className="flex flex-col gap-3">
               {activeBottlenecksList.slice(0, 4).map((item, idx) => (
-                <div key={item.id || idx} className="bg-gray-50 p-4 rounded-md border border-gray-200 flex items-start gap-3.5 transition-all hover:-translate-y-0.5 hover:shadow-sm cursor-default">
+                <div key={item.id || idx} className={"p-4 rounded-md border flex items-start gap-3.5 transition-all hover:-translate-y-0.5 hover:shadow-sm cursor-default " + (isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-gray-50 border-gray-200")}>
                   <div className="w-6 h-6 bg-[#1a237e] text-white rounded-md flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">{idx + 1}</div>
                   <div className="flex flex-col flex-1">
-                    <span className="text-sm font-bold text-gray-900">{item.reason}</span>
+                    <span className={"text-sm font-bold " + (isDarkMode ? "text-white" : "text-gray-900")}>{item.reason}</span>
                     <div className="flex items-center justify-between mt-1">
-                      <span className="text-[11px] font-semibold text-[#1a237e]">{item.activity}</span>
+                      <span className={"text-[11px] font-semibold " + (isDarkMode ? "text-sky-400" : "text-[#1a237e]")}>{item.activity}</span>
                       <span className="text-[10px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded">{item.discipline}</span>
                     </div>
                   </div>
@@ -219,11 +219,11 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
         </div>
 
         {/* Critical Path Risk Table */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-12">
-          <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+        <div className={"rounded-lg border shadow-sm overflow-hidden mb-12 transition-colors " + (isDarkMode ? "bg-slate-800 border-slate-700 text-white" : "bg-white border-gray-200")}>
+          <div className={"p-6 border-b flex justify-between items-center " + (isDarkMode ? "border-slate-700 bg-slate-800" : "border-gray-100 bg-white")}>
             <div>
-              <h2 className="text-lg font-bold text-[#1a237e]">Critical Path Risk Analysis</h2>
-              <p className="text-xs text-gray-500">Predicted delay probability and proactive mitigation status</p>
+              <h2 className={"text-lg font-bold " + (isDarkMode ? "text-white" : "text-[#1a237e]")}>Critical Path Risk Analysis</h2>
+              <p className={"text-xs " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Predicted delay probability and proactive mitigation status</p>
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -232,18 +232,18 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search WBS Node or Activity..." 
-                className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-[#1a237e] w-64"
+                className={"pl-9 pr-4 py-2 rounded-md text-sm focus:outline-none w-64 transition-colors " + (isDarkMode ? "bg-slate-900 border-slate-700 text-white placeholder-slate-400 focus:ring-amber-400" : "bg-gray-50 border-gray-200 text-gray-900 focus:ring-[#1a237e]")}
               />
             </div>
           </div>
           <table className="w-full text-left">
-            <thead className="bg-gray-50/50 border-b border-gray-100">
+            <thead className={"border-b " + (isDarkMode ? "bg-slate-900/90 border-slate-700 text-slate-300" : "bg-gray-50/50 border-gray-100 text-gray-500")}>
               <tr>
-                <th className="py-3 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-wider">WBS Node</th>
-                <th className="py-3 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Activity Name</th>
-                <th className="py-3 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Discipline</th>
-                <th className="py-3 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-wider">AI Risk Prediction</th>
-                <th className="py-3 px-6 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Mitigation Status</th>
+                <th className={"py-3 px-6 text-[10px] font-bold uppercase tracking-wider " + (isDarkMode ? "text-slate-300" : "text-gray-500")}>WBS Node</th>
+                <th className={"py-3 px-6 text-[10px] font-bold uppercase tracking-wider " + (isDarkMode ? "text-slate-300" : "text-gray-500")}>Activity Name</th>
+                <th className={"py-3 px-6 text-[10px] font-bold uppercase tracking-wider " + (isDarkMode ? "text-slate-300" : "text-gray-500")}>Discipline</th>
+                <th className={"py-3 px-6 text-[10px] font-bold uppercase tracking-wider " + (isDarkMode ? "text-slate-300" : "text-gray-500")}>AI Risk Prediction</th>
+                <th className={"py-3 px-6 text-[10px] font-bold uppercase tracking-wider " + (isDarkMode ? "text-slate-300" : "text-gray-500")}>Mitigation Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -260,11 +260,11 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
                 }
 
                 return (
-                  <tr key={idx} className="hover:bg-gray-50/80 transition-colors">
-                    <td className="px-6 py-4 text-sm font-mono font-bold text-[#1a237e]">{item.node}</td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-800">{item.name}</td>
+                  <tr key={idx} className={"transition-colors border-b " + (isDarkMode ? "hover:bg-slate-700/60 border-slate-700" : "hover:bg-gray-50/80 border-gray-100")}>
+                    <td className={"px-6 py-4 text-sm font-mono font-bold " + (isDarkMode ? "text-sky-400" : "text-[#1a237e]")}>{item.node}</td>
+                    <td className={"px-6 py-4 text-sm font-semibold " + (isDarkMode ? "text-slate-200" : "text-gray-800")}>{item.name}</td>
                     <td className="px-6 py-4 text-sm">
-                      <span className="px-2.5 py-1 rounded text-xs font-semibold bg-gray-100 text-gray-700">
+                      <span className={"px-2.5 py-1 rounded text-xs font-semibold " + (isDarkMode ? "bg-slate-900 text-slate-200 border border-slate-700" : "bg-gray-100 text-gray-700")}>
                         {item.discipline}
                       </span>
                     </td>
@@ -273,7 +273,7 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
                         {icon} {item.riskPct}% Delay Risk
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-700">{item.status}</td>
+                    <td className={"px-6 py-4 text-sm font-medium " + (isDarkMode ? "text-slate-300" : "text-gray-700")}>{item.status}</td>
                   </tr>
                 );
               })}
