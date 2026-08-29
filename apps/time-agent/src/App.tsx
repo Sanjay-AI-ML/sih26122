@@ -1,19 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-function OilIndiaLogo({ className = "w-7 h-7" }: { className?: string }) {
+function AgentIcon({ className = "w-8 h-8" }: { className?: string }) {
   return (
-    <div className={"flex items-center justify-center bg-white rounded-lg p-1 border border-stone-200 shadow-sm shrink-0 " + className}>
-      <svg viewBox="0 0 100 110" className="w-full h-full" fill="none">
-        {/* Red vertical bar */}
-        <rect x="38" y="48" width="24" height="42" fill="#DA251C" rx="2" />
-        {/* Black ring */}
-        <path
-          fillRule="evenodd"
-          clipRule="evenodd"
-          d="M50 12C68 12 82 23.5 82 37.5C82 51.5 68 63 50 63C32 63 18 51.5 18 37.5C18 23.5 32 12 50 12ZM50 24.5C41.2 24.5 34 30.3 34 37.5C34 44.7 41.2 50.5 50 50.5C58.8 50.5 66 44.7 66 37.5C66 30.3 58.8 24.5 50 24.5Z"
-          fill="#231F20"
-        />
-      </svg>
+    <div className={"flex items-center justify-center bg-slate-900 text-white rounded-xl shadow-xs shrink-0 " + className}>
+      <span className="material-symbols-outlined text-lg">bolt</span>
     </div>
   );
 }
@@ -84,11 +74,12 @@ const i18n: any = {
     "switchShift": "Switch Shift",
     "noApprovedRecs": "No approved records yet. Send a progress update to get started!",
     "profileName": "S. Gogoi",
-    "profileDetails": "Piping • Shift {shift} • Oil India Ltd.",
+    "profileDetails": "Field Progress Capture • Shift {shift}",
+    "headerSubtitle": "Field Progress Capture",
     "shift": "SHIFT",
     "highContrast": "High Contrast",
     "normal": "Normal",
-    "shiftSwitchedTo": "Shift switched to {shift}. Active on Piping · Shift {shift} · Oil India Ltd.",
+    "shiftSwitchedTo": "Shift switched to {shift}.",
     "noMatch": "No match",
     "noMatchFound": "No schedule match found",
     "offlineQueuedMsg": "Offline Mode: Saved field report to local sync queue.",
@@ -161,11 +152,12 @@ const i18n: any = {
     "switchShift": "शिफ्ट बदलें",
     "noApprovedRecs": "अभी तक कोई स्वीकृत रिकॉर्ड नहीं। प्रगति अपडेट भेजें!",
     "profileName": "एस. गोगोई",
-    "profileDetails": "पाइपिंग • शिफ्ट {shift} • ऑयल इंडिया लिमिटेड",
+    "profileDetails": "फ़ील्ड प्रगति कैप्चर • शिफ्ट {shift}",
+    "headerSubtitle": "फ़ील्ड प्रगति कैप्चर",
     "shift": "शिफ्ट",
     "highContrast": "उच्च कंट्रास्ट",
     "normal": "सामान्य",
-    "shiftSwitchedTo": "शिफ्ट {shift} में बदल गया। अब आप पाइपिंग · शिफ्ट {shift} · ऑयल इंडिया लिमिटेड पर हैं।",
+    "shiftSwitchedTo": "शिफ्ट {shift} में बदल गया।",
     "noMatch": "कोई मिलान नहीं",
     "noMatchFound": "कोई शेड्यूल मैच नहीं मिला",
     "offlineQueuedMsg": "ऑफ़लाइन मोड: स्थानीय सिंक कतार में फ़ील्ड रिपोर्ट सहेजी गई।",
@@ -698,15 +690,11 @@ export default function App() {
     return (
       <div className="w-full min-h-screen bg-slate-900 flex justify-center items-center p-4">
         <div className="flex flex-col items-center justify-center w-full max-w-sm bg-white rounded-2xl shadow-2xl p-8 gap-6 border border-slate-100 animate-slide-up">
-          <OilIndiaLogo className="w-20 h-20 shadow-md" />
+          <AgentIcon className="w-16 h-16 shadow-md" />
           <div className="text-center">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-800 text-[11px] font-semibold mb-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-              OIL INDIA LIMITED
-            </div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Time Agent</h1>
             <p className="text-xs text-slate-500 mt-1.5 leading-relaxed">
-              Intelligent Field Execution Progress & Time Capture System
+              Intelligent Field Execution Progress Capture
             </p>
           </div>
           <button 
@@ -728,13 +716,10 @@ export default function App() {
       {/* ── HEADER ────────────────────────────────────────────────────────── */}
       <header className="h-16 bg-white/95 backdrop-blur-md border-b border-slate-200/80 flex items-center justify-between px-4 shrink-0 z-20 shadow-xs">
         <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setScreen("home")}>
-          <OilIndiaLogo className="w-9 h-9 transition-transform group-hover:scale-105" />
+          <AgentIcon className="w-9 h-9 transition-transform group-hover:scale-105" />
           <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-sm text-slate-900 tracking-tight">{t("timeAgent")}</span>
-              <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-1.5 py-0.2 rounded-md">OIL</span>
-            </div>
-            <span className="text-[11px] text-slate-500 leading-tight">{tf("profileDetails", { shift })}</span>
+            <span className="font-bold text-sm text-slate-900 tracking-tight">{t("timeAgent")}</span>
+            <span className="text-[11px] text-slate-500 leading-tight">{t("headerSubtitle")}</span>
           </div>
         </div>
 
@@ -1069,7 +1054,7 @@ export default function App() {
           <div className="w-full sm:w-96 bg-white h-full z-50 flex flex-col shadow-2xl animate-slide-up" onClick={e => e.stopPropagation()}>
             <div className="h-16 border-b border-slate-200 px-5 flex items-center justify-between bg-slate-50/60">
               <div className="flex items-center gap-2.5">
-                <OilIndiaLogo className="w-7 h-7" />
+                <AgentIcon className="w-7 h-7" />
                 <h2 className="font-bold text-sm text-slate-900">{t("settingsTitle")}</h2>
               </div>
               <button onClick={() => setScreen("home")} className="p-1 text-slate-400 hover:text-slate-800 cursor-pointer">
@@ -1130,7 +1115,7 @@ export default function App() {
             <div className="w-10 h-1 bg-slate-300 rounded-full mx-auto"></div>
             
             <div className="flex items-center gap-3.5 pb-3 border-b border-slate-100">
-              <OilIndiaLogo className="w-12 h-12" />
+              <AgentIcon className="w-12 h-12 text-2xl" />
               <div>
                 <div className="font-bold text-sm text-slate-900">{t("profileName")}</div>
                 <div className="text-xs text-slate-500">{tf("profileDetails", { shift })}</div>
