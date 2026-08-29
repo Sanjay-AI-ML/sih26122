@@ -1,4 +1,4 @@
-# Setu — SIH26122
+# SAMANWAY — SIH26122
 
 **Intelligent Data Capture & Schedule-Linking Layer for Infrastructure Project Management**
 Problem Statement: SIH26122 · Organization: Oil India Limited · Category: Software · Theme: Smart Automation
