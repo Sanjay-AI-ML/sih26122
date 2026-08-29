@@ -748,20 +748,20 @@ function App() {
             <div className={"border-b px-3 py-1.5 flex items-center justify-between shrink-0 transition-colors " + (isDarkMode ? "bg-slate-850 border-slate-800 text-slate-200" : "bg-[#fbf9f8] border-[#CCCCCC] text-[#666666]")}>
               <div className="flex gap-1">
                 {([["xs", t("fontSmall")], ["sm", t("fontNormal")], ["base", t("fontLarge")]] as [string,string][]).map(([sentinel, label]) => (
-                  <button key={sentinel} onClick={() => setTextSize(sentinel as "xs"|"sm"|"base")} className={"px-2 py-0.5 border border-[#CCCCCC] rounded text-xs " + (textSize === sentinel ? "bg-[#eae8e7] font-bold" : "bg-white")}>
+                  <button key={sentinel} onClick={() => setTextSize(sentinel as "xs"|"sm"|"base")} className={"px-2 py-0.5 border rounded text-xs transition-colors " + (textSize === sentinel ? (isDarkMode ? "bg-amber-400 text-black font-bold border-amber-400" : "bg-[#eae8e7] text-black font-bold border-gray-400") : (isDarkMode ? "bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700" : "bg-white text-gray-700 border-gray-300"))}>
                     {label}
                   </button>
                 ))}
               </div>
               <div className="flex items-center gap-3">
                 <button onClick={() => setIsDarkMode(!isDarkMode)} className={"px-2 py-0.5 border rounded text-xs flex items-center gap-1 cursor-pointer transition-colors " + (isDarkMode ? "bg-slate-700 border-slate-600 text-amber-400 font-bold" : "bg-white border-gray-300 text-gray-700")} title="Toggle Dark Mode"><span className="material-symbols-outlined text-sm">{isDarkMode ? "dark_mode" : "light_mode"}</span><span>{isDarkMode ? "Dark" : "Light"}</span></button>
-                <label className="flex items-center gap-1 text-xs text-[#666666] cursor-pointer">
+                <label className={"flex items-center gap-1 text-xs cursor-pointer " + (isDarkMode ? "text-slate-200" : "text-[#666666]")}>
                   <span>{t("highContrast")}</span>
                   <input type="checkbox" checked={highContrast} onChange={e => setHighContrast(e.target.checked)} className="cursor-pointer" />
                 </label>
                 <div className="flex border border-[#CCCCCC] rounded overflow-hidden">
-                  <button onClick={() => setLanguage("EN")} className={"px-2 py-0.5 text-xs " + (language === "EN" ? "bg-[#eae8e7] font-bold" : "bg-white")}>EN</button>
-                  <button onClick={() => setLanguage("HI")} className={"px-2 py-0.5 text-xs " + (language === "HI" ? "bg-[#eae8e7] font-bold" : "bg-white")}>हिन्दी</button>
+                  <button onClick={() => setLanguage("EN")} className={"px-2 py-0.5 text-xs transition-colors " + (language === "EN" ? (isDarkMode ? "bg-amber-400 text-black font-bold" : "bg-[#eae8e7] text-black font-bold") : (isDarkMode ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-white text-gray-700"))}>EN</button>
+                  <button onClick={() => setLanguage("HI")} className={"px-2 py-0.5 text-xs transition-colors " + (language === "HI" ? (isDarkMode ? "bg-amber-400 text-black font-bold" : "bg-[#eae8e7] text-black font-bold") : (isDarkMode ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-white text-gray-700"))}>हिन्दी</button>
                 </div>
               </div>
             </div>
@@ -828,20 +828,20 @@ function App() {
                   if (m.type === "bot") {
                     return (
                       <div key={m.id} className="self-start max-w-[85%]">
-                        <div className="bg-[#f6f3f2] border border-[#CCCCCC] p-3 rounded-lg text-xs text-black">
+                        <div className={"p-3 rounded-lg text-xs transition-colors " + (isDarkMode ? "bg-slate-800 border border-slate-700 text-slate-100 shadow-md" : "bg-[#f6f3f2] border border-[#CCCCCC] text-black")}>
                           {m.vars ? tf(m.text, m.vars) : (i18n["EN"][m.text] ? t(m.text) : m.text)}
                         </div>
-                        <span className="text-[9px] text-[#666666] ml-1">{m.time}</span>
+                        <span className={"text-[9px] ml-1 " + (isDarkMode ? "text-slate-400" : "text-[#666666]")}>{m.time}</span>
                       </div>
                     );
                   }
                   if (m.type === "user") {
                     return (
                       <div key={m.id} className="self-end max-w-[85%]">
-                        <div className="bg-[#1b1b1b] text-white p-3 rounded-lg text-xs">
+                        <div className={"p-3 rounded-lg text-xs transition-colors " + (isDarkMode ? "bg-amber-400 text-slate-950 font-semibold shadow-md" : "bg-[#1b1b1b] text-white")}>
                           {m.vars ? tf(m.text, m.vars) : (i18n["EN"][m.text] ? t(m.text) : m.text)}
                         </div>
-                        <span className="text-[9px] text-[#666666] mr-1 text-right block">{m.time}</span>
+                        <span className={"text-[9px] mr-1 text-right block " + (isDarkMode ? "text-slate-400" : "text-[#666666]")}>{m.time}</span>
                       </div>
                     );
                   }
@@ -866,16 +866,16 @@ function App() {
                             <span className="text-[#666666] italic">{t("transcribed")}</span>
                           </div>
                         </div>
-                        <span className="text-[9px] text-[#666666] mr-1 text-right block">{m.time}</span>
+                        <span className={"text-[9px] mr-1 text-right block " + (isDarkMode ? "text-slate-400" : "text-[#666666]")}>{m.time}</span>
                       </div>
                     );
                   }
                   if (m.type === "card") {
                     return (
                       <div key={m.id} className="self-start w-full max-w-md">
-                        <div className="bg-white border border-[#CCCCCC] border-l-4 border-l-[#51A71D] rounded-lg shadow-sm overflow-hidden">
-                          <div className="bg-[#f6f3f2] px-3 py-2 border-b border-[#CCCCCC] flex justify-between items-center">
-                            <span className="font-bold text-xs text-black">{t("structured")}</span>
+                        <div className={"border border-l-4 border-l-[#51A71D] rounded-lg shadow-sm overflow-hidden transition-colors " + (isDarkMode ? "bg-slate-800 border-slate-700 text-slate-100" : "bg-white border-[#CCCCCC]")}>
+                          <div className={"px-3 py-2 border-b flex justify-between items-center " + (isDarkMode ? "bg-slate-900 border-slate-700 text-white" : "bg-[#f6f3f2] border-[#CCCCCC]")}>
+                            <span className={"font-bold text-xs " + (isDarkMode ? "text-white" : "text-black")}>{t("structured")}</span>
                             <span className="bg-[#51A71D]/15 text-[#51A71D] text-[9px] font-bold px-2 py-0.5 rounded">
                               {m.confidenceScore}% - {t(m.confidenceBand?.toLowerCase() || 'low')}
                             </span>
@@ -897,7 +897,7 @@ function App() {
                             <span className="material-symbols-outlined text-sm">chevron_right</span>
                           </div>
                         </div>
-                        <span className="text-[9px] text-[#666666] ml-1">{m.time}</span>
+                        <span className={"text-[9px] ml-1 " + (isDarkMode ? "text-slate-400" : "text-[#666666]")}>{m.time}</span>
                       </div>
                     );
                   }
