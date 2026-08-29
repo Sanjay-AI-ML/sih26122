@@ -200,6 +200,7 @@ function App() {
       const [screen, setScreen] = useState("home");
       const [isOffline, setIsOffline] = useState(false);
       const [highContrast, setHighContrast] = useState(false);
+        const [isDarkMode, setIsDarkMode] = useState(true);
       // "xs" = A-,  "sm" = Normal,  "base" = A+
       const [textSize, setTextSize] = useState<"xs"|"sm"|"base">("sm");
       const [language, setLanguage] = useState("EN");
@@ -715,7 +716,7 @@ function App() {
       }
 
       return (
-        <div className={"flex flex-col h-screen w-screen " + (highContrast ? "contrast-125 " : "") + (textSize === "xs" ? "text-xs" : textSize === "base" ? "text-base" : "text-sm")}>
+        <div className={"flex flex-col h-screen w-screen transition-colors duration-200 " + (isDarkMode ? "bg-slate-900 text-slate-100 " : "bg-[#fbf9f8] text-[#1b1c1c] ") + (highContrast ? "contrast-125 " : "") + (textSize === "xs" ? "text-xs" : textSize === "base" ? "text-base" : "text-sm")}>
           {/* Header */}
           <header className="h-14 bg-white border-b border-[#CCCCCC] flex items-center justify-between px-3 shrink-0 z-20 shadow-sm">
             <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => setScreen("home")}>
@@ -753,6 +754,7 @@ function App() {
                 ))}
               </div>
               <div className="flex items-center gap-3">
+                <button onClick={() => setIsDarkMode(!isDarkMode)} className={"px-2 py-0.5 border rounded text-xs flex items-center gap-1 cursor-pointer transition-colors " + (isDarkMode ? "bg-slate-700 border-slate-600 text-amber-400 font-bold" : "bg-white border-gray-300 text-gray-700")} title="Toggle Dark Mode"><span className="material-symbols-outlined text-sm">{isDarkMode ? "dark_mode" : "light_mode"}</span><span>{isDarkMode ? "Dark" : "Light"}</span></button>
                 <label className="flex items-center gap-1 text-xs text-[#666666] cursor-pointer">
                   <span>{t("highContrast")}</span>
                   <input type="checkbox" checked={highContrast} onChange={e => setHighContrast(e.target.checked)} className="cursor-pointer" />
