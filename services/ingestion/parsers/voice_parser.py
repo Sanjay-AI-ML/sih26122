@@ -50,4 +50,22 @@ class VoiceParser:
             ev_dict["input_format"] = InputFormatEnum.VOICE
             voice_events.append(ExtractedEvent(**ev_dict))
 
+        if not voice_events and transcript.strip():
+            voice_events.append(ExtractedEvent(
+                activity_phrase=f"Voice update: {transcript.strip()[:80]}",
+                discipline=DisciplineEnum.PIPING,
+                tag_or_line_id=None,
+                location=None,
+                event_type=EventTypeEnum.UNSPECIFIED,
+                event_date=default_date or date.today().isoformat(),
+                quantity=None,
+                unit=None,
+                contractor=None,
+                delay_reason=None,
+                source_document=source_document,
+                source_excerpt=transcript.strip(),
+                input_format=InputFormatEnum.VOICE,
+                raw_confidence_hint=0.40
+            ))
+
         return voice_events

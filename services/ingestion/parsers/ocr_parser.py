@@ -63,9 +63,11 @@ class OCRParser:
         reader = self._get_ocr_reader()
 
         if reader is None:
-            raise RuntimeError(
-                "No OCR engine available. Install easyocr (`pip install easyocr`) "
-                "or pytesseract (`pip install pytesseract`) and ensure Tesseract is on PATH."
+            from services.ingestion.parsers.scan_parser import ScanParser
+            return ScanParser().parse(
+                file_input=image_input,
+                filename=filename,
+                default_date=default_date
             )
 
         extracted_text = ""

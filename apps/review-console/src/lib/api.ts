@@ -167,3 +167,44 @@ export async function removeFromQueue(queueId: string): Promise<void> {
   const res = await fetch(`${WRITE}/queue/${queueId}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(`Failed to delete from queue: ${res.status}`);
 }
+
+// ── Institutional Memory RAG ──────────────────────────────────
+export interface MemoryCitation {
+  activity_id: string;
+  discipline: string;
+  event_date: string;
+  excerpt: string;
+  tag: string;
+  contractor: string;
+  delay_reason?: string | null;
+  status: string;
+  source_document: string;
+}
+
+export interface MemoryQueryResponse {
+  query: string;
+  answer: string;
+  citations: MemoryCitation[];
+  total_matches: number;
+  stats?: AnalyticsStats;
+}
+
+export interface MemoryQueryMessage {
+  role: 'user' | 'ai';
+  content: string;
+}
+
+export async function queryInstitutionalMemory(
+  query: string,
+  discipline?: string,
+  history?: MemoryQueryMessage[]
+): Promise<MemoryQueryResponse> {
+  const res = await fetch(`${ANALYT}/analytics/memory/query`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query, discipline, history })
+  });
+  if (!res.ok) throw new Error(`Memory query failed: ${res.status}`);
+  return res.json();
+}
+

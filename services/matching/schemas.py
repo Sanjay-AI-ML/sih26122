@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
 # We import the shared schema from the ingestion layer
@@ -35,3 +35,13 @@ class MatchResult(BaseModel):
     confidence_band: ConfidenceBand
     is_ambiguous: bool
     ambiguity_reason: Optional[str] = None
+
+    # ── XGBoost Stage 5 Output Fields ─────────────────────────────────────────
+    # routing:
+    #   "auto_approve" → Model is confident enough to bypass human review
+    #   "auto_reject"  → Model is confident this is a wrong match
+    #   "needs_human"  → Genuinely ambiguous, route to planner queue
+    xgb_routing: Optional[str] = None
+    xgb_approval_probability: Optional[float] = None
+    xgb_explanation: Optional[Dict[str, str]] = None
+    xgb_model_active: Optional[bool] = None

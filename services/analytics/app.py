@@ -33,6 +33,28 @@ def get_stats():
         "daily_trend": trend,
     }
 
+from pydantic import BaseModel
+from typing import Optional, List, Dict, Any
+
+class MemoryQueryRequest(BaseModel):
+    query: str
+    discipline: Optional[str] = None
+    history: Optional[List[Dict[str, Any]]] = None
+
+@app.post("/analytics/memory/query")
+def query_memory_endpoint(payload: MemoryQueryRequest):
+    """Answers planner questions using DuckDB RAG over institutional memory."""
+    return analytics_engine.query_institutional_memory(
+        query=payload.query,
+        discipline=payload.discipline,
+        history=payload.history
+    )
+
+@app.get("/analytics/memory/query")
+def query_memory_get_endpoint(q: str, discipline: Optional[str] = None):
+    """GET query endpoint for fast browser / curl probing."""
+    return analytics_engine.query_institutional_memory(query=q, discipline=discipline)
+
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}

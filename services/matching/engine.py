@@ -6,15 +6,17 @@ from services.matching.schemas import (
     Candidate, MatchResult, ConfidenceBand, ScheduleActivity
 )
 from services.matching.vector_store import vector_store
+from services.matching.xgb_classifier import xgb_classifier
 
 
 class MatchingEngine:
     """
-    4-Stage Matching Pipeline:
+    5-Stage Matching Pipeline:
     1. Deterministic Hard Filter (Discipline & Tag)
-    2. Semantic Vector Search
+    2. Semantic Vector Search (FAISS all-MiniLM-L6-v2)
     3. Calibrated Confidence Scoring
     4. Ambiguity Detection
+    5. XGBoost Human Intervention Eliminator
     """
 
     @staticmethod
@@ -118,14 +120,49 @@ class MatchingEngine:
         else:
             band = ConfidenceBand.HIGH
 
+        # ── Stage 5: XGBoost Human Intervention Eliminator ───────────────────
+        # After FAISS + RapidFuzz gives us a 0–1 confidence score, the XGBoost
+        # model evaluates 11 signals simultaneously to decide:
+        #   → auto_approve : high probability match, no human needed
+        #   → auto_reject  : low probability match, no human needed
+        #   → needs_human  : genuinely ambiguous, route to planner queue
+        #
+        # This stage dramatically shrinks the human review queue by resolving
+        # medium-confidence (50–84%) matches that have strong contextual signals
+        # (e.g. tag historically approved 91%, discipline matches, quantity present).
+
+        # Extract tag fuzzy score for the top candidate (0–100 scale)
+        tag_fuzzy_score = 0.0
+        if event.tag_or_line_id and top_cand.tag:
+            tag_fuzzy_score = fuzz.partial_ratio(
+                event.tag_or_line_id.lower(), top_cand.tag.lower()
+            )
+
+        xgb_result = xgb_classifier.predict(
+            faiss_score         = top_cand.score,
+            tag_fuzzy_score     = tag_fuzzy_score,
+            discipline_match    = not is_ambiguous and band != ConfidenceBand.LOW,
+            quantity            = event.quantity,
+            delay_reason        = event.delay_reason,
+            contractor          = event.contractor,
+            activity_id         = top_cand.activity_id,
+            ambiguity_flag      = is_ambiguous,
+            source_excerpt      = event.source_excerpt,
+            date_proximity_days = 0,
+        )
+
         return MatchResult(
-            event=event,
-            top_activity_id=top_cand.activity_id,
-            candidates=top_candidates,
-            confidence_score=confidence_score,
-            confidence_band=band,
-            is_ambiguous=is_ambiguous,
-            ambiguity_reason=ambiguity_reason
+            event               = event,
+            top_activity_id     = top_cand.activity_id,
+            candidates          = top_candidates,
+            confidence_score    = confidence_score,
+            confidence_band     = band,
+            is_ambiguous        = is_ambiguous,
+            ambiguity_reason    = ambiguity_reason,
+            xgb_routing         = xgb_result["routing"],
+            xgb_approval_probability = xgb_result["xgb_approval_probability"],
+            xgb_explanation     = xgb_result["explanation"],
+            xgb_model_active    = xgb_result["model_active"],
         )
 
 # Expose a singleton instance for simplicity
