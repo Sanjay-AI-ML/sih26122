@@ -314,6 +314,10 @@ class LLMExtractor:
         Consolidates duplicate activities (e.g., 'spool erected' vs 'spol erected'),
         boosts confidence scores, and returns ONLY the best extraction to prevent conflicts.
 
+        CRITICAL: Groups by ACTIVITY NAME ONLY, not discipline.
+        If same activity has multiple discipline predictions, keeps HIGHEST CONFIDENCE.
+        This prevents conflicting discipline cards for the same activity.
+
         Uses LOCAL Claude Intelligence for final selection.
         """
         if not events:
@@ -331,24 +335,27 @@ class LLMExtractor:
             normalized = phrase.lower().strip()
             # Common typos and variations
             normalized = normalized.replace("spol ", "spool ")
+            normalized = normalized.replace("spol", "spool")
             normalized = re.sub(r'\s+', ' ', normalized)  # Collapse spaces
             return normalized
 
-        # Group events by normalized activity + discipline
-        groups: Dict[tuple, List[ExtractedEvent]] = {}
+        # Group events by NORMALIZED ACTIVITY NAME ONLY (not discipline!)
+        # This allows us to detect same activities with different discipline predictions
+        groups: Dict[str, List[ExtractedEvent]] = {}
         for event in events:
             norm_activity = normalize_activity(event.activity_phrase)
-            key = (norm_activity, event.discipline.value)
-            if key not in groups:
-                groups[key] = []
-            groups[key].append(event)
+            if norm_activity not in groups:
+                groups[norm_activity] = []
+            groups[norm_activity].append(event)
 
-        # For each group, select the highest confidence event
+        # For each activity, select the HIGHEST CONFIDENCE extraction
+        # (even if disciplines differ, keep the most confident one)
         best_events = []
-        for group in groups.values():
-            # Sort by confidence descending
-            sorted_group = sorted(group, key=lambda e: e.raw_confidence_hint, reverse=True)
+        for activity_events in groups.values():
+            # Sort by confidence descending - select BEST regardless of discipline
+            sorted_group = sorted(activity_events, key=lambda e: e.raw_confidence_hint, reverse=True)
             best = sorted_group[0]
+
             # Boost confidence by 20% (LOCAL Claude confidence boost)
             best.raw_confidence_hint = min(1.0, best.raw_confidence_hint * 1.20)
             best_events.append(best)
