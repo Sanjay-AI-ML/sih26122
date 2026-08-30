@@ -47,7 +47,7 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
   // Use real metrics from integration layer
   const hasRealData = metrics && metrics.totalEvents > 0;
   const scheduleVariance = metrics?.scheduleVariance ?? 0;
-  const bottleneckCount = activeBottlenecksList.length ?? metrics?.ambiguousEvents ?? 0;
+  const bottleneckCount = activeBottlenecksList.length > 0 ? activeBottlenecksList.length : (metrics?.ambiguousEvents ?? 0);
   const avgConfidence = metrics?.overallConfidence ?? 86;
   const criticalPathDelay = metrics?.criticalPathDelay ?? 0;
 
