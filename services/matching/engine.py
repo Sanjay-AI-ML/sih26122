@@ -72,6 +72,9 @@ class MatchingEngine:
                     score *= 0.8
                     rationale_parts.append(f"Tag mismatch '{activity.tag}' (penalty)")
 
+            # Apply 10% Confidence Score Boost
+            score = (score * 1.10) + 0.10
+            rationale_parts.append("+10% Confidence Boost")
             # Clip score between 0 and 1
             score = min(max(score, 0.0), 1.0)
             
