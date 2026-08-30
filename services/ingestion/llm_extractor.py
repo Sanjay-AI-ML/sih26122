@@ -27,12 +27,26 @@ from services.ingestion.rag_retriever import RAGRetriever
 
 EXTRACTION_SYSTEM_PROMPT = """You are an expert AI parser for Indian Oil & Gas and Infrastructure Project Management schedules.
 Extract structured field events from the given Daily Progress Report text.
+HANDLE SPELLING MISTAKES - "spol" = "spool", "errection" = "erection", etc. Normalize to standard terms.
 
-GLOSSARY (Resolve abbreviations using this):
+GLOSSARY (Resolve abbreviations and spelling mistakes):
 - T&C = Testing and Commissioning
 - L&T = Larsen & Toubro (Contractor)
 - Civil = Concrete, Earthworks, Foundations
 - HSE = Health, Safety, and Environment
+- PIPING ACTIVITIES: spool/spol erection, welding, joint inspection, hydro testing, alignment, fabrication
+- CIVIL ACTIVITIES: excavation, concreting, foundation, backfill, grout, pile driving
+- ELECTRICAL ACTIVITIES: cable pulling, cable laying, termination, testing
+- INSTRUMENTATION: transmitter calibration, pressure gauge, installation
+
+SPELLING VARIATIONS (Treat as IDENTICAL):
+- spool = spol = Spool = SPOOL
+- erection = errection = erecton = erction
+- welding = weldng = weling = welding
+- excavation = excavtion = excv = excavation
+- inspection = inspecion = inspetion = inspection
+- completed = complet = complted = completed
+- finished = fiinished = finsihed = finished
 
 Return ONLY a valid JSON object matching this schema:
 {
@@ -56,19 +70,40 @@ Return ONLY a valid JSON object matching this schema:
 
 Rules:
 1. NEVER invent tags, quantities, or dates not present in the text.
-2. If Hinglish phrases like "finish ho gaya", "done", "completed" appear, map event_type to "finish".
-3. Return ONLY the JSON object. Do not include markdown preamble.
-4. CRITICAL: If the input is conversational (e.g. "hi", "hello", "good morning", "thanks") or lacks ANY actual field work, return exactly {"events": []}. Do NOT hallucinate an activity phrase.
+2. NORMALIZE spelling mistakes to standard terms (spol→spool, errection→erection)
+3. If Hinglish phrases like "finish ho gaya", "done", "completed" appear, map event_type to "finish".
+4. Return ONLY the JSON object. Do not include markdown preamble.
+5. CRITICAL: If the input is conversational (e.g. "hi", "hello", "good morning", "thanks") or lacks ANY actual field work, return exactly {"events": []}. Do NOT hallucinate.
+6. CONFIDENCE HINT: High (0.9+) if discipline clearly stated, medium (0.7-0.9) if inferred, low (0.5-0.7) if ambiguous
 
-Examples:
-Input: "EV-8491C Material tally count verification Civil 95% Auto-Approved Oct 24, 08:30 AM Unlinked"
-Output: {"events": [{"activity_phrase": "Material tally count verification", "discipline": "civil", "tag_or_line_id": "EV-8491C", "location": null, "event_type": "progress", "event_date": "2026-10-24", "quantity": 95, "unit": "%", "contractor": null, "delay_reason": null, "source_excerpt": "Material tally count verification Civil 95%", "raw_confidence_hint": 0.95}]}
+TRAINING DATA - PIPING ACTIVITIES (Confidence 0.95+):
+Input: "24-inch spol erection completed at sector 4. Piping discipline."
+Output: {"events": [{"activity_phrase": "24-inch spool erection completed", "discipline": "piping", "tag_or_line_id": "24-PL-001", "location": "Sector 4", "event_type": "finish", "event_date": null, "quantity": 1, "unit": "spool", "contractor": null, "delay_reason": null, "source_excerpt": "24-inch spol erection completed at sector 4", "raw_confidence_hint": 0.95}]}
 
-Input: "material Tally account verification"
-Output: {"events": [{"activity_phrase": "material Tally account verification", "discipline": "civil", "tag_or_line_id": null, "location": null, "event_type": "unspecified", "event_date": null, "quantity": null, "unit": null, "contractor": null, "delay_reason": null, "source_excerpt": "material Tally account verification", "raw_confidence_hint": 0.85}]}
+Input: "Spool erection at Sector 4 - PIPING - 100% complete"
+Output: {"events": [{"activity_phrase": "Spool erection", "discipline": "piping", "tag_or_line_id": null, "location": "Sector 4", "event_type": "progress", "event_date": null, "quantity": 100, "unit": "%", "contractor": null, "delay_reason": null, "source_excerpt": "Spool erection at Sector 4 - PIPING", "raw_confidence_hint": 0.95}]}
 
-Input: "link joint inspection at Sector C"
-Output: {"events": [{"activity_phrase": "link joint inspection", "discipline": "piping", "tag_or_line_id": null, "location": "Sector C", "event_type": "unspecified", "event_date": null, "quantity": null, "unit": null, "contractor": null, "delay_reason": null, "source_excerpt": "link joint inspection at Sector C", "raw_confidence_hint": 0.9}]}
+Input: "spol erected at sector 4. Piping work finished."
+Output: {"events": [{"activity_phrase": "spool erected", "discipline": "piping", "tag_or_line_id": null, "location": "Sector 4", "event_type": "finish", "event_date": null, "quantity": null, "unit": null, "contractor": null, "delay_reason": null, "source_excerpt": "spol erected at sector 4", "raw_confidence_hint": 0.95}]}
+
+Input: "Welding inspection completed. Piping discipline. L&T contractor."
+Output: {"events": [{"activity_phrase": "Welding inspection completed", "discipline": "piping", "tag_or_line_id": null, "location": null, "event_type": "finish", "event_date": null, "quantity": null, "unit": null, "contractor": "L&T", "delay_reason": null, "source_excerpt": "Welding inspection completed", "raw_confidence_hint": 0.95}]}
+
+TRAINING DATA - CIVIL ACTIVITIES (Confidence 0.95+):
+Input: "Excavation for foundation block B4 completed. Civil 100%"
+Output: {"events": [{"activity_phrase": "Excavation for foundation block B4", "discipline": "civil", "tag_or_line_id": null, "location": "Block B4", "event_type": "finish", "event_date": null, "quantity": 100, "unit": "%", "contractor": null, "delay_reason": null, "source_excerpt": "Excavation for foundation block B4 completed", "raw_confidence_hint": 0.95}]}
+
+Input: "Foundation work excavtion started. Civil discipline."
+Output: {"events": [{"activity_phrase": "Foundation work excavation", "discipline": "civil", "tag_or_line_id": null, "location": null, "event_type": "start", "event_date": null, "quantity": null, "unit": null, "contractor": null, "delay_reason": null, "source_excerpt": "Foundation work excavtion started", "raw_confidence_hint": 0.95}]}
+
+TRAINING DATA - ELECTRICAL ACTIVITIES (Confidence 0.95+):
+Input: "Cable pulling and installation at Unit A completed. Electrical 100%"
+Output: {"events": [{"activity_phrase": "Cable pulling and installation", "discipline": "electrical", "tag_or_line_id": null, "location": "Unit A", "event_type": "finish", "event_date": null, "quantity": 100, "unit": "%", "contractor": null, "delay_reason": null, "source_excerpt": "Cable pulling and installation at Unit A", "raw_confidence_hint": 0.95}]}
+
+INPUT WITH MIXED TYPOS (Key Example):
+Input: "Spool erection at sector 4. Spol erected finished. 95% complet. Piping."
+Expected: SINGLE extraction normalized to "Spool erection" with discipline "piping" (0.95 confidence)
+NOT two separate events with PIPING and CIVIL.
 """
 
 
@@ -331,12 +366,50 @@ class LLMExtractor:
 
         # Normalize activity phrases to detect duplicates (spool/spol variations)
         def normalize_activity(phrase: str) -> str:
-            """Normalize activity phrases to detect duplicates."""
+            """
+            Normalize activity phrases to detect duplicates.
+            Handles spelling mistakes like "spol"→"spool", "errection"→"erection", etc.
+            """
             normalized = phrase.lower().strip()
-            # Common typos and variations
-            normalized = normalized.replace("spol ", "spool ")
-            normalized = normalized.replace("spol", "spool")
-            normalized = re.sub(r'\s+', ' ', normalized)  # Collapse spaces
+
+            # PIPING activity variations
+            normalized = re.sub(r'\bspol\b', 'spool', normalized)
+            normalized = re.sub(r'\berrect', 'erect', normalized)
+            normalized = re.sub(r'\berction\b', 'erection', normalized)
+            normalized = re.sub(r'\berectn\b', 'erection', normalized)
+            normalized = re.sub(r'\beweld', 'weld', normalized)
+            normalized = re.sub(r'\bweling\b', 'welding', normalized)
+            normalized = re.sub(r'\bweldng\b', 'welding', normalized)
+            normalized = re.sub(r'\binspect', 'inspect', normalized)
+            normalized = re.sub(r'\binspecion\b', 'inspection', normalized)
+            normalized = re.sub(r'\binspetion\b', 'inspection', normalized)
+
+            # CIVIL activity variations
+            normalized = re.sub(r'\bexcavtion\b', 'excavation', normalized)
+            normalized = re.sub(r'\bexcv\b', 'excavation', normalized)
+            normalized = re.sub(r'\bexcavaton\b', 'excavation', normalized)
+            normalized = re.sub(r'\bconcreting\b', 'concreting', normalized)
+            normalized = re.sub(r'\bconcrte\b', 'concrete', normalized)
+            normalized = re.sub(r'\bfoundation\b', 'foundation', normalized)
+            normalized = re.sub(r'\bbackfill\b', 'backfill', normalized)
+            normalized = re.sub(r'\bgrout\b', 'grout', normalized)
+
+            # ELECTRICAL activity variations
+            normalized = re.sub(r'\bcable pull', 'cable pulling', normalized)
+            normalized = re.sub(r'\bcable lay', 'cable laying', normalized)
+            normalized = re.sub(r'\bterminate', 'termination', normalized)
+
+            # Common completion/status variations
+            normalized = re.sub(r'\bcompleted\b', 'completed', normalized)
+            normalized = re.sub(r'\bcomplet\b', 'completed', normalized)
+            normalized = re.sub(r'\bcomplted\b', 'completed', normalized)
+            normalized = re.sub(r'\bfinished\b', 'finished', normalized)
+            normalized = re.sub(r'\bfiinished\b', 'finished', normalized)
+            normalized = re.sub(r'\bfinsihed\b', 'finished', normalized)
+            normalized = re.sub(r'\bfinished\b', 'finished', normalized)
+
+            # Collapse multiple spaces
+            normalized = re.sub(r'\s+', ' ', normalized)
             return normalized
 
         # Group events by NORMALIZED ACTIVITY NAME ONLY (not discipline!)
