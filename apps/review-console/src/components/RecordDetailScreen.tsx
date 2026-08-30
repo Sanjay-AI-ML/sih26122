@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReviewQueue } from '../context/ReviewQueueContext';
 import { RAGContextPanel } from './RAGContextPanel';
+import { RetrievalScoreBreakdown } from './RetrievalScoreBreakdown';
+
 
 
 export const RecordDetailScreen: React.FC = () => {
@@ -270,6 +272,9 @@ export const RecordDetailScreen: React.FC = () => {
 
             {/* RAG Context Panel - Engineering Terminology (Prompt 3) */}
             <RAGContextPanel discipline={item.discipline} defaultExpanded={true} />
+
+            {/* Multi-Stage Retrieval Score Breakdown (Prompt 4) */}
+            <RetrievalScoreBreakdown candidate={item.candidates?.[0]} defaultExpanded={true} className="mt-3" />
           </div>
 
           {/* Right Column: Match Candidates & Actions */}
