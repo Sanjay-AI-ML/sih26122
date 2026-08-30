@@ -68,6 +68,7 @@ export interface MatchResult {
   confidence_band: 'high' | 'medium' | 'low';
   is_ambiguous: boolean;
   ambiguity_reason?: string;
+  granularity_warning?: string | null;
 }
 
 export async function matchEvent(event: IngestEvent): Promise<MatchResult> {

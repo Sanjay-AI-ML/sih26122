@@ -67,6 +67,8 @@ export interface QueueItem {
   actualFinish?: string;
   progress?: number;
   priority?: 'High' | 'Medium' | 'Low';
+  granularity_warning?: string | null;
+  granularityWarning?: string | null;
 }
 
 export interface NewReportInput {

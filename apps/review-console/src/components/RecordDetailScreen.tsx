@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReviewQueue } from '../context/ReviewQueueContext';
+import { GranularityWarningAlert } from './GranularityWarningAlert';
 
 export const RecordDetailScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -94,6 +95,17 @@ export const RecordDetailScreen: React.FC = () => {
             <span className="material-symbols-outlined text-[18px]" data-icon="close">close</span>
           </button>
         </header>
+        
+        {/* Prominent Granularity Warning Alert */}
+        {(item.granularity_warning || item.granularityWarning || (item.status === 'flagged' && item.exceptionNote)) && (
+          <div className="px-4 sm:px-6 pt-3 pb-1 border-b border-border-standard bg-amber-50/40 dark:bg-amber-950/20">
+            <GranularityWarningAlert
+              granularity_warning={item.granularity_warning || item.granularityWarning || item.exceptionNote || 'Coarse match detected: Report-level data mapped to individual activity'}
+              activity_id={item.id}
+              isProminent={true}
+            />
+          </div>
+        )}
 
         <div className="flex-1 overflow-y-auto flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-border-standard custom-scrollbar">
           {/* Left Column: Source & Extraction */}

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useReviewQueue } from '../context/ReviewQueueContext';
 import { useNavigate } from 'react-router-dom';
 import type { InputFormatType, StatusType } from "../types";
+import { GranularityWarningAlert } from './GranularityWarningAlert';
 
 export const ReviewQueueScreen: React.FC = () => {
   const {
@@ -252,6 +253,22 @@ export const ReviewQueueScreen: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Inline Granularity Warning Alert for coarse matches in current queue */}
+      {filteredItems.some(i => i.granularity_warning || i.granularityWarning || (i.status === 'flagged' && i.exceptionNote)) && (
+        <div className="mb-3">
+          <GranularityWarningAlert
+            granularity_warning={
+              filteredItems.find(i => i.granularity_warning || i.granularityWarning || (i.status === 'flagged' && i.exceptionNote))?.granularity_warning ||
+              filteredItems.find(i => i.granularity_warning || i.granularityWarning || (i.status === 'flagged' && i.exceptionNote))?.granularityWarning ||
+              filteredItems.find(i => i.granularity_warning || i.granularityWarning || (i.status === 'flagged' && i.exceptionNote))?.exceptionNote ||
+              'Coarse match detected: Report-level data mapped to individual activity'
+            }
+            activity_id={filteredItems.find(i => i.granularity_warning || i.granularityWarning || (i.status === 'flagged' && i.exceptionNote))?.id}
+            isProminent={false}
+          />
+        </div>
+      )}
 
       {/* Main View: Table OR Grid */}
       {viewMode === 'table' ? (
