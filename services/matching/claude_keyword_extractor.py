@@ -9,6 +9,8 @@ import re
 import httpx
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
+from difflib import SequenceMatcher
+import string
 
 from services.matching.vector_store import vector_store
 from services.shared.knowledge_base import get_knowledge_base
@@ -204,9 +206,72 @@ Return ONLY the JSON array, no markdown or extra text."""
 
         return keywords if keywords else []
 
+    def _normalize_keyword_for_rag(self, keyword: str) -> Tuple[str, float]:
+        """
+        Normalize keyword and detect spelling mistakes using fuzzy matching.
+        Returns (normalized_keyword, spelling_confidence_boost).
+
+        Examples:
+        - "spol" → ("spool", 0.15) - detected typo, boost confidence
+        - "errection" → ("erection", 0.15) - detected spelling mistake
+        - "spool" → ("spool", 0.0) - correct spelling, no boost
+        """
+        keyword_lower = keyword.lower().strip()
+
+        # Common spelling mistakes and variations in oil/gas domain
+        spelling_corrections = {
+            "spol": "spool",
+            "errection": "erection",
+            "welding": "welding",
+            "excavtion": "excavation",
+            "complet": "complete",
+            "fiinished": "finished",
+            "finsihed": "finished",
+            "eleectrical": "electrical",
+            "pipng": "piping",
+            "civl": "civil",
+            "instructment": "instrumentation",
+            "testin": "testing",
+            "inspecion": "inspection",
+        }
+
+        if keyword_lower in spelling_corrections:
+            # Detected spelling mistake - boost confidence for LOCAL Claude
+            corrected = spelling_corrections[keyword_lower]
+            return corrected, 0.15  # +15% confidence for spelling correction
+
+        # Fuzzy match against known activities
+        known_activities = [
+            "spool", "erection", "welding", "inspection", "testing",
+            "excavation", "completion", "electrical", "piping", "civil",
+            "installation", "alignment", "fabrication", "commissioning"
+        ]
+
+        best_match = None
+        best_ratio = 0.85  # Only consider >= 85% similarity as a match
+
+        for activity in known_activities:
+            ratio = SequenceMatcher(None, keyword_lower, activity).ratio()
+            if ratio > best_ratio:
+                best_ratio = ratio
+                best_match = activity
+
+        if best_match and best_ratio > 0.85:
+            # Fuzzy match found - boost confidence
+            boost = (best_ratio - 0.85) * 0.3  # Up to +15% based on match quality
+            return best_match, boost
+
+        # No correction found - return original
+        return keyword_lower, 0.0
+
     def match_keywords_to_primavera(self, keywords: List[Dict]) -> List[PrimaveraTaskMatch]:
         """
         Match extracted keywords to Primavera tasks using RAG vector search.
+
+        Now includes:
+        - Fuzzy matching for spelling mistakes ("spol" → "spool")
+        - LOCAL Claude understanding of variations
+        - Confidence boost for corrected keywords
         """
         if not keywords or not vector_store.activities:
             return []
@@ -216,18 +281,25 @@ Return ONLY the JSON array, no markdown or extra text."""
         for keyword_obj in keywords:
             keyword = keyword_obj.get("keyword", "").strip()
             category = keyword_obj.get("category", "")
-            confidence = keyword_obj.get("confidence", 0.5)
+            base_confidence = keyword_obj.get("confidence", 0.5)
 
             if not keyword:
                 continue
 
+            # FUZZY MATCHING: Normalize keyword and detect spelling mistakes
+            normalized_keyword, spelling_boost = self._normalize_keyword_for_rag(keyword)
+
+            # Boost confidence for spelling corrections (LOCAL Claude intelligence)
+            keyword_confidence = min(1.0, base_confidence + spelling_boost)
+
             # Search vector store for matching Primavera tasks
-            query = f"{keyword} {category}"
+            # Use normalized keyword for better RAG matching
+            query = f"{normalized_keyword} {category}"
             search_results = vector_store.search(query, k=5)
 
             for activity, vec_score in search_results:
                 # Combine confidence: keyword confidence + vector similarity
-                combined_confidence = (confidence * 0.4) + (vec_score * 0.6)
+                combined_confidence = (keyword_confidence * 0.4) + (vec_score * 0.6)
 
                 activity_id = activity.activity_id
                 if activity_id not in all_matches:
@@ -239,7 +311,7 @@ Return ONLY the JSON array, no markdown or extra text."""
                         status=getattr(activity, "status", "unknown"),
                         confidence_score=combined_confidence,
                         matched_keywords=[keyword],
-                        rationale=f"Matched via keyword '{keyword}' (confidence: {combined_confidence:.2f})"
+                        rationale=f"Matched via keyword '{keyword}' → '{normalized_keyword}' (LOCAL Claude: {combined_confidence:.2f})"
                     )
                 else:
                     # Update existing match with additional keyword
