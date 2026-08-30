@@ -351,7 +351,9 @@ interface ReviewQueueContextType {
 
 
   // Accessibility / Header States
-  isHighContrast: boolean;
+  isDarkMode: boolean;
+    toggleDarkMode: () => void;
+    isHighContrast: boolean;
   toggleHighContrast: () => void;
   isTextEnlarged: boolean;
   toggleTextEnlarged: () => void;
@@ -459,7 +461,20 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
 
   // Accessibility
+  const [isDarkMode, setIsDarkMode] = useState(true);
   const [isHighContrast, setIsHighContrast] = useState(false);
+
+  const toggleDarkMode = useCallback(() => {
+    setIsDarkMode(prev => {
+      const next = !prev;
+      if (next) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      return next;
+    });
+  }, []);
   const [isTextEnlarged, setIsTextEnlarged] = useState(false);
   const [language, setLanguage] = useState<'EN' | 'HI'>('EN');
   // Pre-compute normalized translation map to avoid O(N) search on every render cell
@@ -912,7 +927,9 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
         setActiveScheduleItem,
         selectedCandidate,
         setSelectedCandidate,
-        isHighContrast,
+        isDarkMode,
+    toggleDarkMode,
+    isHighContrast,
         toggleHighContrast,
         isTextEnlarged,
         toggleTextEnlarged,
