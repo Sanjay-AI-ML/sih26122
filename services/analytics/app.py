@@ -27,11 +27,25 @@ def get_stats():
     stats = analytics_engine.get_ambiguity_stats()
     breakdown = analytics_engine.get_discipline_breakdown()
     trend = analytics_engine.get_daily_trend()
+    delays = analytics_engine.get_delay_analysis()
+    confidence = analytics_engine.get_confidence_metrics()
     return {
         **stats,
         "discipline_breakdown": breakdown,
         "daily_trend": trend,
+        "delay_analysis": delays,
+        "confidence_metrics": confidence,
     }
+
+@app.get("/analytics/delays")
+def get_delays():
+    """Returns delay analysis by discipline."""
+    return analytics_engine.get_delay_analysis()
+
+@app.get("/analytics/confidence")
+def get_confidence():
+    """Returns confidence score metrics."""
+    return analytics_engine.get_confidence_metrics()
 
 @app.get("/health")
 def health_check():
