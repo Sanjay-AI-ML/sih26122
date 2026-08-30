@@ -24,7 +24,6 @@ export const SideNav: React.FC = () => {
 
   const [isRAGOpen, setIsRAGOpen] = React.useState(false);
   const [isAnalyticsOpen, setIsAnalyticsOpen] = React.useState(false);
-  const [showClaudeExtractor, setShowClaudeExtractor] = React.useState(false);
 
   const allItems = items || [];
   const avgConfidence = allItems.length > 0 ? Math.round(allItems.reduce((acc, item) => acc + (item.confidenceScore || 0), 0) / allItems.length) : 0;
@@ -153,7 +152,6 @@ export const SideNav: React.FC = () => {
             <button
               onClick={() => {
                 navigate('/claude-extractor');
-                setShowClaudeExtractor(true);
                 closeMobileSidebar();
               }}
               className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors text-on-surface-variant hover:bg-surface-container ${

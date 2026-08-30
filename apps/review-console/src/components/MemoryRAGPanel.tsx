@@ -53,8 +53,13 @@ export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose 
   useEffect(() => {
     const checkBackend = async () => {
       try {
-        const ingestResp = await fetch('http://localhost:8001/health', { timeout: 3000 });
-        const matchResp = await fetch('http://localhost:8002/health', { timeout: 3000 });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+        const ingestResp = await fetch('http://localhost:8001/health', { signal: controller.signal });
+        const matchResp = await fetch('http://localhost:8002/health', { signal: controller.signal });
+
+        clearTimeout(timeoutId);
         setIsBackendAvailable(ingestResp.ok && matchResp.ok);
       } catch {
         setIsBackendAvailable(false);
