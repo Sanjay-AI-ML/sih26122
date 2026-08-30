@@ -7,6 +7,8 @@ from services.matching.schemas import (
 )
 from services.matching.vector_store import vector_store
 from services.matching.granularity_detector import granularity_detector
+from services.matching.confidence_calibrator import confidence_calibrator
+
 
 
 
@@ -129,6 +131,19 @@ class MatchingEngine:
             confidence_score = max(0.0, confidence_score * 0.75)
             if mismatches:
                 granularity_warning = f"coarse_match: {'; '.join(mismatches)}"
+
+        # 6. Phase 7: Logistic Regression Confidence Calibration Model
+        bm25_sim = fuzz.partial_ratio(event.activity_phrase.lower(), top_cand.activity_name.lower()) / 100.0
+        calib_features = {
+            "rag_match_score": top_cand.score,
+            "bm25_similarity": bm25_sim,
+            "semantic_similarity": top_cand.score,
+            "reranker_score": top_cand.score,
+            "granularity_flag": 1.0 if granularity_warning else 0.0,
+            "discipline_confidence": 1.0 if ("Discipline match" in top_cand.rationale) else 0.5
+        }
+        calibrated_score = confidence_calibrator.calibrate(calib_features)
+        confidence_score = min(max(calibrated_score, 0.0), 1.0)
 
         # Confidence Band calculation
         if is_ambiguous or confidence_score < 0.50:
