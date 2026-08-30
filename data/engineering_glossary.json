@@ -1,0 +1,289 @@
+{
+  "piping": [
+    {
+      "canonical_term": "spool erection",
+      "synonyms": ["spool erected", "line erection", "pipe installation", "spool installation"],
+      "discipline": "piping",
+      "activity_type": "erection",
+      "examples": [
+        "24-inch XX spool erection completed",
+        "spool erected at sector 4",
+        "line 24 installation finished"
+      ],
+      "related_terms": ["fabrication", "hydrotest", "ndt", "radiography"]
+    },
+    {
+      "canonical_term": "hydrotest",
+      "synonyms": ["hydrostatic test", "pressure testing", "hydro test", "pressure test"],
+      "discipline": "piping",
+      "activity_type": "testing",
+      "examples": [
+        "hydrotest completed for 24-inch XX",
+        "pressure test successful",
+        "hydrostatic testing in progress"
+      ],
+      "related_terms": ["erection", "ndt", "inspection"]
+    },
+    {
+      "canonical_term": "pipe fabrication",
+      "synonyms": ["spool fabrication", "pipe welding", "spool welding", "fabricate"],
+      "discipline": "piping",
+      "activity_type": "fabrication",
+      "examples": [
+        "24-inch XX fabrication completed",
+        "spool welding finished",
+        "pipe spools ready for erection"
+      ],
+      "related_terms": ["erection", "ndtreading", "inspection"]
+    },
+    {
+      "canonical_term": "weld inspection",
+      "synonyms": ["weld testing", "radiography", "ndt", "non-destructive test", "x-ray inspection"],
+      "discipline": "piping",
+      "activity_type": "inspection",
+      "examples": [
+        "weld inspection passed",
+        "radiography completed",
+        "ndt inspection in progress"
+      ],
+      "related_terms": ["fabrication", "erection"]
+    }
+  ],
+  "civil": [
+    {
+      "canonical_term": "foundation casting",
+      "synonyms": ["concrete pour", "foundation pour", "concrete casting", "footing"],
+      "discipline": "civil",
+      "activity_type": "construction",
+      "examples": [
+        "foundation concrete pour for pump P-101",
+        "foundation casting completed",
+        "concrete footing poured"
+      ],
+      "related_terms": ["excavation", "rebar", "shuttering"]
+    },
+    {
+      "canonical_term": "excavation",
+      "synonyms": ["digging", "earthwork", "trench", "soil excavation"],
+      "discipline": "civil",
+      "activity_type": "preparation",
+      "examples": [
+        "foundation excavation completed",
+        "trench digging finished",
+        "earthwork in progress"
+      ],
+      "related_terms": ["foundation", "compaction", "backfilling"]
+    },
+    {
+      "canonical_term": "rebar installation",
+      "synonyms": ["reinforcement", "steel placement", "rebar placement", "reinforcing steel"],
+      "discipline": "civil",
+      "activity_type": "construction",
+      "examples": [
+        "rebar installation completed",
+        "reinforcement steel placed",
+        "steel cage ready for concrete"
+      ],
+      "related_terms": ["foundation", "concrete pour"]
+    },
+    {
+      "canonical_term": "shuttering",
+      "synonyms": ["formwork", "forms", "formwork installation", "temporary forms"],
+      "discipline": "civil",
+      "activity_type": "preparation",
+      "examples": [
+        "shuttering erected",
+        "formwork installation completed",
+        "temporary forms ready for pouring"
+      ],
+      "related_terms": ["foundation", "concrete pour"]
+    }
+  ],
+  "electrical": [
+    {
+      "canonical_term": "cable pulling",
+      "synonyms": ["cable laying", "cable installation", "wiring", "electrical wiring"],
+      "discipline": "electrical",
+      "activity_type": "installation",
+      "examples": [
+        "11kV substation feeder cable pulling completed",
+        "cable installation in progress",
+        "electrical wiring finished"
+      ],
+      "related_terms": ["cable tray", "termination", "testing"]
+    },
+    {
+      "canonical_term": "cable termination",
+      "synonyms": ["termination", "cable end termination", "connector installation", "terminal connection"],
+      "discipline": "electrical",
+      "activity_type": "installation",
+      "examples": [
+        "cable termination completed",
+        "connector installation finished",
+        "cable ends terminated"
+      ],
+      "related_terms": ["cable pulling", "testing"]
+    },
+    {
+      "canonical_term": "transformer installation",
+      "synonyms": ["substation installation", "equipment installation", "transformer setup"],
+      "discipline": "electrical",
+      "activity_type": "installation",
+      "examples": [
+        "substation transformer installed",
+        "equipment placement completed",
+        "transformer setup finished"
+      ],
+      "related_terms": ["electrical", "testing"]
+    }
+  ],
+  "instrumentation": [
+    {
+      "canonical_term": "calibration",
+      "synonyms": ["instrument calibration", "calibrate", "sensor calibration", "gauge calibration"],
+      "discipline": "instrumentation",
+      "activity_type": "testing",
+      "examples": [
+        "boiler control pressure calibration completed",
+        "transmitter calibration in progress",
+        "gauge calibration finished"
+      ],
+      "related_terms": ["loop checking", "installation"]
+    },
+    {
+      "canonical_term": "loop checking",
+      "synonyms": ["instrument loop check", "control loop check", "loop test", "functional test"],
+      "discipline": "instrumentation",
+      "activity_type": "testing",
+      "examples": [
+        "instrument loop checking completed",
+        "control loop test in progress",
+        "functional testing finished"
+      ],
+      "related_terms": ["calibration", "installation"]
+    },
+    {
+      "canonical_term": "transmitter installation",
+      "synonyms": ["sensor installation", "gauge installation", "instrument installation"],
+      "discipline": "instrumentation",
+      "activity_type": "installation",
+      "examples": [
+        "pressure transmitter installation completed",
+        "sensor placement finished",
+        "gauge installation in progress"
+      ],
+      "related_terms": ["calibration", "loop checking"]
+    }
+  ],
+  "hse": [
+    {
+      "canonical_term": "safety briefing",
+      "synonyms": ["toolbox talk", "hse briefing", "safety meeting", "safety training"],
+      "discipline": "hse",
+      "activity_type": "safety",
+      "examples": [
+        "completed safety briefing and HSE site inspection",
+        "toolbox talk conducted",
+        "safety training completed"
+      ],
+      "related_terms": ["audit", "incident", "permit"]
+    },
+    {
+      "canonical_term": "hse inspection",
+      "synonyms": ["safety inspection", "health and safety audit", "site inspection"],
+      "discipline": "hse",
+      "activity_type": "inspection",
+      "examples": [
+        "HSE site inspection completed",
+        "safety inspection in progress",
+        "health and safety audit finished"
+      ],
+      "related_terms": ["briefing", "audit"]
+    },
+    {
+      "canonical_term": "permit verification",
+      "synonyms": ["permit check", "work permit", "safety permit", "entry permit"],
+      "discipline": "hse",
+      "activity_type": "safety",
+      "examples": [
+        "work permit issued",
+        "permit verification completed",
+        "safety permit check in progress"
+      ],
+      "related_terms": ["inspection", "briefing"]
+    }
+  ],
+  "status_terms": {
+    "completion": {
+      "canonical": "completed",
+      "synonyms": ["finished", "done", "accomplished", "finished ho gaya"],
+      "event_type": "finish",
+      "examples": ["work completed", "finished ho gaya", "done"]
+    },
+    "in_progress": {
+      "canonical": "in_progress",
+      "synonyms": ["ongoing", "in progress", "under way", "chal raha hai"],
+      "event_type": "progress",
+      "examples": ["work in progress", "ongoing", "currently being done"]
+    },
+    "started": {
+      "canonical": "started",
+      "synonyms": ["commenced", "begun", "initiated", "start ho gaya"],
+      "event_type": "start",
+      "examples": ["work started", "commenced", "initiated"]
+    },
+    "delayed": {
+      "canonical": "delayed",
+      "synonyms": ["held up", "delayed", "postponed", "on hold"],
+      "event_type": "delay_stoppage",
+      "examples": ["work delayed", "held up", "postponed"]
+    }
+  },
+  "units": {
+    "length": ["meter", "meters", "mtrs", "m", "inch", "inches", "km"],
+    "volume": ["cum", "m3", "cubic meters", "liters", "litres"],
+    "weight": ["MT", "metric tons", "tons", "kg", "kilogram"],
+    "quantity": ["spools", "joints", "nos", "numbers", "sets", "units", "bays"],
+    "percentage": ["%", "percent"],
+    "time": ["days", "hours", "hrs", "minutes", "mins"]
+  },
+  "contractors": [
+    "L&T Heavy Engineering",
+    "L&T Civil",
+    "Larsen & Toubro",
+    "L&T",
+    "Punj Lloyd",
+    "Bridge & Roof",
+    "Tata Projects",
+    "BHEL",
+    "Engineers India Limited",
+    "EIL",
+    "Afcons Infrastructure",
+    "Kalpataru Projects",
+    "Petrofac",
+    "Technip Energies",
+    "Toyo Engineering",
+    "Megha Engineering",
+    "MEIL",
+    "Shapoorji Pallonji",
+    "NCC Limited",
+    "Simplex Infrastructures",
+    "Hindustan Construction Company",
+    "HCC"
+  ],
+  "abbreviations": {
+    "T&C": "Testing and Commissioning",
+    "L&T": "Larsen & Toubro",
+    "HSE": "Health, Safety, and Environment",
+    "NDT": "Non-Destructive Testing",
+    "PLC": "Programmable Logic Controller",
+    "DCS": "Distributed Control System",
+    "SCADA": "Supervisory Control and Data Acquisition",
+    "HTX": "Heat Exchanger",
+    "P&ID": "Piping and Instrumentation Diagram",
+    "WBS": "Work Breakdown Structure",
+    "EIL": "Engineers India Limited",
+    "MEIL": "Megha Engineering and Infrastructure Limited",
+    "HCC": "Hindustan Construction Company"
+  }
+}
