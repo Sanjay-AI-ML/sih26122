@@ -199,6 +199,68 @@ async def health_check():
         "claude_keyword_extraction": "enabled"
     }
 
+
+# ==================== LangChain RAG Endpoints ====================
+# Production-ready RAG using open-source LangChain framework
+
+from services.matching.langchain_rag import get_rag_system
+
+
+@app.post("/rag/extract-and-match", tags=["RAG"])
+async def rag_extract_and_match(payload: dict):
+    """
+    LangChain RAG pipeline: Extract keywords and match to Primavera tasks.
+    Uses open-source LangChain with local Claude + vector search.
+
+    Intelligently handles spelling mistakes: "spol" → "spool", "errection" → "erection"
+    """
+    field_report = payload.get("field_report", "")
+
+    if not field_report:
+        return {"success": False, "error": "field_report required"}
+
+    rag_system = get_rag_system()
+    result = rag_system.extract_and_match(field_report)
+
+    return result
+
+
+@app.post("/rag/semantic-search", tags=["RAG"])
+async def rag_semantic_search(payload: dict):
+    """
+    Semantic search for Primavera tasks using vector similarity (LangChain FAISS).
+    """
+    query = payload.get("query", "")
+    k = payload.get("k", 5)
+
+    if not query:
+        return {"success": False, "error": "query required"}
+
+    rag_system = get_rag_system()
+    results = rag_system.semantic_search(query, k=k)
+
+    return {
+        "success": True,
+        "query": query,
+        "results": results,
+        "count": len(results)
+    }
+
+
+@app.get("/rag/health", tags=["RAG"])
+async def rag_health():
+    """Health check for LangChain RAG system."""
+    rag_system = get_rag_system()
+    return {
+        "status": "healthy",
+        "rag_engine": "LangChain RAG",
+        "embeddings": "HuggingFace (all-MiniLM-L6-v2)",
+        "llm": "Local Claude (Ollama)",
+        "vector_store": "FAISS",
+        "version": "1.0.0"
+    }
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("services.matching.app:app", host="0.0.0.0", port=8002, reload=True)
