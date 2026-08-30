@@ -5,6 +5,7 @@ Extracts intelligent keywords from field reports using Claude and matches them t
 
 import json
 import os
+import re
 import httpx
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
@@ -104,13 +105,104 @@ Return ONLY the JSON array, no markdown or extra text."""
                 resp_data = response.json()
                 try:
                     keywords = json.loads(resp_data.get("response", "[]"))
-                    return keywords if isinstance(keywords, list) else []
+                    if isinstance(keywords, list) and len(keywords) > 0:
+                        return keywords
                 except json.JSONDecodeError:
-                    return []
+                    pass
         except Exception as e:
             print(f"Local Claude error: {e}")
 
-        return []
+        # Fallback: Rule-based extraction if LLM extraction fails
+        return self._rule_based_extraction(field_report)
+
+    def _rule_based_extraction(self, field_report: str) -> List[Dict]:
+        """
+        Fallback rule-based keyword extraction when LLM fails.
+        Uses domain knowledge and regex patterns.
+        """
+        keywords = []
+        text_lower = field_report.lower()
+
+        # ACTIVITY extraction - look for action verbs
+        activities = {
+            "welding": "ACTIVITY",
+            "erection": "ACTIVITY",
+            "installation": "ACTIVITY",
+            "inspection": "ACTIVITY",
+            "testing": "ACTIVITY",
+            "alignment": "ACTIVITY",
+            "fabrication": "ACTIVITY",
+            "painting": "ACTIVITY",
+            "commissioning": "ACTIVITY",
+            "completion": "ACTIVITY",
+            "excavation": "ACTIVITY",
+            "concreting": "ACTIVITY"
+        }
+
+        for activity, cat in activities.items():
+            if activity in text_lower:
+                keywords.append({
+                    "keyword": activity,
+                    "category": cat,
+                    "confidence": 0.8,
+                    "context": "Found in field report"
+                })
+
+        # CONTRACTOR extraction
+        contractors = self.kb.get_contractors()
+        for contractor in contractors:
+            if contractor.lower() in text_lower:
+                keywords.append({
+                    "keyword": contractor,
+                    "category": "CONTRACTOR",
+                    "confidence": 0.9,
+                    "context": f"Contractor: {contractor}"
+                })
+
+        # LOCATION extraction - look for sectors, areas, units
+        import re
+        sector_matches = re.findall(r'sector\s+(\d+|[A-Z])', text_lower, re.IGNORECASE)
+        for sector in sector_matches:
+            keywords.append({
+                "keyword": f"Sector {sector}",
+                "category": "LOCATION",
+                "confidence": 0.85,
+                "context": f"Location identified"
+            })
+
+        # EQUIPMENT extraction - piping tags
+        tag_matches = re.findall(r'\d+-[A-Z]+-\d+', field_report)
+        for tag in tag_matches:
+            keywords.append({
+                "keyword": tag,
+                "category": "EQUIPMENT",
+                "confidence": 0.95,
+                "context": f"Equipment tag: {tag}"
+            })
+
+        # STATUS extraction
+        status_map = self.kb.get_status_terms()
+        for status_key, status_dict in status_map.items():
+            canonical = status_dict.get("canonical", "").lower()
+            if canonical and canonical in text_lower:
+                keywords.append({
+                    "keyword": canonical,
+                    "category": "STATUS",
+                    "confidence": 0.85,
+                    "context": f"Status: {canonical}"
+                })
+
+        # QUANTITY extraction - percentages and measurements
+        quantity_matches = re.findall(r'(\d+(?:\.\d+)?)\s*(%|meters|spools|MT|cubic|cum)', text_lower)
+        for qty, unit in quantity_matches:
+            keywords.append({
+                "keyword": f"{qty} {unit}",
+                "category": "QUANTITY",
+                "confidence": 0.8,
+                "context": f"Quantity: {qty} {unit}"
+            })
+
+        return keywords if keywords else []
 
     def match_keywords_to_primavera(self, keywords: List[Dict]) -> List[PrimaveraTaskMatch]:
         """
