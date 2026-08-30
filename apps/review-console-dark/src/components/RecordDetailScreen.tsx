@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReviewQueue } from '../context/ReviewQueueContext';
+import { RAGContextPanel } from './RAGContextPanel';
+import { RetrievalScoreBreakdown } from './RetrievalScoreBreakdown';
+import { GranularityWarningAlert } from './GranularityWarningAlert';
+import { ScheduleTimelinePanel } from './ScheduleTimelinePanel';
+
+
+
 
 export const RecordDetailScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -267,13 +274,54 @@ export const RecordDetailScreen: React.FC = () => {
             </div>
           </div>
 
-          {/* Right Column: Match Candidates & Actions */}
-          <div className="w-full lg:w-[360px] xl:w-[390px] flex-shrink-0 bg-surface flex flex-col">
+          {/* Right Column: Match Candidates & 5 Stacked ML/RAG Panels */}
+          <div className="w-full lg:w-[380px] xl:w-[420px] flex-shrink-0 bg-surface flex flex-col">
             <div className="p-3 sm:p-4 flex flex-col gap-3 flex-1 overflow-y-auto custom-scrollbar">
-              <h3 className="font-h3 text-h3 text-on-surface flex items-center gap-1.5 font-semibold">
+              
+              {/* PANEL 1: Confidence & Ambiguity */}
+              <div className="p-3 rounded-lg border border-border-standard bg-surface-container-lowest flex flex-col gap-2 shadow-2xs">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-xs uppercase tracking-wider text-primary">
+                    CONFIDENCE & AMBIGUITY (PHASE 7)
+                  </span>
+                  <span className={`px-2 py-0.5 rounded text-[11px] font-bold font-mono uppercase ${
+                    (item.confidenceScore || 85) >= 85 ? 'bg-green-100 text-green-800 border border-green-300 dark:bg-green-950 dark:text-green-200 dark:border-green-800' :
+                    (item.confidenceScore || 85) >= 50 ? 'bg-amber-100 text-amber-800 border border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800' :
+                    'bg-red-100 text-red-800 border border-red-300 dark:bg-red-950 dark:text-red-200 dark:border-red-800'
+                  }`}>
+                    {(item.confidenceScore || 85) >= 85 ? 'HIGH BAND' : (item.confidenceScore || 85) >= 50 ? 'MEDIUM BAND' : 'LOW BAND'} ({item.confidenceScore || 85}%)
+                  </span>
+                </div>
+
+                {(item as any).isAmbiguous ? (
+                  <div className="p-2 rounded bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-900 text-amber-900 dark:text-amber-200 text-xs space-y-1">
+                    <div className="font-bold flex items-center gap-1">
+                      <span className="material-symbols-outlined text-[15px] text-amber-600">help</span>
+                      Ambiguous Match Detected:
+                    </div>
+                    <p className="text-[11px]">
+                      Margin between Top candidate ('{item.candidates?.[0]?.id || 'CAND-1'}') and Second candidate ('{item.candidates?.[1]?.id || 'CAND-2'}') is under 0.05.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-outline flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px] text-green-600">check_circle</span>
+                    Clear Top Candidate: Score margin &gt; 0.15 relative to second candidate.
+                  </div>
+                )}
+              </div>
+
+              {/* PANEL 4: Granularity Warning (if exists) */}
+              {((item as any).granularityWarning || item.sourceText?.toLowerCase().includes('all')) && (
+                <GranularityWarningAlert warning={(item as any).granularityWarning || "coarse_match: Report-level terms detected ('all spools') matching multiple granular item nodes"} />
+              )}
+
+              {/* Schedule Match Candidates Section */}
+              <h3 className="font-h3 text-h3 text-on-surface flex items-center gap-1.5 font-semibold mt-1">
                 <span className="material-symbols-outlined text-primary text-[18px]" data-icon="compare_arrows">compare_arrows</span>
                 {t('scheduleMatchCandidates')}
               </h3>
+
               <div className="flex flex-col gap-2.5">
                 {(item.candidates || []).map((cand, idx) => {
                   const isSelected = selectedCandidateIndex === idx;
@@ -347,6 +395,16 @@ export const RecordDetailScreen: React.FC = () => {
                   {t('browseMasterSchedule')}
                 </button>
               </div>
+
+              {/* PANEL 2: RAG Context (Collapsible) */}
+              <RAGContextPanel discipline={item.discipline} defaultExpanded={true} className="mt-2" />
+
+              {/* PANEL 3: Score Breakdown (Collapsible) */}
+              <RetrievalScoreBreakdown candidate={item.candidates?.[selectedCandidateIndex] || item.candidates?.[0]} defaultExpanded={true} className="mt-2" />
+
+              {/* PANEL 5: Schedule Timeline (Optional) */}
+              <ScheduleTimelinePanel defaultExpanded={true} className="mt-2" />
+
             </div>
 
             {/* Action Footer */}

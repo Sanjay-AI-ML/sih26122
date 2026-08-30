@@ -90,7 +90,8 @@ export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose 
     }
   };
 
-  const queryRealAnalytics = async (userQuery: string) => {
+  const queryRealAnalytics = async (_userQuery: string) => {
+
     try {
       // TODO: Implement Phase 13
       // const response = await fetch('http://localhost:8004/analytics/query', {

@@ -23,14 +23,14 @@ interface DelayRiskDashboardProps {
  * - DuckDB for analytics aggregations
  */
 
-// Demo/placeholder data shown only when no real data is available
-const DEMO_BOTTLENECKS = [
-  { id: "DEMO-1", reason: "[DEMO] Sample bottleneck example", activity: "[DEMO] Sample Activity", discipline: "Piping", delayDays: 0 }
-];
-
-const DEMO_CRITICAL_PATH = [
-  { node: "DEMO-1", name: "[DEMO] Sample Activity", discipline: "Piping", riskPct: 0, status: "Demo", band: "low-risk" }
-];
+interface CriticalPathItem {
+  node: string;
+  name: string;
+  discipline: string;
+  riskPct: number;
+  status: string;
+  band: string;
+}
 
 export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, onClose }) => {
   const { setIsExportModalOpen, items, isDarkMode } = useReviewQueue();
@@ -51,7 +51,7 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
         reason: b.delayReason || "Schedule Variance Reported",
         activity: b.activityDescription || b.eventId || "WBS Node Activity",
         discipline: b.discipline || "Piping",
-        delayDays: Math.max(0, b.delayDays || 0)
+        delayDays: Math.max(0, (b as any).delayDays || 0)
       }))
     : [];
 
@@ -85,13 +85,14 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
 
   // Critical path rows: empty when no real data
   // PHASE 14: Will pull from real schedule analysis
-  const criticalPathRows = (hasRealData ? [
+  const criticalPathRows: CriticalPathItem[] = (hasRealData ? [
     // Placeholder: will be replaced by Phase 14 real data
-  ] : []).filter(item =>
+  ] : []).filter((item: CriticalPathItem) =>
     item.node.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.discipline.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
 
   return (
     <div className={"fixed inset-0 z-[150] flex justify-center overflow-y-auto transition-colors " + (isDarkMode ? "bg-slate-950/90 backdrop-blur-md text-white" : "bg-gray-50/95 backdrop-blur-sm text-gray-900")}>
