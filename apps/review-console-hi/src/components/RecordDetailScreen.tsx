@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReviewQueue } from '../context/ReviewQueueContext';
+import { RAGContextPanel } from './RAGContextPanel';
+
 
 export const RecordDetailScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -265,6 +267,9 @@ export const RecordDetailScreen: React.FC = () => {
                 </table>
               </div>
             </div>
+
+            {/* RAG Context Panel - Engineering Terminology (Prompt 3) */}
+            <RAGContextPanel discipline={item.discipline} defaultExpanded={true} />
           </div>
 
           {/* Right Column: Match Candidates & Actions */}
