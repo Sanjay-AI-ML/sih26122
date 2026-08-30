@@ -23,7 +23,7 @@ from services.ingestion.config import (
     KNOWN_CONTRACTORS,
     STANDARD_UNITS,
 )
-from services.ingestion.rag_retriever import RAGRetriever, default_rag_retriever
+from services.ingestion.rag_retriever import RAGRetriever
 
 EXTRACTION_SYSTEM_PROMPT = """You are an expert AI parser for Indian Oil & Gas and Infrastructure Project Management schedules.
 Extract structured field events from the given Daily Progress Report text.
