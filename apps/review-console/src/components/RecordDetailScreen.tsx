@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReviewQueue } from '../context/ReviewQueueContext';
+import { ConfidenceBandDisplay } from './ConfidenceBandDisplay';
 
 export const RecordDetailScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -193,10 +194,7 @@ export const RecordDetailScreen: React.FC = () => {
             <div className="flex flex-col gap-1.5">
               <div className="flex justify-between items-end mb-0.5">
                 <h3 className="font-h3 text-h3 text-on-surface font-semibold">{t('extractedFields')}</h3>
-                <div className="inline-flex items-center gap-1 px-2 py-1 rounded bg-warning/20 border border-warning/30 text-tertiary-container font-label-caps text-label-caps text-[10px] shadow-2xs">
-                  <span className="material-symbols-outlined text-[12px]" data-icon="error">error</span>
-                  {t('needsReviewLabel')} · {item.confidenceScore}% {t('confidenceCol').toLowerCase()}
-                </div>
+                <ConfidenceBandDisplay confidence_score={item.confidenceScore} size="sm" />
               </div>
               <div className="border border-border-standard rounded-md overflow-x-auto">
                 <table className="w-full table-fixed text-left border-collapse min-w-[380px]">
@@ -310,12 +308,7 @@ export const RecordDetailScreen: React.FC = () => {
                             {t(cand.discipline?.toLowerCase()) || cand.discipline}
                           </span>
                         </div>
-                        {!isSelected && (
-                          <div className={`flex items-center gap-0.5 font-technical-data text-technical-data ${cand.matchScore >= 0.7 ? 'text-success' : 'text-warning'}`}>
-                            <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                            {cand.matchScore}
-                          </div>
-                        )}
+                        <ConfidenceBandDisplay confidence_score={cand.matchScore} size="sm" showExplanation={false} />
                       </div>
 
                       <h4 className="font-body-md text-body-md text-on-surface font-medium mb-1 pr-6 leading-snug">

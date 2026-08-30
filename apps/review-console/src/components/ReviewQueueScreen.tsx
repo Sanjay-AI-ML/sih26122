@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useReviewQueue } from '../context/ReviewQueueContext';
 import { useNavigate } from 'react-router-dom';
 import type { InputFormatType, StatusType } from "../types";
+import { ConfidenceBandDisplay } from './ConfidenceBandDisplay';
 
 export const ReviewQueueScreen: React.FC = () => {
   const {
@@ -265,14 +266,15 @@ export const ReviewQueueScreen: React.FC = () => {
                   <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-20 text-center text-[10px]">{t("inputFormat")}</th>
                   <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider text-[10px]">{t("descriptionCol")}</th>
                   <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-32 text-[10px]">{t("disciplines")}</th>
-                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-36 text-[10px]">{t("date")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-40 text-[10px]">{t("confidenceCol")}</th>
+                  <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-28 text-[10px]">{t("date")}</th>
                   <th className="py-2 px-3 font-label-caps text-label-caps text-on-surface-variant tracking-wider w-20 text-center text-[10px]">{t("actionsCol")}</th>
                 </tr>
               </thead>
               <tbody className="font-body-sm text-body-sm text-on-surface divide-y divide-border-standard">
                 {paginatedItems.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-10 text-center text-outline">
+                    <td colSpan={8} className="py-10 text-center text-outline">
                       <span className="material-symbols-outlined text-[32px] text-outline mb-1">inbox</span>
                       <p className="text-body-sm">{t('noItemsFound')}</p>
                       <button 
@@ -317,6 +319,9 @@ export const ReviewQueueScreen: React.FC = () => {
                           <span className="px-1.5 py-0.5 border border-border-standard rounded text-[10.5px] bg-surface-container">
                             {t(item.discipline?.toLowerCase()) || item.discipline}
                           </span>
+                        </td>
+                        <td className="py-2 px-3">
+                          <ConfidenceBandDisplay confidence_score={item.confidenceScore} size="sm" />
                         </td>
                         <td className="py-2 px-3 text-outline text-[11px]">
                           {item.timestamp}
@@ -429,8 +434,11 @@ export const ReviewQueueScreen: React.FC = () => {
                   <h3 className="font-body-md text-body-md font-medium text-on-surface mb-1 line-clamp-2">
                     {t(item.activityDescription) || item.activityDescription}
                   </h3>
-                  <div className="inline-block bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[11px]">
-                    {t(item.discipline?.toLowerCase()) || item.discipline}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <div className="inline-block bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded text-[11px]">
+                      {t(item.discipline?.toLowerCase()) || item.discipline}
+                    </div>
+                    <ConfidenceBandDisplay confidence_score={item.confidenceScore} size="sm" />
                   </div>
                 </div>
 
