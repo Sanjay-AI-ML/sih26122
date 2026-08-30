@@ -168,3 +168,50 @@ export async function removeFromQueue(queueId: string): Promise<void> {
   const res = await fetch(`${WRITE}/queue/${queueId}`, { method: 'DELETE' });
   if (!res.ok) throw new Error(`Failed to delete from queue: ${res.status}`);
 }
+
+export interface SimilarExtraction {
+  activity_phrase: string;
+  date: string;
+  status: string;
+  discipline?: string;
+  tag?: string;
+  variance_days?: number;
+  contractor?: string;
+  delay_reason?: string | null;
+  quantity?: number;
+  unit?: string;
+}
+
+export interface CommonBottleneck {
+  title: string;
+  period: string;
+  impact: string;
+  discipline?: string;
+}
+
+export interface HistoricalQueryResponse {
+  query: string;
+  total_found: number;
+  summary: string;
+  similar_extractions: SimilarExtraction[];
+  common_bottlenecks: CommonBottleneck[];
+  timeline_insights: string[];
+}
+
+export async function queryHistoricalMemory(
+  query: string,
+  projectId?: string,
+  dateRange?: string
+): Promise<HistoricalQueryResponse> {
+  const res = await fetch(`${ANALYT}/analytics/historical-queries`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query,
+      project_id: projectId || null,
+      date_range: dateRange || null
+    })
+  });
+  if (!res.ok) throw new Error(`Historical query failed: ${res.status}`);
+  return res.json();
+}
