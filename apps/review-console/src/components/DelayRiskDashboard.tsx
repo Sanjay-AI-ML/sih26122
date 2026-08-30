@@ -1,27 +1,13 @@
 import React from 'react';
 import { X, Download, TrendingDown, AlertTriangle, Activity, BrainCircuit, Search, CheckCircle } from 'lucide-react';
 import { useReviewQueue } from '../context/ReviewQueueContext';
+import { useProjectMetrics } from '../lib/dataIntegration';
+import { useRealTimeDataPolling } from '../hooks/useRealTimeData';
 
 interface DelayRiskDashboardProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-/**
- * PHASE 14 UPGRADE: Removed hardcoded SAMPLE_BOTTLENECKS
- *
- * Previously this dashboard showed fabricated sample data as if it were
- * real analytics. This has been replaced with:
- *
- * 1. Real queue items (from ReviewQueueContext)
- * 2. Honest labeling when data is unavailable
- * 3. Placeholder for Phase 14 real analytics integration
- *
- * When Phase 14 is complete, this will query:
- * - SQLite for historical variance
- * - Real delay patterns from approved events
- * - DuckDB for analytics aggregations
- */
 
 interface CriticalPathItem {
   node: string;
@@ -34,7 +20,11 @@ interface CriticalPathItem {
 
 export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, onClose }) => {
   const { setIsExportModalOpen, items, isDarkMode } = useReviewQueue();
+  const { metrics, isLoading } = useProjectMetrics();
   const [searchQuery, setSearchQuery] = React.useState("");
+
+  // Enable real-time data polling
+  useRealTimeDataPolling(isOpen);
 
   if (!isOpen) return null;
 
@@ -44,7 +34,6 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
   const realBottlenecks = safeItems.filter(i => i.delayReason);
 
   // Use real bottlenecks OR empty when none available
-  // NO fake sample data (Phase 2 fix)
   const activeBottlenecksList = realBottlenecks.length > 0
     ? realBottlenecks.map((b, idx) => ({
         id: b.id || `Q-${idx}`,
@@ -55,26 +44,44 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
       }))
     : [];
 
-  const bottleneckCount = activeBottlenecksList.length;
-  const hasRealData = realBottlenecks.length > 0;
+  // Use real metrics from integration layer
+  const hasRealData = metrics && metrics.totalEvents > 0;
+  const scheduleVariance = metrics?.scheduleVariance ?? 0;
+  const bottleneckCount = activeBottlenecksList.length || metrics?.ambiguousEvents ?? 0;
+  const avgConfidence = metrics?.overallConfidence ?? 86;
+  const criticalPathDelay = metrics?.criticalPathDelay ?? 0;
 
-  // Real analytics when Phase 14 is complete
-  // For now: honest DEMO MODE labels
-  const scheduleVariance = hasRealData ? -14 : 0;
-  const riskLevel = hasRealData ? 'HIGH' : 'PENDING ANALYTICS';
-  const riskColor = hasRealData ? 'text-red-600' : 'text-gray-400';
-  const riskBg = hasRealData ? 'bg-red-50' : 'bg-gray-50';
-  
-  const avgConfidence = safeItems.length > 0 
-    ? Math.round(safeItems.reduce((acc, item) => acc + (item.confidenceScore || 85), 0) / safeItems.length) 
-    : 86;
+  // Determine risk level
+  let riskLevel = 'PENDING ANALYTICS';
+  let riskColor = 'text-gray-400';
+  let riskBg = 'bg-gray-50';
 
-  // Group by discipline delay days
-  // PHASE 14: Will be populated from real analytics queries
-  const discDelays: Record<string, number> = {};
-
-  // Populate from real bottlenecks if available
   if (hasRealData) {
+    if (criticalPathDelay > 7) {
+      riskLevel = 'HIGH';
+      riskColor = 'text-red-600';
+      riskBg = 'bg-red-50';
+    } else if (criticalPathDelay > 2) {
+      riskLevel = 'MEDIUM';
+      riskColor = 'text-amber-600';
+      riskBg = 'bg-amber-50';
+    } else {
+      riskLevel = 'LOW';
+      riskColor = 'text-green-600';
+      riskBg = 'bg-green-50';
+    }
+  }
+
+  // Group by discipline delay days from metrics
+  const discDelays: Record<string, number> = {};
+  if (metrics?.disciplineMetrics) {
+    metrics.disciplineMetrics.forEach(d => {
+      discDelays[d.discipline] = Math.round(d.averageDelay);
+    });
+  }
+
+  // Populate from real bottlenecks if no metrics data
+  if (Object.keys(discDelays).length === 0 && realBottlenecks.length > 0) {
     activeBottlenecksList.forEach(b => {
       const disc = b.discipline || 'Piping';
       discDelays[disc] = (discDelays[disc] || 0) + (b.delayDays || 0);
@@ -98,17 +105,15 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
     <div className={"fixed inset-0 z-[150] flex justify-center overflow-y-auto transition-colors " + (isDarkMode ? "bg-slate-950/90 backdrop-blur-md text-white" : "bg-gray-50/95 backdrop-blur-sm text-gray-900")}>
       <div className="w-full max-w-7xl mx-auto p-8 pb-32 animate-fade-in mt-10">
 
-        {/* PHASE 14 NOTICE - Honest about demo mode */}
-        {!hasRealData && (
-          <div className={"p-4 mb-6 rounded-lg border-l-4 " + (isDarkMode ? "bg-yellow-950 border-yellow-600 text-yellow-200" : "bg-yellow-50 border-yellow-400 text-yellow-800")}>
-            <p className="font-semibold text-sm">
-              ⚠️ DEMO MODE — Phase 14 Analytics Integration Pending
-            </p>
-            <p className="text-xs mt-1">
-              Real analytics for delay prediction and historical variance will be available when backend integration is complete. Currently showing placeholder interface.
-            </p>
-          </div>
-        )}
+        {/* REAL-TIME DATA INTEGRATION STATUS */}
+        <div className={"p-4 mb-6 rounded-lg border-l-4 " + (isLoading ? (isDarkMode ? "bg-blue-950 border-blue-600 text-blue-200" : "bg-blue-50 border-blue-400 text-blue-800") : (hasRealData ? (isDarkMode ? "bg-green-950 border-green-600 text-green-200" : "bg-green-50 border-green-400 text-green-800") : (isDarkMode ? "bg-yellow-950 border-yellow-600 text-yellow-200" : "bg-yellow-50 border-yellow-400 text-yellow-800")))}>
+          <p className="font-semibold text-sm">
+            {isLoading ? "🔄 Loading Real-Time Analytics..." : (hasRealData ? "✅ LIVE DATA — Real-time analytics connected" : "⚠️ DEMO MODE — Waiting for analytics service")}
+          </p>
+          <p className="text-xs mt-1">
+            {isLoading ? "Fetching data from analytics service..." : (hasRealData ? "Displaying live metrics with auto-refresh every 5 seconds." : "Connect backend services (ports 8001-8004) to view live data.")}
+          </p>
+        </div>
 
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
