@@ -96,6 +96,8 @@ const i18n: any = {
     "instrumentation": "INSTRUMENTATION",
     "static_rotating": "STATIC/ROTATING",
     "pending": "Pending",
+    "totalSubmitted": "Total Submitted",
+    "pendingReview": "Pending Review",
     "switchShift": "Switch Shift",
     "noApprovedRecs": "No approved records yet. Send a progress update!",
     "profileName": "S. Gogoi",
@@ -176,6 +178,8 @@ const i18n: any = {
     "instrumentation": "इंस्ट्रूमेंटेशन",
     "static_rotating": "स्थैतिक/घूर्णन",
     "pending": "लंबित",
+    "totalSubmitted": "कुल सबमिट",
+    "pendingReview": "समीक्षा प्रतीक्षित",
     "switchShift": "शिफ्ट बदलें",
     "noApprovedRecs": "अभी तक कोई स्वीकृत रिकॉर्ड नहीं। प्रगति अपडेट भेजें!",
     "profileName": "एस. गोगोई",
@@ -936,9 +940,10 @@ function App() {
               </div>
             ) : screen === "analytics" ? (
               <div className="p-3 overflow-y-auto flex-1 flex flex-col gap-3">
+                {/* Summary stat cards */}
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: t('totalReports'), value: analyticsData?.total_events ?? '--', color: '#1842AA' },
+                    { label: t('totalSubmitted'), value: analyticsData?.total_submitted ?? analyticsData?.total_events ?? '--', color: '#1842AA' },
                     { label: t('approved'), value: analyticsData?.approved ?? '--', color: '#51A71D' },
                     { label: t('rejected'), value: analyticsData?.rejected ?? '--', color: '#DA251C' },
                     { label: t('ambiguous'), value: analyticsData?.ambiguous ?? '--', color: '#E1B91B' },
@@ -949,9 +954,44 @@ function App() {
                     </div>
                   ))}
                 </div>
-                {analyticsData?.discipline_breakdown && (
+
+                {/* Pending Review card - highlighted when there are pending items */}
+                {analyticsData && (
+                  <div className={"p-3 rounded shadow-sm border-l-4 transition-colors " + (isDarkMode ? "bg-slate-800 border border-slate-700 text-white" : "bg-white border border-[#CCCCCC]")} style={{ borderLeftColor: '#E1B91B' }}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className={"text-[11px] font-semibold " + (isDarkMode ? "text-slate-400" : "text-[#666666]")}>{t('pendingReview')}</div>
+                        <div className="text-2xl font-bold mt-1" style={{ color: '#E1B91B' }}>{analyticsData?.pending ?? 0}</div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className={"text-[10px] font-semibold px-2 py-0.5 rounded " + ((analyticsData?.pending ?? 0) > 0 ? "bg-[#E1B91B]/20 text-[#856b00]" : (isDarkMode ? "bg-slate-700 text-slate-400" : "bg-gray-100 text-gray-500"))}>
+                          {(analyticsData?.pending ?? 0) > 0 ? 'AWAITING REVIEW' : 'QUEUE CLEAR'}
+                        </span>
+                        {(analyticsData?.pending ?? 0) > 0 && (
+                          <span className={"text-[10px] " + (isDarkMode ? "text-slate-400" : "text-[#666666]")}>→ Open Review Console</span>
+                        )}
+                      </div>
+                    </div>
+                    {/* Per-discipline pending breakdown */}
+                    {analyticsData?.pending_discipline_breakdown && Object.keys(analyticsData.pending_discipline_breakdown).length > 0 && (
+                      <div className={"mt-2 pt-2 border-t " + (isDarkMode ? "border-slate-700" : "border-gray-100")}>
+                        <div className={"text-[10px] mb-1 " + (isDarkMode ? "text-slate-400" : "text-[#888]")}>Pending by discipline:</div>
+                        <div className="flex flex-wrap gap-1">
+                          {Object.entries(analyticsData.pending_discipline_breakdown).map(([disc, cnt]: [string, any]) => (
+                            <span key={disc} className="text-[10px] font-medium bg-[#E1B91B]/20 text-[#856b00] px-2 py-0.5 rounded-full border border-[#E1B91B]/40">
+                              {disc.toUpperCase()} · {cnt}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Approved discipline breakdown */}
+                {analyticsData?.discipline_breakdown && analyticsData.discipline_breakdown.length > 0 && (
                   <div className={"p-3 rounded shadow-sm transition-colors " + (isDarkMode ? "bg-slate-800 border border-slate-700 text-white" : "bg-white border border-[#CCCCCC]")}>
-                    <div className={"text-xs font-bold mb-2 " + (isDarkMode ? "text-slate-300" : "text-[#666666]")}>{t("byDiscipline")}</div>
+                    <div className={"text-xs font-bold mb-2 " + (isDarkMode ? "text-slate-300" : "text-[#666666]")}>{t("byDiscipline")} ({t('approved')})</div>
                     {analyticsData.discipline_breakdown.map((item: any, idx: number) => (
                       <div key={idx} className="flex items-center justify-between text-xs py-1 border-b border-[#f0eded] last:border-0">
                         <span className="capitalize">{t(item.discipline?.toLowerCase() || "")?.toUpperCase() || item.discipline}</span>
@@ -960,6 +1000,7 @@ function App() {
                     ))}
                   </div>
                 )}
+
                 {!analyticsData && (
                   <div className="flex flex-col items-center justify-center h-32 gap-2 text-[#666666]">
                     <span className="material-symbols-outlined text-3xl">analytics</span>
@@ -967,6 +1008,7 @@ function App() {
                   </div>
                 )}
               </div>
+
             ) : null}
           </div>
 

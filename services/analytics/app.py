@@ -33,12 +33,51 @@ def get_s_curve():
 
 @app.get("/analytics/stats")
 def get_stats():
-    """Returns overall statistics including ambiguity, discipline breakdown and daily trend."""
+    """
+    Returns overall statistics including ambiguity, discipline breakdown and daily trend.
+    Also fetches pending queue count from the writeback bridge service (port 8003)
+    to reflect newly submitted activities from the time agent.
+    """
+    import httpx
+
     stats = analytics_engine.get_ambiguity_stats()
     breakdown = analytics_engine.get_discipline_breakdown()
     trend = analytics_engine.get_daily_trend()
+
+    # Fetch pending queue from writeback bridge service
+    pending_count = 0
+    pending_discipline_breakdown: Dict[str, int] = {}
+    try:
+        resp = httpx.get("http://localhost:8003/queue/pending", timeout=2.0)
+        if resp.status_code == 200:
+            pending_items = resp.json()
+            pending_count = len(pending_items)
+            for item in pending_items:
+                disc = (item.get("event", {}).get("discipline") or "unknown").lower()
+                pending_discipline_breakdown[disc] = pending_discipline_breakdown.get(disc, 0) + 1
+    except Exception:
+        # Writeback bridge unreachable — silently degrade
+        pass
+
+    # Merge pending discipline breakdown with the approved breakdown
+    combined_breakdown = {b["discipline"]: b["count"] for b in breakdown}
+    for disc, cnt in pending_discipline_breakdown.items():
+        combined_breakdown[disc] = combined_breakdown.get(disc, 0)  # keep approved count separate
+
+    # Compute total_submitted: includes all approved + rejected + pending
+    approved = stats.get("approved", 0) or 0
+    rejected = stats.get("rejected", 0) or 0
+    ambiguous = stats.get("ambiguous", 0) or 0
+    total_submitted = (stats.get("total_events", 0) or 0) + pending_count
+
     return {
         **stats,
+        "pending": pending_count,
+        "total_submitted": total_submitted,
+        "approved": approved,
+        "rejected": rejected,
+        "ambiguous": ambiguous,
+        "pending_discipline_breakdown": pending_discipline_breakdown,
         "discipline_breakdown": breakdown,
         "daily_trend": trend,
     }
