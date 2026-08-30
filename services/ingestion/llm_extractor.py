@@ -71,20 +71,26 @@ Output: {"events": [{"activity_phrase": "link joint inspection", "discipline": "
 """
 
 
+from services.ingestion.multi_stage_retriever import MultiStageRetriever
+
+
 class LLMExtractor:
     """
-    Local SLM / LLM extractor using Ollama / LiteLLM with strict fallback.
+    Local SLM / LLM extractor using Ollama / LiteLLM with strict fallback
+    and multi-stage schedule grounding.
     """
 
     def __init__(
         self,
         base_url: Optional[str] = None,
         model_name: Optional[str] = None,
-        timeout: float = 60.0
+        timeout: float = 60.0,
+        retriever: Optional[MultiStageRetriever] = None
     ):
         self.base_url = base_url or os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
         self.model_name = model_name or os.getenv("LLM_MODEL_NAME", "llama3.2:latest")
         self.timeout = timeout
+        self.retriever = retriever or MultiStageRetriever()
 
     def is_available(self) -> bool:
         """Checks if local Ollama server is running."""
@@ -102,6 +108,7 @@ class LLMExtractor:
     ) -> List[ExtractedEvent]:
         """
         Executes LLM extraction via Ollama API. Falls back to rule-guided extraction if offline.
+        Uses MultiStageRetriever to inject grounded schedule context into the prompt.
         """
         if not text or not text.strip():
             return []
@@ -124,10 +131,18 @@ class LLMExtractor:
         if not has_action and not has_disc and not has_numbers:
             return []
 
+        # Retrieve relevant schedule grounding candidates via three-stage retrieval
+        grounded_activities = self.retriever.retrieve_with_filtering(text, top_k=5)
+        context_hints = ""
+        if grounded_activities:
+            context_hints = "\n\nGROUNDED SCHEDULE ACTIVITIES (for reference):\n" + "\n".join(
+                f"- Activity ID: {act.get('id')}, Name: {act.get('activity_name')}, Discipline: {act.get('discipline')}, Tag: {act.get('tag', 'N/A')}"
+                for act in grounded_activities
+            )
 
         payload = {
             "model": self.model_name,
-            "prompt": f"Extract structured events from this report:\n\n{text}",
+            "prompt": f"Extract structured events from this report:{context_hints}\n\nReport Text:\n{text}",
             "system": EXTRACTION_SYSTEM_PROMPT,
             "stream": False,
             "format": "json",
