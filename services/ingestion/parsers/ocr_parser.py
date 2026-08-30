@@ -57,15 +57,16 @@ class OCRParser:
     ) -> List[ExtractedEvent]:
         """
         Runs OCR on the given image, then extracts structured events via LLM.
-        Raises RuntimeError if no OCR engine is installed so the API returns a 500
-        with a clear message instead of silently returning garbage.
+        Falls back gracefully to ScanParser if no OCR engine is installed.
         """
         reader = self._get_ocr_reader()
 
         if reader is None:
-            raise RuntimeError(
-                "No OCR engine available. Install easyocr (`pip install easyocr`) "
-                "or pytesseract (`pip install pytesseract`) and ensure Tesseract is on PATH."
+            from services.ingestion.parsers.scan_parser import ScanParser
+            return ScanParser().parse(
+                file_input=image_input,
+                filename=filename,
+                default_date=default_date
             )
 
         extracted_text = ""
@@ -92,14 +93,21 @@ class OCRParser:
                     if os.path.exists(tmp_name):
                         os.remove(tmp_name)
 
-        except RuntimeError:
-            raise
         except Exception as e:
-            raise RuntimeError(f"OCR failed for {filename}: {e}") from e
+            from services.ingestion.parsers.scan_parser import ScanParser
+            return ScanParser().parse(
+                file_input=image_input,
+                filename=filename,
+                default_date=default_date
+            )
 
         if not extracted_text or not extracted_text.strip():
-            # Image was too degraded for the OCR engine to read
-            return []
+            from services.ingestion.parsers.scan_parser import ScanParser
+            return ScanParser().parse(
+                file_input=image_input,
+                filename=filename,
+                default_date=default_date
+            )
 
         # Pass extracted text through the LLM structured extractor
         events = self.llm_extractor.extract_with_llm(

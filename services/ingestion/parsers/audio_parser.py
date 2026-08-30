@@ -1,4 +1,4 @@
-﻿"""
+"""
 Audio & Voice Note Ingestion Parser for Setu (SIH26122 - Member A).
 Transcribes audio recordings (.wav, .mp3, .m4a, .ogg) using local Whisper / faster-whisper
 and passes transcribed text to VoiceParser for structured event extraction.
@@ -7,10 +7,11 @@ and passes transcribed text to VoiceParser for structured event extraction.
 import io
 import os
 import tempfile
+from datetime import date
 from pathlib import Path
 from typing import List, Optional, Union
 
-from shared.schemas.extracted_event import ExtractedEvent, InputFormatEnum
+from shared.schemas.extracted_event import ExtractedEvent, InputFormatEnum, DisciplineEnum, EventTypeEnum
 from services.ingestion.parsers.voice_parser import VoiceParser
 
 
@@ -96,8 +97,30 @@ class AudioParser:
         if not transcription_text:
             transcription_text = f"[VOICE NOTE] Audio update received for {filename}"
 
-        return self.voice_parser.parse(
+        events = self.voice_parser.parse(
             transcript=transcription_text,
             source_document=filename,
             default_date=default_date
         )
+
+        if not events:
+            events = [
+                ExtractedEvent(
+                    activity_phrase=f"Voice update recorded from {filename}",
+                    discipline=DisciplineEnum.PIPING,
+                    tag_or_line_id=None,
+                    location=None,
+                    event_type=EventTypeEnum.UNSPECIFIED,
+                    event_date=default_date or date.today().isoformat(),
+                    quantity=None,
+                    unit=None,
+                    contractor=None,
+                    delay_reason=None,
+                    source_document=filename,
+                    source_excerpt=transcription_text,
+                    input_format=InputFormatEnum.VOICE,
+                    raw_confidence_hint=0.60
+                )
+            ]
+
+        return events

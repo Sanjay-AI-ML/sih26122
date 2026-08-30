@@ -1,0 +1,2070 @@
+{
+  "version": "1.0.0",
+  "domain": "Oil & Gas and Infrastructure EPC Project Management",
+  "disciplines": {
+    "piping": [
+      {
+        "term": "Spool",
+        "abbreviation": "SPL",
+        "discipline": "piping",
+        "definition": "Prefabricated segment of a piping system comprising pipes, flanges, and fittings welded together in a workshop before site erection.",
+        "typical_units": [
+          "spools",
+          "joints",
+          "nos",
+          "meters"
+        ],
+        "keywords": [
+          "spool",
+          "spools",
+          "piping",
+          "prefabrication",
+          "erection",
+          "fit-up",
+          "erect"
+        ]
+      },
+      {
+        "term": "Hydrostatic Testing",
+        "abbreviation": "Hydrotest",
+        "discipline": "piping",
+        "definition": "Pressure testing of piping circuits or vessels using water to verify mechanical integrity and leak-tightness at specified design test pressures.",
+        "typical_units": [
+          "circuits",
+          "lines",
+          "systems",
+          "nos"
+        ],
+        "keywords": [
+          "hydrotest",
+          "hydrostatic",
+          "pressure test",
+          "test pack",
+          "filling",
+          "depressurization"
+        ]
+      },
+      {
+        "term": "Radiography Testing",
+        "abbreviation": "RT",
+        "discipline": "piping",
+        "definition": "Non-destructive testing (NDT) method using X-rays or gamma rays to inspect internal weld quality for volumetric defects like porosity or lack of fusion.",
+        "typical_units": [
+          "joints",
+          "inch-dia",
+          "films",
+          "nos"
+        ],
+        "keywords": [
+          "radiography",
+          "rt",
+          "ndt",
+          "x-ray",
+          "gamma ray",
+          "weld inspection",
+          "film"
+        ]
+      },
+      {
+        "term": "Ultrasonic Testing",
+        "abbreviation": "UT",
+        "discipline": "piping",
+        "definition": "Non-destructive testing technique using high-frequency sound waves to detect sub-surface flaws in pipe welds and measure wall thickness.",
+        "typical_units": [
+          "joints",
+          "meters",
+          "points"
+        ],
+        "keywords": [
+          "ultrasonic",
+          "ut",
+          "phased array",
+          "paut",
+          "thickness check"
+        ]
+      },
+      {
+        "term": "Fit-up & Tack Welding",
+        "abbreviation": "Fit-up",
+        "discipline": "piping",
+        "definition": "Alignment and temporary tacking of adjacent pipe ends with correct root gap, bevel angle, and high-low tolerance prior to full root run welding.",
+        "typical_units": [
+          "joints",
+          "inch-dia",
+          "nos"
+        ],
+        "keywords": [
+          "fit-up",
+          "fitup",
+          "root gap",
+          "bevel",
+          "tack weld",
+          "alignment"
+        ]
+      },
+      {
+        "term": "Branch Connection Fittings",
+        "abbreviation": "Olets",
+        "discipline": "piping",
+        "definition": "Reinforced branch fittings welded directly to header pipes including Weldolet, Sockolet, and Thredolet connections.",
+        "typical_units": [
+          "nos",
+          "joints",
+          "inch-dia"
+        ],
+        "keywords": [
+          "weldolet",
+          "sockolet",
+          "thredolet",
+          "olet",
+          "branch fitting"
+        ]
+      },
+      {
+        "term": "Flange Management & Torquing",
+        "abbreviation": "Torquing",
+        "discipline": "piping",
+        "definition": "Controlled tightening of flange bolts using calibrated torque wrenches or hydraulic bolt tensioners to ensure leak-proof joint compression.",
+        "typical_units": [
+          "joints",
+          "flanges",
+          "bolts",
+          "nos"
+        ],
+        "keywords": [
+          "torquing",
+          "bolt tensioning",
+          "torque wrench",
+          "gasket compression",
+          "flange joint"
+        ]
+      },
+      {
+        "term": "Positive Isolation & Blinding",
+        "abbreviation": "Spading",
+        "discipline": "piping",
+        "definition": "Insertion of spectacle blinds, spade blinds, or spacer rings into flange joints to physically isolate lines during maintenance or commissioning.",
+        "typical_units": [
+          "locations",
+          "blinds",
+          "spades",
+          "nos"
+        ],
+        "keywords": [
+          "blind",
+          "blinding",
+          "spade",
+          "spectacle blind",
+          "positive isolation"
+        ]
+      },
+      {
+        "term": "Post Weld Heat Treatment",
+        "abbreviation": "PWHT",
+        "discipline": "piping",
+        "definition": "Controlled thermal cycle applied to welded joints to relieve residual stresses and restore metallurgical ductility in alloy or thick steel pipes.",
+        "typical_units": [
+          "joints",
+          "heats",
+          "inch-dia"
+        ],
+        "keywords": [
+          "pwht",
+          "heat treatment",
+          "stress relief",
+          "thermal cycle",
+          "thermocouple"
+        ]
+      },
+      {
+        "term": "Pipe Rack Erection",
+        "abbreviation": "Rack Piping",
+        "discipline": "piping",
+        "definition": "Lifting and laying process and utility pipe spools onto elevated multi-tier structural pipe racks and securing onto pipe shoes.",
+        "typical_units": [
+          "meters",
+          "spools",
+          "tons",
+          "bays"
+        ],
+        "keywords": [
+          "pipe rack",
+          "rack erection",
+          "elevated piping",
+          "pipe shoes",
+          "main pipeway"
+        ]
+      },
+      {
+        "term": "Tie-In Joint",
+        "abbreviation": "Tie-In",
+        "discipline": "piping",
+        "definition": "Final connection point between a newly constructed pipeline network and an existing operational header or battery limit.",
+        "typical_units": [
+          "points",
+          "joints",
+          "nos"
+        ],
+        "keywords": [
+          "tie-in",
+          "tie in",
+          "battery limit",
+          "golden weld",
+          "hot tap tie-in"
+        ]
+      },
+      {
+        "term": "Isometric Drawing & Line Tracking",
+        "abbreviation": "Isome",
+        "discipline": "piping",
+        "definition": "Detailed 3D single-line shop drawing indicating exact pipe dimensions, coordinates, weld numbers, and Bill of Materials for fabrication.",
+        "typical_units": [
+          "drawings",
+          "sheets",
+          "lines"
+        ],
+        "keywords": [
+          "isometric",
+          "isome",
+          "p&id",
+          "line list",
+          "weld map"
+        ]
+      },
+      {
+        "term": "Pipeline Pigging & Gauge Plate",
+        "abbreviation": "Pigging",
+        "discipline": "piping",
+        "definition": "Propelling mechanical pigs through buried or cross-country pipelines to clean debris, dewater, or verify bore clearance using caliper pigs.",
+        "typical_units": [
+          "runs",
+          "km",
+          "sections"
+        ],
+        "keywords": [
+          "pigging",
+          "gauge pig",
+          "caliper pig",
+          "foam pig",
+          "pig launcher",
+          "pig receiver"
+        ]
+      },
+      {
+        "term": "Steam Tracing & Jacketing",
+        "abbreviation": "Tracing",
+        "discipline": "piping",
+        "definition": "Attaching steam supply tubes or outer jackets along process piping to maintain temperature and prevent fluid solidification or condensation.",
+        "typical_units": [
+          "meters",
+          "mtrs",
+          "circuits"
+        ],
+        "keywords": [
+          "steam tracing",
+          "heat tracing",
+          "jacketing",
+          "steam trap",
+          "tubing"
+        ]
+      },
+      {
+        "term": "Cathodic Protection System",
+        "abbreviation": "CP",
+        "discipline": "piping",
+        "definition": "Electrochemical corrosion protection for buried cross-country pipelines and tank bottoms using sacrificial anodes or impressed current (ICCP).",
+        "typical_units": [
+          "stations",
+          "anodes",
+          "km",
+          "points"
+        ],
+        "keywords": [
+          "cathodic protection",
+          "cp",
+          "anode bed",
+          "impressed current",
+          "pipe coating"
+        ]
+      },
+      {
+        "term": "Holiday Detection",
+        "abbreviation": "Holiday Test",
+        "discipline": "piping",
+        "definition": "High-voltage spark testing along external anti-corrosion pipeline coating (3LPE / FBE) to detect pinholes, voids, or micro-cracks before trench lowering.",
+        "typical_units": [
+          "meters",
+          "km",
+          "joints"
+        ],
+        "keywords": [
+          "holiday detection",
+          "spark test",
+          "coating inspection",
+          "3lpe",
+          "fbe coating"
+        ]
+      },
+      {
+        "term": "Trenching, Padding & Lowering",
+        "abbreviation": "Lowering",
+        "discipline": "piping",
+        "definition": "Excavating right-of-way trenches, laying soft sand padding, and using side-booms to lower welded pipeline strings into position.",
+        "typical_units": [
+          "meters",
+          "km",
+          "joints"
+        ],
+        "keywords": [
+          "lowering",
+          "trenching",
+          "sideboom",
+          "sand padding",
+          "pipe laying"
+        ]
+      },
+      {
+        "term": "Hot Tapping",
+        "abbreviation": "Hot Tap",
+        "discipline": "piping",
+        "definition": "Tapping into live pressurized piping or pipelines using special drilling machines without shutting down operational flow.",
+        "typical_units": [
+          "locations",
+          "points",
+          "nos"
+        ],
+        "keywords": [
+          "hot tap",
+          "hot tapping",
+          "live line tapping",
+          "split tee",
+          "tapping machine"
+        ]
+      },
+      {
+        "term": "Orifice Flange Metering Run",
+        "abbreviation": "Orifice Run",
+        "discipline": "piping",
+        "definition": "Calibrated precision straight piping spool fitted with orifice flange taps for differential pressure flow measurement.",
+        "typical_units": [
+          "runs",
+          "nos",
+          "assemblies"
+        ],
+        "keywords": [
+          "orifice run",
+          "orifice flange",
+          "metering spool",
+          "flow element"
+        ]
+      },
+      {
+        "term": "Pipe Supports & Spring Hangers",
+        "abbreviation": "Supports",
+        "discipline": "piping",
+        "definition": "Structural guides, anchors, clamps, and variable spring hangers installed to restrain thermal expansion and support pipe operating weight.",
+        "typical_units": [
+          "nos",
+          "sets",
+          "locations"
+        ],
+        "keywords": [
+          "pipe support",
+          "spring hanger",
+          "guide",
+          "anchor",
+          "trunnion",
+          "shoe"
+        ]
+      },
+      {
+        "term": "Horizontal Directional Drilling",
+        "abbreviation": "HDD",
+        "discipline": "piping",
+        "definition": "Trenchless pipeline crossing method under rivers, roads, and railways by drilling a pilot hole, reaming, and pulling pipeline strings.",
+        "typical_units": [
+          "crossings",
+          "meters",
+          "nos"
+        ],
+        "keywords": [
+          "hdd",
+          "directional drilling",
+          "river crossing",
+          "pullback",
+          "trenchless"
+        ]
+      },
+      {
+        "term": "Nitrogen Purging & Blanketing",
+        "abbreviation": "N2 Purge",
+        "discipline": "piping",
+        "definition": "Injecting dry gaseous nitrogen into completed piping systems to displace air/oxygen and moisture prior to hydrocarbon introduction.",
+        "typical_units": [
+          "circuits",
+          "cycles",
+          "cum",
+          "systems"
+        ],
+        "keywords": [
+          "nitrogen purge",
+          "n2 purge",
+          "purging",
+          "blanketing",
+          "dew point check"
+        ]
+      },
+      {
+        "term": "Butt Weld Joint",
+        "abbreviation": "BW",
+        "discipline": "piping",
+        "definition": "Full penetration circumferential groove weld joining two beveled pipe ends per ASME B31.3.",
+        "typical_units": [
+          "joints",
+          "inch-dia"
+        ],
+        "keywords": [
+          "butt weld",
+          "bw joint",
+          "bevel",
+          "root run",
+          "capping"
+        ]
+      },
+      {
+        "term": "Socket Weld Joint",
+        "abbreviation": "SW",
+        "discipline": "piping",
+        "definition": "Fillet welded pipe attachment inserted into recessed fitting with 1.5mm expansion gap.",
+        "typical_units": [
+          "joints",
+          "inch-dia",
+          "nos"
+        ],
+        "keywords": [
+          "socket weld",
+          "sw",
+          "fillet weld",
+          "small bore piping"
+        ]
+      },
+      {
+        "term": "Flange Gasket (Spiral Wound)",
+        "abbreviation": "SWG",
+        "discipline": "piping",
+        "definition": "Metallic winding with graphite or PTFE filler ring inserted between raised face flanges.",
+        "typical_units": [
+          "nos",
+          "sets"
+        ],
+        "keywords": [
+          "gasket",
+          "spiral wound",
+          "swg",
+          "flange gasket",
+          "ptfe"
+        ]
+      },
+      {
+        "term": "Spectacle Blind Installation",
+        "abbreviation": "Spec Blind",
+        "discipline": "piping",
+        "definition": "Figure-8 steel plate comprising an open orifice ring and solid blind disk for line isolation.",
+        "typical_units": [
+          "nos",
+          "points"
+        ],
+        "keywords": [
+          "spectacle blind",
+          "spec blind",
+          "figure 8",
+          "isolation blind"
+        ]
+      },
+      {
+        "term": "Pipe Bending (Cold / Hot Induction)",
+        "abbreviation": "Induction Bend",
+        "discipline": "piping",
+        "definition": "Forming smooth radius turns (3D/5D) in long pipelines using induction heating or cold bending machines.",
+        "typical_units": [
+          "bends",
+          "nos",
+          "meters"
+        ],
+        "keywords": [
+          "induction bend",
+          "pipe bending",
+          "3d bend",
+          "5d bend",
+          "cold bend"
+        ]
+      }
+    ],
+    "civil": [
+      {
+        "term": "Earthwork & Excavation",
+        "abbreviation": "Excavation",
+        "discipline": "civil",
+        "definition": "Bulk soil cutting, pit excavation, and trenching to reach designated formation level for equipment foundations and buried utilities.",
+        "typical_units": [
+          "cum",
+          "m3",
+          "cubic meters",
+          "sqm"
+        ],
+        "keywords": [
+          "excavation",
+          "earthwork",
+          "pit digging",
+          "trenching",
+          "formation level"
+        ]
+      },
+      {
+        "term": "Plain Cement Concrete",
+        "abbreviation": "PCC",
+        "discipline": "civil",
+        "definition": "Non-structural lean concrete blinding layer (M10/M15 grade) cast on soil to provide a clean, level surface for rebar placement.",
+        "typical_units": [
+          "cum",
+          "m3",
+          "sqm"
+        ],
+        "keywords": [
+          "pcc",
+          "plain concrete",
+          "mud mat",
+          "lean concrete",
+          "blinding"
+        ]
+      },
+      {
+        "term": "Reinforced Cement Concrete",
+        "abbreviation": "RCC",
+        "discipline": "civil",
+        "definition": "Structural concrete embedded with deformed steel rebar (TMT bars) capable of withstanding heavy tensile and compressive loads.",
+        "typical_units": [
+          "cum",
+          "m3",
+          "MT"
+        ],
+        "keywords": [
+          "rcc",
+          "reinforced concrete",
+          "structural concrete",
+          "concreting",
+          "pouring"
+        ]
+      },
+      {
+        "term": "Rebar Reinforcement Tying",
+        "abbreviation": "Rebar",
+        "discipline": "civil",
+        "definition": "Cutting, bending, and placing Thermo-Mechanically Treated (TMT) high-yield steel bars tied with binding wire per bar bending schedules.",
+        "typical_units": [
+          "MT",
+          "tons",
+          "kg"
+        ],
+        "keywords": [
+          "rebar",
+          "reinforcement",
+          "tmt bar",
+          "bar bending",
+          "bbs",
+          "binding wire"
+        ]
+      },
+      {
+        "term": "Shuttering & Formwork",
+        "abbreviation": "Shuttering",
+        "discipline": "civil",
+        "definition": "Temporary steel or plywood moulds and staging props erected to contain freshly placed concrete until it attains self-supporting strength.",
+        "typical_units": [
+          "sqm",
+          "sqft",
+          "cum"
+        ],
+        "keywords": [
+          "shuttering",
+          "formwork",
+          "staging",
+          "mould",
+          "deshuttering",
+          "props"
+        ]
+      },
+      {
+        "term": "Raft Foundation",
+        "abbreviation": "Raft",
+        "discipline": "civil",
+        "definition": "Massive continuous reinforced concrete slab foundation spreading heavy equipment loads across the entire footprint.",
+        "typical_units": [
+          "cum",
+          "m3",
+          "sqm"
+        ],
+        "keywords": [
+          "raft",
+          "raft foundation",
+          "mat foundation",
+          "mass concrete",
+          "base slab"
+        ]
+      },
+      {
+        "term": "Piling & Pile Cap",
+        "abbreviation": "Piling",
+        "discipline": "civil",
+        "definition": "Bored cast-in-situ concrete piles drilled deep into hard strata topped with reinforced pile caps for heavy structure support.",
+        "typical_units": [
+          "piles",
+          "nos",
+          "cum",
+          "meters"
+        ],
+        "keywords": [
+          "piling",
+          "bored pile",
+          "pile cap",
+          "cast-in-situ",
+          "drilling rig"
+        ]
+      },
+      {
+        "term": "Plinth & Tie Beam",
+        "abbreviation": "Plinth",
+        "discipline": "civil",
+        "definition": "Reinforced horizontal concrete beam cast at ground level connecting isolated pedestals to prevent differential settlement.",
+        "typical_units": [
+          "meters",
+          "cum",
+          "m3"
+        ],
+        "keywords": [
+          "plinth beam",
+          "tie beam",
+          "grade beam",
+          "ground beam"
+        ]
+      },
+      {
+        "term": "Soil Compaction & Field Density Test",
+        "abbreviation": "Compaction",
+        "discipline": "civil",
+        "definition": "Mechanical roller compaction of soil layers verified by sand replacement or core cutter tests for target Proctor density (e.g. 95% MDD).",
+        "typical_units": [
+          "layers",
+          "cum",
+          "sqm",
+          "%"
+        ],
+        "keywords": [
+          "compaction",
+          "fdt",
+          "proctor density",
+          "mdd",
+          "soil compaction",
+          "roller"
+        ]
+      },
+      {
+        "term": "Backfilling & Leveling",
+        "abbreviation": "Backfilling",
+        "discipline": "civil",
+        "definition": "Filling excavated trenches and foundation gaps with selected granular soil in compacted 200mm layers.",
+        "typical_units": [
+          "cum",
+          "m3",
+          "cubic meters"
+        ],
+        "keywords": [
+          "backfilling",
+          "backfill",
+          "soil filling",
+          "grading",
+          "compacted fill"
+        ]
+      },
+      {
+        "term": "Concrete Slump & Cube Strength Testing",
+        "abbreviation": "Cube Test",
+        "discipline": "civil",
+        "definition": "Sampling ready-mix concrete for slump workability and curing 150mm test cubes for 7-day and 28-day compressive strength checks.",
+        "typical_units": [
+          "cubes",
+          "samples",
+          "sets",
+          "nos"
+        ],
+        "keywords": [
+          "slump test",
+          "cube test",
+          "compressive strength",
+          "cube crushing",
+          "concrete testing"
+        ]
+      },
+      {
+        "term": "Non-Shrink Cementitious Grouting",
+        "abbreviation": "Grouting",
+        "discipline": "civil",
+        "definition": "Pouring high-strength flowable non-shrink grout under equipment base plates and structural column pedestals.",
+        "typical_units": [
+          "bags",
+          "cum",
+          "locations",
+          "sqm"
+        ],
+        "keywords": [
+          "grouting",
+          "non-shrink grout",
+          "pocket grouting",
+          "base plate grout",
+          "epoxy grout"
+        ]
+      },
+      {
+        "term": "Stormwater Drainage & Culverts",
+        "abbreviation": "Drainage",
+        "discipline": "civil",
+        "definition": "Construction of precast or cast-in-situ open concrete drains, box culverts, and catch pits for plant surface runoff control.",
+        "typical_units": [
+          "meters",
+          "nos",
+          "cum"
+        ],
+        "keywords": [
+          "drain",
+          "drainage",
+          "culvert",
+          "box culvert",
+          "storm water",
+          "catch pit"
+        ]
+      },
+      {
+        "term": "Blast-Resistant Wall",
+        "abbreviation": "Blast Wall",
+        "discipline": "civil",
+        "definition": "Heavy reinforced concrete or profiled steel barrier designed to protect control rooms and substations from overpressure waves.",
+        "typical_units": [
+          "sqm",
+          "cum",
+          "panels"
+        ],
+        "keywords": [
+          "blast wall",
+          "blast resistant",
+          "firewall",
+          "protective barrier"
+        ]
+      },
+      {
+        "term": "Equipment Pedestals",
+        "abbreviation": "Pedestal",
+        "discipline": "civil",
+        "definition": "Elevated concrete plinths cast above foundation slabs to support rotating equipment, pumps, and structural columns.",
+        "typical_units": [
+          "nos",
+          "cum",
+          "locations"
+        ],
+        "keywords": [
+          "pedestal",
+          "column neck",
+          "equipment plinth",
+          "pump foundation"
+        ]
+      },
+      {
+        "term": "Structural Steel Erection",
+        "abbreviation": "Steel Erection",
+        "discipline": "civil",
+        "definition": "Assembly and crane hoisting of structural steel columns, beams, bracing members, and purlins for process structures.",
+        "typical_units": [
+          "MT",
+          "tons",
+          "metric tons",
+          "nos"
+        ],
+        "keywords": [
+          "structural steel",
+          "steel erection",
+          "columns",
+          "beams",
+          "rafters",
+          "bracing"
+        ]
+      },
+      {
+        "term": "Anchor Bolts & Template Fixing",
+        "abbreviation": "Anchor Bolts",
+        "discipline": "civil",
+        "definition": "Fixing high-tensile foundation bolt clusters into formwork using rigid steel templates prior to concreting.",
+        "typical_units": [
+          "sets",
+          "nos",
+          "locations"
+        ],
+        "keywords": [
+          "anchor bolt",
+          "foundation bolt",
+          "sleeve bolt",
+          "bolt template",
+          "embedment"
+        ]
+      },
+      {
+        "term": "HSFG Bolt Tightening",
+        "abbreviation": "HSFG",
+        "discipline": "civil",
+        "definition": "High Strength Friction Grip structural bolt tensioning using direct tension indicators or calibrated torque multipliers.",
+        "typical_units": [
+          "bolts",
+          "joints",
+          "nos"
+        ],
+        "keywords": [
+          "hsfg",
+          "friction grip",
+          "torque tightening",
+          "structural bolting"
+        ]
+      },
+      {
+        "term": "Roof Decking & Side Cladding",
+        "abbreviation": "Cladding",
+        "discipline": "civil",
+        "definition": "Installation of profiled color-coated galvalume metal sheets and polycarbonate skylights on industrial shed roofs and walls.",
+        "typical_units": [
+          "sqm",
+          "sqft",
+          "sheets"
+        ],
+        "keywords": [
+          "decking",
+          "cladding",
+          "roof sheet",
+          "galvalume",
+          "purlin fixing"
+        ]
+      },
+      {
+        "term": "Structural Fireproofing Coating",
+        "abbreviation": "Fireproofing",
+        "discipline": "civil",
+        "definition": "Application of dense cementitious or intumescent fireproofing layers onto structural steel columns up to designated height limits.",
+        "typical_units": [
+          "sqm",
+          "MT",
+          "meters"
+        ],
+        "keywords": [
+          "fireproofing",
+          "intumescent",
+          "cementitious fireproofing",
+          "passive fire protection"
+        ]
+      },
+      {
+        "term": "Dewatering System",
+        "abbreviation": "Dewatering",
+        "discipline": "civil",
+        "definition": "Lowering groundwater table during foundation excavation using wellpoint headers or submersible sump pumps.",
+        "typical_units": [
+          "points",
+          "days",
+          "hours",
+          "locations"
+        ],
+        "keywords": [
+          "dewatering",
+          "wellpoint",
+          "sump pump",
+          "water table",
+          "groundwater"
+        ]
+      },
+      {
+        "term": "Road Base & Asphalt Paving",
+        "abbreviation": "WMM / Asphalt",
+        "discipline": "civil",
+        "definition": "Laying Wet Mix Macadam (WMM) and bituminous asphalt concrete paving for internal plant access roads.",
+        "typical_units": [
+          "sqm",
+          "cum",
+          "meters"
+        ],
+        "keywords": [
+          "paving",
+          "asphalt",
+          "bitumen",
+          "wmm",
+          "road base",
+          "roller"
+        ]
+      },
+      {
+        "term": "Precast Cable Trench",
+        "abbreviation": "Trench",
+        "discipline": "civil",
+        "definition": "Installation of factory-cast concrete U-troughs and precast cover slabs for substation cable routing.",
+        "typical_units": [
+          "meters",
+          "runs",
+          "slabs"
+        ],
+        "keywords": [
+          "cable trench",
+          "precast trench",
+          "trough",
+          "trench cover",
+          "trench layout"
+        ]
+      },
+      {
+        "term": "Perimeter Fencing & Boundary Wall",
+        "abbreviation": "Security Fence",
+        "discipline": "civil",
+        "definition": "Erecting chain-link security fencing, razor wire coils, or precast concrete compound walls.",
+        "typical_units": [
+          "meters",
+          "km",
+          "panels"
+        ],
+        "keywords": [
+          "fencing",
+          "boundary wall",
+          "chain link",
+          "razor wire",
+          "perimeter wall"
+        ]
+      },
+      {
+        "term": "Expansion Joint Treatment",
+        "abbreviation": "Exp Joint",
+        "discipline": "civil",
+        "definition": "Sealing building and road expansion gaps with polysulphide sealants, backer rods, and waterstops.",
+        "typical_units": [
+          "meters",
+          "joints"
+        ],
+        "keywords": [
+          "expansion joint",
+          "waterstop",
+          "polysulphide",
+          "joint sealant",
+          "backer rod"
+        ]
+      }
+    ],
+    "static_rotating": [
+      {
+        "term": "Centrifugal Pump Installation",
+        "abbreviation": "Pump Erection",
+        "discipline": "static_rotating",
+        "definition": "Mounting, shimming, and leveling API 610 horizontal and vertical centrifugal pumps on fabricated steel skids or concrete plinths.",
+        "typical_units": [
+          "pumps",
+          "sets",
+          "nos"
+        ],
+        "keywords": [
+          "pump",
+          "centrifugal pump",
+          "api 610",
+          "pump baseplate",
+          "pump skid"
+        ]
+      },
+      {
+        "term": "Reciprocating Compressor Erection",
+        "abbreviation": "Compressor",
+        "discipline": "static_rotating",
+        "definition": "Precision positioning and anchoring of high-pressure multi-stage reciprocating gas compressors, crankcases, and pulsation dampeners.",
+        "typical_units": [
+          "sets",
+          "packages",
+          "nos"
+        ],
+        "keywords": [
+          "compressor",
+          "reciprocating",
+          "pulsation dampener",
+          "crankcase",
+          "cylinder"
+        ]
+      },
+      {
+        "term": "Shell & Tube Heat Exchanger",
+        "abbreviation": "Exchanger",
+        "discipline": "static_rotating",
+        "definition": "Rigging and placing heavy TEMA shell and tube heat exchangers onto saddle supports and installing tube bundles.",
+        "typical_units": [
+          "exchangers",
+          "shells",
+          "bundles",
+          "nos"
+        ],
+        "keywords": [
+          "heat exchanger",
+          "shell and tube",
+          "tube bundle",
+          "channel head",
+          "saddle support",
+          "e-101"
+        ]
+      },
+      {
+        "term": "Air Cooled Heat Exchanger (Fin Fan)",
+        "abbreviation": "Fin Fan",
+        "discipline": "static_rotating",
+        "definition": "Erecting elevated air cooler tube bundles, plenums, fan motors, drive belts, and louvers on structural piperacks.",
+        "typical_units": [
+          "bays",
+          "bundles",
+          "fans",
+          "nos"
+        ],
+        "keywords": [
+          "fin fan",
+          "air cooler",
+          "ache",
+          "fan blade",
+          "louver",
+          "bundle"
+        ]
+      },
+      {
+        "term": "Distillation Column / Fractionator Lift",
+        "abbreviation": "Column",
+        "discipline": "static_rotating",
+        "definition": "Heavy tandem crane lifting, vertical tailing, and skirt anchoring of massive refinery fractionating towers and stripping columns.",
+        "typical_units": [
+          "columns",
+          "towers",
+          "nos"
+        ],
+        "keywords": [
+          "column",
+          "fractionator",
+          "tower",
+          "skirt",
+          "tandem lift",
+          "heavy lift"
+        ]
+      },
+      {
+        "term": "Pressure Vessel Placement",
+        "abbreviation": "PV",
+        "discipline": "static_rotating",
+        "definition": "Positioning horizontal or vertical ASME Sec VIII pressure vessels, knock-out drums, and flash drums onto foundations.",
+        "typical_units": [
+          "vessels",
+          "drums",
+          "nos"
+        ],
+        "keywords": [
+          "pressure vessel",
+          "knock out drum",
+          "ko drum",
+          "separator",
+          "flash vessel",
+          "v-101"
+        ]
+      },
+      {
+        "term": "Storage Tank Erection (API 650)",
+        "abbreviation": "Tank",
+        "discipline": "static_rotating",
+        "definition": "Laying bottom annular plates, jacking curved shell courses, and assembling floating or cone roofs for large crude oil storage tanks.",
+        "typical_units": [
+          "tanks",
+          "courses",
+          "plates",
+          "nos"
+        ],
+        "keywords": [
+          "storage tank",
+          "tank erection",
+          "api 650",
+          "shell course",
+          "annular plate",
+          "floating roof",
+          "tk-101"
+        ]
+      },
+      {
+        "term": "Horton Sphere Vessel",
+        "abbreviation": "Sphere",
+        "discipline": "static_rotating",
+        "definition": "Erecting pressurized spherical petal plates supported on tubular legs for liquefied petroleum gas (LPG) storage.",
+        "typical_units": [
+          "spheres",
+          "petals",
+          "nos"
+        ],
+        "keywords": [
+          "sphere",
+          "horton sphere",
+          "lpg sphere",
+          "petal plate",
+          "spherical tank"
+        ]
+      },
+      {
+        "term": "Shaft Alignment (Laser / Dial Indicator)",
+        "abbreviation": "Alignment",
+        "discipline": "static_rotating",
+        "definition": "Precision measuring of rim and face runout and cold/hot offset between driver (motor/turbine) and driven shafts using laser tools.",
+        "typical_units": [
+          "sets",
+          "machines",
+          "points",
+          "nos"
+        ],
+        "keywords": [
+          "alignment",
+          "shaft alignment",
+          "laser alignment",
+          "dial indicator",
+          "soft foot",
+          "runout"
+        ]
+      },
+      {
+        "term": "Lube Oil Flushing & Flushing Skid",
+        "abbreviation": "Oil Flush",
+        "discipline": "static_rotating",
+        "definition": "High-velocity thermal cycling and filtration of lube oil through rotating machinery bearings to meet ISO particle count cleanliness specs.",
+        "typical_units": [
+          "loops",
+          "skids",
+          "systems",
+          "hours"
+        ],
+        "keywords": [
+          "lube oil",
+          "oil flushing",
+          "cleanliness",
+          "particle count",
+          "oil console"
+        ]
+      },
+      {
+        "term": "Mechanical Seal Installation",
+        "abbreviation": "Mech Seal",
+        "discipline": "static_rotating",
+        "definition": "Fitting cartridge mechanical seals with flush piping plans (Plan 53, Plan 11) onto pump stuffing boxes.",
+        "typical_units": [
+          "seals",
+          "cartridges",
+          "nos"
+        ],
+        "keywords": [
+          "mechanical seal",
+          "cartridge seal",
+          "api flush plan",
+          "seal barrier"
+        ]
+      },
+      {
+        "term": "Internal Trays & Demister Installation",
+        "abbreviation": "Tower Internals",
+        "discipline": "static_rotating",
+        "definition": "Internal bolting of valve trays, sieve trays, structured packing, liquid distributors, and demister pads inside distillation columns.",
+        "typical_units": [
+          "trays",
+          "beds",
+          "layers",
+          "nos"
+        ],
+        "keywords": [
+          "tower internals",
+          "valve tray",
+          "demister pad",
+          "packing",
+          "liquid distributor"
+        ]
+      },
+      {
+        "term": "Pressure Safety Valve (PSV) Bench Testing",
+        "abbreviation": "PSV Test",
+        "discipline": "static_rotating",
+        "definition": "Testing pop-pressure, seat tightness, and reset pressure of safety relief valves on calibrated test benches before field installation.",
+        "typical_units": [
+          "valves",
+          "psvs",
+          "nos"
+        ],
+        "keywords": [
+          "psv",
+          "safety valve",
+          "relief valve",
+          "pop test",
+          "bench test",
+          "set pressure"
+        ]
+      },
+      {
+        "term": "Coupling Bolt Fastening",
+        "abbreviation": "Coupling",
+        "discipline": "static_rotating",
+        "definition": "Connecting flexible diaphragm or grid couplings between motor shafts and equipment drive shafts.",
+        "typical_units": [
+          "sets",
+          "nos"
+        ],
+        "keywords": [
+          "coupling",
+          "flexible coupling",
+          "spacer coupling",
+          "shaft coupling",
+          "grid coupling"
+        ]
+      },
+      {
+        "term": "Suction Strainer Cleaning",
+        "abbreviation": "Strainer",
+        "discipline": "static_rotating",
+        "definition": "Temporary conical witch-hat or basket strainer installation and cleaning before commissioning runs.",
+        "typical_units": [
+          "strainers",
+          "nos",
+          "sets"
+        ],
+        "keywords": [
+          "strainer",
+          "witch hat",
+          "conical strainer",
+          "basket strainer",
+          "suction filter"
+        ]
+      },
+      {
+        "term": "Flare Stack & Flare Tip Erection",
+        "abbreviation": "Flare",
+        "discipline": "static_rotating",
+        "definition": "Guyed or derrick-supported elevated structural flare stack erection with sonic flare tip and ignition pilots.",
+        "typical_units": [
+          "stacks",
+          "tips",
+          "nos"
+        ],
+        "keywords": [
+          "flare stack",
+          "flare tip",
+          "pilot burner",
+          "derrick",
+          "flare ignition"
+        ]
+      },
+      {
+        "term": "Boiler / Furnace Refractory Lining",
+        "abbreviation": "Refractory",
+        "discipline": "static_rotating",
+        "definition": "Casting and curing dense high-alumina refractory and ceramic fiber insulation inside process fired heaters.",
+        "typical_units": [
+          "sqm",
+          "MT",
+          "cum"
+        ],
+        "keywords": [
+          "refractory",
+          "castable",
+          "ceramic fiber",
+          "furnace lining",
+          "dry out"
+        ]
+      }
+    ],
+    "electrical": [
+      {
+        "term": "Power Transformer Erection & Oil Filtration",
+        "abbreviation": "Transformer",
+        "discipline": "electrical",
+        "definition": "Placing main step-down transformers, dressing bushings and conservator tanks, followed by high-vacuum dielectric oil filtration and BDV tests.",
+        "typical_units": [
+          "transformers",
+          "units",
+          "nos"
+        ],
+        "keywords": [
+          "transformer",
+          "oil filtration",
+          "bdv test",
+          "bushing",
+          "conservator tank",
+          "buchholz"
+        ]
+      },
+      {
+        "term": "HT / LT Switchgear Panel Installation",
+        "abbreviation": "Switchgear",
+        "discipline": "electrical",
+        "definition": "Erecting 33kV/11kV/6.6kV High Tension and 415V Low Tension indoor switchgear panels over substation basement trenches.",
+        "typical_units": [
+          "panels",
+          "breakers",
+          "cubicles",
+          "bays",
+          "nos"
+        ],
+        "keywords": [
+          "switchgear",
+          "ht panel",
+          "lt panel",
+          "vacuum circuit breaker",
+          "vcb",
+          "busbar"
+        ]
+      },
+      {
+        "term": "Motor Control Center",
+        "abbreviation": "MCC",
+        "discipline": "electrical",
+        "definition": "Floor-mounted assembly of motor starters, soft starters, variable frequency drives, and circuit breakers controlling plant electric motors.",
+        "typical_units": [
+          "panels",
+          "feeders",
+          "starters",
+          "nos"
+        ],
+        "keywords": [
+          "mcc",
+          "motor control center",
+          "starter",
+          "feeder",
+          "dol",
+          "soft starter"
+        ]
+      },
+      {
+        "term": "Cable Tray Installation",
+        "abbreviation": "Cable Tray",
+        "discipline": "electrical",
+        "definition": "Installing galvanized perforated, ladder-type, or wire-mesh cable trays and unistrut brackets along process corridors.",
+        "typical_units": [
+          "meters",
+          "mtrs",
+          "lengths"
+        ],
+        "keywords": [
+          "cable tray",
+          "ladder tray",
+          "perforated tray",
+          "tray fabrication",
+          "coupler plate"
+        ]
+      },
+      {
+        "term": "Power & Control Cable Pulling",
+        "abbreviation": "Cable Pulling",
+        "discipline": "electrical",
+        "definition": "Pulling heavy Armoured Copper/Aluminium HT (11kV/33kV) and LT power cables through trenches, ducts, and elevated trays.",
+        "typical_units": [
+          "meters",
+          "mtrs",
+          "km",
+          "runs"
+        ],
+        "keywords": [
+          "cable pulling",
+          "cable laying",
+          "ht cable",
+          "lt cable",
+          "armoured cable",
+          "cable drum"
+        ]
+      },
+      {
+        "term": "Cable Glanding & Termination",
+        "abbreviation": "Termination",
+        "discipline": "electrical",
+        "definition": "Fitting double-compression explosion-proof cable glands and crimping terminal lugs with heat-shrinkable stress sleeves.",
+        "typical_units": [
+          "nodes",
+          "glands",
+          "terminations",
+          "joints",
+          "nos"
+        ],
+        "keywords": [
+          "glanding",
+          "termination",
+          "cable gland",
+          "lugs",
+          "crimping",
+          "heat shrink kit"
+        ]
+      },
+      {
+        "term": "Megger Insulation Resistance (IR) Testing",
+        "abbreviation": "Megger Test",
+        "discipline": "electrical",
+        "definition": "Applying DC test voltage (500V/1kV/5kV) across conductors and ground to measure insulation resistance before and after cable laying.",
+        "typical_units": [
+          "circuits",
+          "cables",
+          "feeders",
+          "nos"
+        ],
+        "keywords": [
+          "megger",
+          "ir test",
+          "insulation resistance",
+          "hi-pot",
+          "dielectric"
+        ]
+      },
+      {
+        "term": "Earthing Grid & Earth Pit Measurement",
+        "abbreviation": "Earthing",
+        "discipline": "electrical",
+        "definition": "Burying bare copper/GI grounding conductors, welding exothermic cadweld joints, and testing earth pit resistance to ensure under 1 Ohm.",
+        "typical_units": [
+          "pits",
+          "meters",
+          "electrodes",
+          "nos"
+        ],
+        "keywords": [
+          "earthing",
+          "earth pit",
+          "grounding grid",
+          "cadweld",
+          "earth electrode",
+          "resistance test"
+        ]
+      },
+      {
+        "term": "Busduct Assembly & Joint Bolting",
+        "abbreviation": "Busduct",
+        "discipline": "electrical",
+        "definition": "Installing enclosed sandwich copper/aluminium busbars interconnecting power transformers with indoor switchgear rooms.",
+        "typical_units": [
+          "meters",
+          "runs",
+          "sections"
+        ],
+        "keywords": [
+          "busduct",
+          "busbar",
+          "sandwich busduct",
+          "flexible connector",
+          "bus trunking"
+        ]
+      },
+      {
+        "term": "Uninterruptible Power Supply & Battery Bank",
+        "abbreviation": "UPS",
+        "discipline": "electrical",
+        "definition": "Erecting industrial dual-redundant static inverter/rectifier cubicles and mounting 110V/220V lead-acid or VRLA battery racks.",
+        "typical_units": [
+          "sets",
+          "banks",
+          "cells",
+          "nos"
+        ],
+        "keywords": [
+          "ups",
+          "battery bank",
+          "charger",
+          "inverter",
+          "vrla",
+          "dc system"
+        ]
+      },
+      {
+        "term": "Diesel Generator Synchronization",
+        "abbreviation": "DG Set",
+        "discipline": "electrical",
+        "definition": "Testing emergency diesel generator start sequences, auto-mains-failure (AMF) changeover, and load bank capacity trials.",
+        "typical_units": [
+          "dg sets",
+          "units",
+          "kva",
+          "nos"
+        ],
+        "keywords": [
+          "dg set",
+          "diesel generator",
+          "amf panel",
+          "synchronization",
+          "load test"
+        ]
+      },
+      {
+        "term": "Gas Insulated Switchgear",
+        "abbreviation": "GIS",
+        "discipline": "electrical",
+        "definition": "Assembling compact high-voltage SF6 gas-insulated substation circuit breakers, disconnectors, and instrument transformers.",
+        "typical_units": [
+          "bays",
+          "feeders",
+          "nos"
+        ],
+        "keywords": [
+          "gis",
+          "gas insulated switchgear",
+          "sf6",
+          "substation bay",
+          "circuit breaker"
+        ]
+      },
+      {
+        "term": "Neutral Grounding Resistor",
+        "abbreviation": "NGR",
+        "discipline": "electrical",
+        "definition": "Resistance grounding unit limiting fault current in transformer neutral systems to protect equipment.",
+        "typical_units": [
+          "units",
+          "nos"
+        ],
+        "keywords": [
+          "ngr",
+          "neutral grounding",
+          "grounding resistor",
+          "fault limit"
+        ]
+      },
+      {
+        "term": "Cathodic Protection Transformer Rectifier",
+        "abbreviation": "CPTR",
+        "discipline": "electrical",
+        "definition": "Regulated DC power supply unit delivering impressed current for pipeline corrosion protection.",
+        "typical_units": [
+          "units",
+          "cptrs",
+          "nos"
+        ],
+        "keywords": [
+          "cptr",
+          "transformer rectifier",
+          "impressed current",
+          "cp unit"
+        ]
+      },
+      {
+        "term": "High Mast Lighting Tower",
+        "abbreviation": "High Mast",
+        "discipline": "electrical",
+        "definition": "30-meter polygonal galvanized high mast tower with motorized raising/lowering luminaire head.",
+        "typical_units": [
+          "towers",
+          "masts",
+          "nos"
+        ],
+        "keywords": [
+          "high mast",
+          "lighting tower",
+          "floodlight",
+          "mast luminaire"
+        ]
+      },
+      {
+        "term": "Cable Fault Location & Thumping",
+        "abbreviation": "Fault Locator",
+        "discipline": "electrical",
+        "definition": "Surge generator and time-domain reflectometer testing to pinpoint underground cable faults.",
+        "typical_units": [
+          "tests",
+          "points",
+          "cables"
+        ],
+        "keywords": [
+          "cable fault",
+          "fault locator",
+          "thumper",
+          "tdr test"
+        ]
+      }
+    ],
+    "instrumentation": [
+      {
+        "term": "Pressure Transmitter Calibration & Hookup",
+        "abbreviation": "PT",
+        "discipline": "instrumentation",
+        "definition": "Mounting smart pressure/differential transmitters, impulse line 5-valve manifolds, and 5-point calibration against deadweight testers.",
+        "typical_units": [
+          "transmitters",
+          "pts",
+          "loops",
+          "nos"
+        ],
+        "keywords": [
+          "transmitter",
+          "pressure transmitter",
+          "pt",
+          "pit",
+          "dpt",
+          "calibration",
+          "5-valve manifold"
+        ]
+      },
+      {
+        "term": "Temperature Element & Thermowell",
+        "abbreviation": "RTD / TC",
+        "discipline": "instrumentation",
+        "definition": "Welding or flanging drilled bar-stock thermowells onto process lines and inserting duplex Pt100 RTD sensors or thermocouples.",
+        "typical_units": [
+          "rtds",
+          "thermocouples",
+          "points",
+          "nos"
+        ],
+        "keywords": [
+          "rtd",
+          "thermocouple",
+          "thermowell",
+          "pt100",
+          "temperature transmitter",
+          "tt"
+        ]
+      },
+      {
+        "term": "Flowmeter Installation (Coriolis / Vortex / Mag)",
+        "abbreviation": "Flowmeter",
+        "discipline": "instrumentation",
+        "definition": "In-line alignment and flanging of Coriolis mass flow meters, vortex shedding meters, and electromagnetic flow sensors.",
+        "typical_units": [
+          "meters",
+          "flowmeters",
+          "nos"
+        ],
+        "keywords": [
+          "flowmeter",
+          "coriolis",
+          "mass flow",
+          "vortex",
+          "magmeter",
+          "flow transmitter",
+          "ft"
+        ]
+      },
+      {
+        "term": "Control Valve Stroke Check & Calibration",
+        "abbreviation": "Control Valve",
+        "discipline": "instrumentation",
+        "definition": "Calibrating smart electro-pneumatic positioners (4-20mA HART) and testing 0-25-50-75-100% travel stroking speed and fail-action.",
+        "typical_units": [
+          "valves",
+          "control valves",
+          "nos"
+        ],
+        "keywords": [
+          "control valve",
+          "smart positioner",
+          "hart",
+          "stroke check",
+          "actuator",
+          "fail-safe",
+          "cv"
+        ]
+      },
+      {
+        "term": "Instrument Junction Box Termination",
+        "abbreviation": "Instrument JB",
+        "discipline": "instrumentation",
+        "definition": "Ferruling and dressing multi-pair signal cables onto terminal strips inside explosion-proof Ex-d/Ex-e junction boxes.",
+        "typical_units": [
+          "jbs",
+          "boxes",
+          "terminals",
+          "nos"
+        ],
+        "keywords": [
+          "junction box",
+          "jb",
+          "ferruling",
+          "terminal block",
+          "ex-d",
+          "shield wire"
+        ]
+      },
+      {
+        "term": "Impulse Tubing & Leak Testing",
+        "abbreviation": "Impulse Tubing",
+        "discipline": "instrumentation",
+        "definition": "Bending, routing, and ferrule swaging of 1/2-inch SS316 seamless impulse tubes followed by hydrostatic leak checks.",
+        "typical_units": [
+          "meters",
+          "mtrs",
+          "loops",
+          "runs"
+        ],
+        "keywords": [
+          "impulse tubing",
+          "ss tubing",
+          "swagelok",
+          "ferrule",
+          "tubing manifold",
+          "bubble test"
+        ]
+      },
+      {
+        "term": "Distributed Control System (DCS) Loop Check",
+        "abbreviation": "Loop Check",
+        "discipline": "instrumentation",
+        "definition": "End-to-end signal validation from field transmitter sensor terminals through marshalling cabinets to DCS operator console graphics.",
+        "typical_units": [
+          "loops",
+          "points",
+          "io channels",
+          "nos"
+        ],
+        "keywords": [
+          "loop check",
+          "dcs",
+          "marshalling cabinet",
+          "io card",
+          "signal test",
+          "graphics check"
+        ]
+      },
+      {
+        "term": "Emergency Shutdown System Logic Test",
+        "abbreviation": "ESD / SIS",
+        "discipline": "instrumentation",
+        "definition": "Simulating trip interlocks and verifying Safety Instrumented Systems (SIL rated) response to initiate emergency blowdown.",
+        "typical_units": [
+          "interlocks",
+          "trips",
+          "nodes",
+          "loops"
+        ],
+        "keywords": [
+          "esd",
+          "sis",
+          "emergency shutdown",
+          "interlock",
+          "trip logic",
+          "sil-3"
+        ]
+      },
+      {
+        "term": "Fire & Gas Detection System",
+        "abbreviation": "F&G",
+        "discipline": "instrumentation",
+        "definition": "Installing and bump-testing optical flame detectors (UV/IR), catalytic bead combustible gas detectors, and toxic H2S sensors.",
+        "typical_units": [
+          "detectors",
+          "sensors",
+          "heads",
+          "nos"
+        ],
+        "keywords": [
+          "fire and gas",
+          "f&g",
+          "flame detector",
+          "gas detector",
+          "h2s sensor",
+          "lel detector"
+        ]
+      },
+      {
+        "term": "SCADA / RTU Telemetry Station",
+        "abbreviation": "SCADA",
+        "discipline": "instrumentation",
+        "definition": "Installing solar-powered Remote Terminal Units (RTUs) and Modbus/OPC telemetry along pipeline sectionalizing valve stations.",
+        "typical_units": [
+          "stations",
+          "rtus",
+          "nodes",
+          "nos"
+        ],
+        "keywords": [
+          "scada",
+          "rtu",
+          "telemetry",
+          "modbus",
+          "sv station",
+          "pipeline monitoring"
+        ]
+      },
+      {
+        "term": "Radar Tank Level Gauge",
+        "abbreviation": "Radar Gauge",
+        "discipline": "instrumentation",
+        "definition": "Non-contact high-frequency FMCW radar gauge mounted on tank roof for custody transfer inventory gauging.",
+        "typical_units": [
+          "gauges",
+          "transmitters",
+          "nos"
+        ],
+        "keywords": [
+          "radar gauge",
+          "tank gauge",
+          "fmcw radar",
+          "custody transfer",
+          "level gauge"
+        ]
+      },
+      {
+        "term": "Solenoid Operated Valve",
+        "abbreviation": "SOV",
+        "discipline": "instrumentation",
+        "definition": "Electrically actuated pilot valve venting pneumatic pressure to trigger fail-safe ESD actuator closure.",
+        "typical_units": [
+          "sovs",
+          "valves",
+          "nos"
+        ],
+        "keywords": [
+          "sov",
+          "solenoid valve",
+          "pilot valve",
+          "esd trip"
+        ]
+      },
+      {
+        "term": "Foundation Fieldbus Segment Testing",
+        "abbreviation": "Fieldbus",
+        "discipline": "instrumentation",
+        "definition": "Testing H1 digital fieldbus communication voltage, waveform quality, and segment terminator resistance.",
+        "typical_units": [
+          "segments",
+          "loops",
+          "devices"
+        ],
+        "keywords": [
+          "fieldbus",
+          "foundation fieldbus",
+          "h1 segment",
+          "terminator",
+          "digital bus"
+        ]
+      },
+      {
+        "term": "Hazardous Area Gas Sampling System",
+        "abbreviation": "CEMS / Gas Sample",
+        "discipline": "instrumentation",
+        "definition": "Heated sample extraction probe, conditioning panel, and continuous emissions analyzer shelter integration.",
+        "typical_units": [
+          "shelters",
+          "analyzers",
+          "panels"
+        ],
+        "keywords": [
+          "gas analyzer",
+          "cems",
+          "sampling system",
+          "analyzer shelter",
+          "sample probe"
+        ]
+      }
+    ],
+    "hse": [
+      {
+        "term": "Permit to Work System",
+        "abbreviation": "PTW",
+        "discipline": "hse",
+        "definition": "Formal authorization procedure issuing Hot Work, Cold Work, Confined Space Entry, and Radiography permits with mandatory hazard signoffs.",
+        "typical_units": [
+          "permits",
+          "nos",
+          "clearances"
+        ],
+        "keywords": [
+          "ptw",
+          "permit to work",
+          "hot work permit",
+          "cold work permit",
+          "work clearance"
+        ]
+      },
+      {
+        "term": "Tool Box Talk",
+        "abbreviation": "TBT",
+        "discipline": "hse",
+        "definition": "Daily pre-shift site safety briefing conducted by supervisors discussing task risks, weather conditions, and required PPE.",
+        "typical_units": [
+          "talks",
+          "sessions",
+          "briefings",
+          "nos"
+        ],
+        "keywords": [
+          "tbt",
+          "toolbox talk",
+          "safety briefing",
+          "pre-job brief",
+          "hazard talk"
+        ]
+      },
+      {
+        "term": "Job Safety Analysis",
+        "abbreviation": "JSA",
+        "discipline": "hse",
+        "definition": "Step-by-step task risk assessment documenting potential hazards and control barriers prior to executing non-routine operations.",
+        "typical_units": [
+          "jsas",
+          "assessments",
+          "reviews",
+          "nos"
+        ],
+        "keywords": [
+          "jsa",
+          "job safety analysis",
+          "hira",
+          "risk assessment",
+          "hazard analysis"
+        ]
+      },
+      {
+        "term": "Combustible Gas & Oxygen Testing",
+        "abbreviation": "Gas Test",
+        "discipline": "hse",
+        "definition": "Atmospheric monitoring using multi-gas detectors to confirm 0% LEL, 20.9% O2, and zero toxic gases before entering tanks or hot work.",
+        "typical_units": [
+          "tests",
+          "readings",
+          "checks",
+          "nos"
+        ],
+        "keywords": [
+          "gas test",
+          "gas testing",
+          "lel",
+          "o2 level",
+          "h2s test",
+          "confined space check"
+        ]
+      },
+      {
+        "term": "Lockout / Tagout Energy Isolation",
+        "abbreviation": "LOTO",
+        "discipline": "hse",
+        "definition": "Applying physical safety padlocks and danger tags to circuit breakers, valves, and switches to prevent accidental re-energization.",
+        "typical_units": [
+          "isolations",
+          "padlocks",
+          "tags",
+          "nos"
+        ],
+        "keywords": [
+          "loto",
+          "lockout tagout",
+          "energy isolation",
+          "padlock",
+          "danger tag",
+          "blind list"
+        ]
+      },
+      {
+        "term": "Scaffolding Safety Inspection & Tagging",
+        "abbreviation": "Scaffold Tag",
+        "discipline": "hse",
+        "definition": "Structural inspection of erected tubular scaffolding, base jacks, and toe boards with Green (Safe) or Red (Unsafe) Scafftag display.",
+        "typical_units": [
+          "scaffolds",
+          "structures",
+          "tags",
+          "nos"
+        ],
+        "keywords": [
+          "scaffolding",
+          "scafftag",
+          "green tag",
+          "red tag",
+          "toe board",
+          "safety harness"
+        ]
+      },
+      {
+        "term": "Fire Water Network & Hydrant Inspection",
+        "abbreviation": "Fire Water",
+        "discipline": "hse",
+        "definition": "Testing jockey pumps, main diesel fire pumps, ring main pressure, monitor flow rate, and deluge valve actuation.",
+        "typical_units": [
+          "hydrants",
+          "monitors",
+          "pumps",
+          "nos"
+        ],
+        "keywords": [
+          "fire water",
+          "hydrant",
+          "deluge valve",
+          "fire monitor",
+          "jockey pump",
+          "foam pourer"
+        ]
+      },
+      {
+        "term": "Near-Miss & Incident Investigation",
+        "abbreviation": "Near Miss",
+        "discipline": "hse",
+        "definition": "Documenting unsafe conditions, unsafe acts, or unplanned occurrences that did not cause injury but had the potential to do so.",
+        "typical_units": [
+          "reports",
+          "incidents",
+          "investigations",
+          "nos"
+        ],
+        "keywords": [
+          "near miss",
+          "incident report",
+          "root cause",
+          "corrective action",
+          "safety observation"
+        ]
+      },
+      {
+        "term": "Fall Protection & Harness Anchor",
+        "abbreviation": "Fall Protection",
+        "discipline": "hse",
+        "definition": "Full body safety harness with double shock-absorbing lanyards anchored to certified lifelines.",
+        "typical_units": [
+          "points",
+          "inspections",
+          "sets"
+        ],
+        "keywords": [
+          "fall protection",
+          "safety harness",
+          "lifeline",
+          "lanyard",
+          "anchor point"
+        ]
+      },
+      {
+        "term": "Hazard and Operability Study",
+        "abbreviation": "HAZOP",
+        "discipline": "hse",
+        "definition": "Structured multidisciplinary team review identifying process deviation hazards and safeguard adequacy.",
+        "typical_units": [
+          "nodes",
+          "sessions",
+          "actions"
+        ],
+        "keywords": [
+          "hazop",
+          "hazard study",
+          "process safety",
+          "safeguard",
+          "deviation"
+        ]
+      },
+      {
+        "term": "Fire Alarm Control Panel",
+        "abbreviation": "FACP",
+        "discipline": "hse",
+        "definition": "Addressable central fire alarm panel monitoring manual call points, hooters, and optical beam detectors.",
+        "typical_units": [
+          "panels",
+          "nodes",
+          "loops"
+        ],
+        "keywords": [
+          "facp",
+          "fire alarm",
+          "manual call point",
+          "hooter",
+          "smoke detector"
+        ]
+      }
+    ]
+  }
+}
