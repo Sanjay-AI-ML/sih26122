@@ -8,6 +8,7 @@ from shared.schemas.extracted_event import ExtractedEvent
 from services.matching.schemas import MatchResult, ScheduleActivity, DisciplineEnum
 from services.matching.vector_store import vector_store
 from services.matching.engine import matching_engine
+from services.matching.claude_keyword_extractor import get_claude_keyword_extractor
 
 app = FastAPI(
     title="Matching & Confidence Engine (Member B)",
@@ -109,12 +110,93 @@ async def match_event(event: ExtractedEvent):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/keywords/extract", response_model=dict)
+async def extract_keywords(request: dict):
+    """
+    Claude AI + RAG: Extract intelligent keywords from field report.
+    Returns categorized keywords with confidence scores.
+
+    Request body: {"field_report": "text of the field report"}
+    """
+    try:
+        field_report = request.get("field_report", "")
+        if not field_report:
+            raise HTTPException(status_code=400, detail="field_report is required")
+
+        extractor = get_claude_keyword_extractor()
+        keywords = extractor.extract_keywords_with_claude(field_report)
+
+        return {
+            "success": True,
+            "keywords_extracted": len(keywords),
+            "keywords": keywords
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/keywords/match-primavera", response_model=dict)
+async def match_keywords_to_primavera(request: dict):
+    """
+    Claude AI + RAG: Match extracted keywords to Primavera tasks.
+    Returns matched tasks with confidence scores and reasoning.
+
+    Request body: {"keywords": [{"keyword": "...", "category": "...", "confidence": 0.9}]}
+    """
+    try:
+        keywords = request.get("keywords", [])
+        if not keywords:
+            raise HTTPException(status_code=400, detail="keywords array is required")
+
+        extractor = get_claude_keyword_extractor()
+        matches = extractor.match_keywords_to_primavera(keywords)
+
+        return {
+            "success": True,
+            "total_matches": len(matches),
+            "primavera_matches": [
+                {
+                    "activity_id": m.activity_id,
+                    "activity_name": m.activity_name,
+                    "task_code": m.task_code,
+                    "discipline": m.discipline,
+                    "confidence_score": round(m.confidence_score, 3),
+                    "matched_keywords": m.matched_keywords,
+                    "rationale": m.rationale
+                }
+                for m in matches
+            ]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/keywords/extract-and-match", response_model=dict)
+async def extract_and_match_primavera(request: dict):
+    """
+    Claude AI + RAG: Full pipeline - Extract keywords and match to Primavera tasks in one call.
+
+    Request body: {"field_report": "text of the field report"}
+
+    Returns both extracted keywords and matched Primavera tasks.
+    """
+    try:
+        field_report = request.get("field_report", "")
+        if not field_report:
+            raise HTTPException(status_code=400, detail="field_report is required")
+
+        extractor = get_claude_keyword_extractor()
+        result = extractor.extract_and_match(field_report)
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/health")
 async def health_check():
     return {
         "status": "healthy",
         "loaded_activities": len(vector_store.activities),
-        "faiss_total": vector_store.index.ntotal if vector_store.index else 0
+        "faiss_total": vector_store.index.ntotal if vector_store.index else 0,
+        "claude_keyword_extraction": "enabled"
     }
 
 if __name__ == "__main__":

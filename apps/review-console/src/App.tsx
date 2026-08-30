@@ -13,6 +13,7 @@ import { CreateActivityModal } from './components/CreateActivityModal';
 import { NewReportModal } from './components/NewReportModal';
 import { ExportReportModal } from './components/ExportReportModal';
 import { Toast } from './components/Toast';
+import { ClaudeKeywordExtractor } from './components/ClaudeKeywordExtractor';
 
 const RouteHandler: React.FC = () => {
   const location = useLocation();
@@ -31,6 +32,7 @@ const RouteHandler: React.FC = () => {
     <Routes>
       <Route path="/" element={<ReviewQueueScreen />} />
       <Route path="/primavera" element={<PrimaveraP6Screen />} />
+      <Route path="/claude-extractor" element={<div className="flex-1 overflow-auto p-6"><ClaudeKeywordExtractor /></div>} />
       <Route path="/analytics" element={<DelayRiskDashboard isOpen={true} onClose={() => navigate("/")} />} />
       <Route path="/record/:id" element={<RecordDetailScreen />} />
       <Route path="/create" element={<ReviewQueueScreen />} />
