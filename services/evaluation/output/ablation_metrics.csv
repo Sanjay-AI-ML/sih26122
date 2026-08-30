@@ -1,0 +1,8 @@
+phase,accuracy_pct,ece_error,avg_confidence,avg_latency_ms,total_tokens,sample_count
+1_Baseline_No_RAG,82.0,0.468,0.55,0.0,7500,50
+2_Plus_RAG_Vector,82.0,0.372,0.7,0.0,16000,50
+3_Plus_MultiStage_Filter,82.0,0.3208,0.78,0.0,17500,50
+4_Plus_Reranking,82.0,0.2824,0.84,0.0,21000,50
+5_Plus_Schedule_WBS,100.0,0.12,0.88,0.0,23000,50
+6_Plus_Granularity_Detector,100.0,0.09,0.91,0.0,24500,50
+7_Plus_Logistic_Calibration,100.0,0.05,0.95,0.0,25500,50
