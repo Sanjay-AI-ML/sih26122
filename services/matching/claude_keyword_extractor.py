@@ -50,8 +50,10 @@ class ClaudeKeywordExtractor:
 
     def extract_keywords_with_claude(self, field_report: str) -> List[Dict]:
         """
-        Use Claude to intelligently extract keywords from field report.
+        Use LOCAL Claude (via Ollama/LiteLLM) to intelligently extract keywords from field report.
         Returns keywords with categories and confidence scores.
+
+        NOTE: Only uses local Claude instance - NO external API calls.
         """
         if not field_report or not field_report.strip():
             return []
@@ -83,37 +85,7 @@ Return ONLY a valid JSON array with this schema:
 
 Return ONLY the JSON array, no markdown or extra text."""
 
-        # Try Claude API first
-        if self.anthropic_key:
-            try:
-                response = httpx.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": self.anthropic_key,
-                        "anthropic-version": "2023-06-01",
-                        "content-type": "application/json"
-                    },
-                    json={
-                        "model": os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-20241022"),
-                        "max_tokens": 2048,
-                        "system": system_prompt,
-                        "messages": [{"role": "user", "content": user_message}],
-                        "temperature": 0.3
-                    },
-                    timeout=30.0
-                )
-                if response.status_code == 200:
-                    resp_data = response.json()
-                    content = resp_data.get("content", [{}])[0].get("text", "")
-                    try:
-                        keywords = json.loads(content)
-                        return keywords if isinstance(keywords, list) else []
-                    except json.JSONDecodeError:
-                        return []
-            except Exception as e:
-                print(f"Claude API error: {e}")
-
-        # Fallback to local Ollama
+        # Use ONLY local Ollama/Claude instance - NO external APIs
         try:
             payload = {
                 "model": self.model_name,
@@ -136,7 +108,7 @@ Return ONLY the JSON array, no markdown or extra text."""
                 except json.JSONDecodeError:
                     return []
         except Exception as e:
-            print(f"Ollama error: {e}")
+            print(f"Local Claude error: {e}")
 
         return []
 
