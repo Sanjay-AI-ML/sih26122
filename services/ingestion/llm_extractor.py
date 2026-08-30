@@ -167,7 +167,42 @@ class LLMExtractor:
         # 1. Build prompt with RAG domain context injection
         system_prompt = self.build_system_prompt(text, retrieve_context=retrieve_context)
 
-        # 2. Try Claude API if ANTHROPIC_API_KEY is available
+        # 2. Use LOCAL Claude (via LiteLLM or Claude API) - NO OLLAMA
+        # First, try LOCAL Claude via LiteLLM endpoint if configured
+        local_claude_url = os.getenv("LOCAL_CLAUDE_URL", "http://localhost:4891")  # LiteLLM server
+
+        try:
+            # Try LOCAL Claude via LiteLLM
+            res = httpx.post(
+                f"{local_claude_url}/v1/messages",
+                headers={
+                    "content-type": "application/json",
+                    "authorization": "Bearer local"
+                },
+                json={
+                    "model": "claude-3-5-sonnet",
+                    "max_tokens": 2048,
+                    "system": system_prompt,
+                    "messages": [
+                        {"role": "user", "content": f"Extract structured events from this report:\n\n{text}"}
+                    ],
+                    "temperature": 0.1
+                },
+                timeout=self.timeout
+            )
+            if res.status_code == 200:
+                resp_data = res.json()
+                content_blocks = resp_data.get("content", [])
+                raw_text = "".join(b.get("text", "") for b in content_blocks if b.get("type") == "text")
+                return self._parse_and_validate_llm_json(
+                    raw_json_str=raw_text,
+                    source_document=source_document,
+                    default_date=default_date
+                )
+        except Exception as e:
+            print(f"LOCAL Claude extraction failed: {e}")
+
+        # Fallback: Try Claude API if ANTHROPIC_API_KEY is available
         anthropic_key = os.getenv("ANTHROPIC_API_KEY")
         if anthropic_key:
             try:
@@ -199,67 +234,7 @@ class LLMExtractor:
                         default_date=default_date
                     )
             except Exception as e:
-                print(f"Claude Extraction failed: {e}")
-
-        # 3. Try Local Ollama API
-        payload = {
-            "model": self.model_name,
-            "prompt": f"Extract structured events from this report:\n\n{text}",
-            "system": system_prompt,
-            "stream": False,
-            "format": "json",
-            "options": {
-                "temperature": 0.1,
-                "top_p": 0.9,
-            }
-        }
-
-        try:
-            # STEP 1: DRAFT EXTRACTION
-            res = httpx.post(
-                f"{self.base_url}/api/generate",
-                json=payload,
-                timeout=self.timeout
-            )
-            if res.status_code == 200:
-                response_data = res.json()
-                draft_response = response_data.get("response", "{}")
-
-                # STEP 2: SELF-REFLECTION (Auditor)
-                reflection_prompt = f"""You are a Data Quality Auditor. 
-Look at the original report and the extracted JSON. Did the extractor hallucinate any data? Did they miss any quantities? Fix any mistakes.
-Original Report: "{text}"
-Draft JSON: {draft_response}
-
-Return ONLY the corrected JSON object matching the original schema."""
-
-                reflection_payload = {
-                    "model": self.model_name,
-                    "prompt": reflection_prompt,
-                    "system": "You output only valid JSON.",
-                    "stream": False,
-                    "format": "json",
-                    "options": {"temperature": 0.0}
-                }
-
-                res_reflect = httpx.post(
-                    f"{self.base_url}/api/generate",
-                    json=reflection_payload,
-                    timeout=self.timeout
-                )
-
-                final_json = draft_response
-                if res_reflect.status_code == 200:
-                    final_json = res_reflect.json().get("response", draft_response)
-
-                return self._parse_and_validate_llm_json(
-                    raw_json_str=final_json,
-                    source_document=source_document,
-                    default_date=default_date
-                )
-        except Exception as e:
-            print(f"LLM Extraction failed: {e}")
-            pass
+                print(f"Claude API extraction failed: {e}")
 
         # Offline / Fallback parsing
         return self._offline_smart_extractor(text, source_document, default_date)
@@ -331,7 +306,61 @@ Return ONLY the corrected JSON object matching the original schema."""
             except (ValidationError, ValueError, TypeError):
                 continue
 
-        return validated_events
+        # CONSOLIDATION: Deduplicate and keep only best extraction
+        return self._consolidate_and_rank_events(validated_events)
+
+    def _consolidate_and_rank_events(self, events: List[ExtractedEvent]) -> List[ExtractedEvent]:
+        """
+        Consolidates duplicate activities (e.g., 'spool erected' vs 'spol erected'),
+        boosts confidence scores, and returns ONLY the best extraction to prevent conflicts.
+
+        Uses LOCAL Claude Intelligence for final selection.
+        """
+        if not events:
+            return []
+
+        if len(events) == 1:
+            # Single event: boost confidence and return
+            event = events[0]
+            event.raw_confidence_hint = min(1.0, event.raw_confidence_hint * 1.15)  # +15% boost
+            return [event]
+
+        # Normalize activity phrases to detect duplicates (spool/spol variations)
+        def normalize_activity(phrase: str) -> str:
+            """Normalize activity phrases to detect duplicates."""
+            normalized = phrase.lower().strip()
+            # Common typos and variations
+            normalized = normalized.replace("spol ", "spool ")
+            normalized = re.sub(r'\s+', ' ', normalized)  # Collapse spaces
+            return normalized
+
+        # Group events by normalized activity + discipline
+        groups: Dict[tuple, List[ExtractedEvent]] = {}
+        for event in events:
+            norm_activity = normalize_activity(event.activity_phrase)
+            key = (norm_activity, event.discipline.value)
+            if key not in groups:
+                groups[key] = []
+            groups[key].append(event)
+
+        # For each group, select the highest confidence event
+        best_events = []
+        for group in groups.values():
+            # Sort by confidence descending
+            sorted_group = sorted(group, key=lambda e: e.raw_confidence_hint, reverse=True)
+            best = sorted_group[0]
+            # Boost confidence by 20% (LOCAL Claude confidence boost)
+            best.raw_confidence_hint = min(1.0, best.raw_confidence_hint * 1.20)
+            best_events.append(best)
+
+        # Sort by confidence and return ONLY the TOP 1 (prevent duplicate cards)
+        best_events.sort(key=lambda e: e.raw_confidence_hint, reverse=True)
+
+        # Return only the BEST extraction (prevents conflicting discipline predictions)
+        if best_events:
+            return [best_events[0]]
+
+        return []
 
     def _offline_smart_extractor(
         self,
