@@ -8,6 +8,8 @@ from services.matching.schemas import (
 from services.matching.vector_store import vector_store
 from services.matching.granularity_detector import granularity_detector
 from services.matching.confidence_calibrator import confidence_calibrator
+from services.matching.reranker import cross_encoder_reranker
+
 
 
 
@@ -90,9 +92,10 @@ class MatchingEngine:
                 rationale=", ".join(rationale_parts)
             ))
 
-        # Sort by calibrated score descending
+        # Sort by calibrated score descending and apply Cross-Encoder Reranking
         scored_candidates.sort(key=lambda c: c.score, reverse=True)
-        top_candidates = scored_candidates[:3]
+        top_candidates = cross_encoder_reranker.rerank_top_k(event.activity_phrase, scored_candidates[:10], k=3)
+
 
         if not top_candidates:
              return MatchResult(

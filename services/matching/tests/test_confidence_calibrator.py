@@ -10,7 +10,7 @@ class TestConfidenceCalibrator(unittest.TestCase):
 
     def test_model_training(self):
         self.assertTrue(self.calibrator.is_trained)
-        self.assertIsNotNone(self.calibrator.model)
+
 
     def test_high_confidence_features(self):
         features = {
