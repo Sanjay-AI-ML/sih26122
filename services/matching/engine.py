@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from rapidfuzz import fuzz
 
 from shared.schemas.extracted_event import ExtractedEvent
@@ -12,7 +12,7 @@ class MatchingEngine:
     """
     4-Stage Matching Pipeline:
     1. Deterministic Hard Filter (Discipline & Tag)
-    2. Semantic Vector Search
+    2. Semantic Vector Search (BGE-M3 1024-dim)
     3. Calibrated Confidence Scoring
     4. Ambiguity Detection
     """
@@ -32,8 +32,6 @@ class MatchingEngine:
             )
 
         # 1. Semantic Vector Search (Broad Retrieval)
-        # We retrieve a larger pool to allow deterministic filtering to refine it.
-        # Include tag and discipline in the query to help FAISS retrieve better candidates.
         query = f"{event.activity_phrase}"
         if event.tag_or_line_id:
             query += f" Tag: {event.tag_or_line_id}"
@@ -43,7 +41,7 @@ class MatchingEngine:
         raw_results = vector_store.search(query, k=50)
 
         # 2 & 3. Deterministic Filter & Calibrated Confidence Scoring
-        scored_candidates = []
+        scored_candidates: List[Tuple[float, Candidate]] = []
         for activity, vec_score in raw_results:
             # Baseline score is the cosine similarity (0.0 - 1.0)
             score = vec_score
@@ -54,44 +52,48 @@ class MatchingEngine:
             act_disc = getattr(activity.discipline, "value", str(activity.discipline)).lower() if activity.discipline else ""
             if event_disc and act_disc and event_disc != act_disc:
                 score *= 0.5  # Heavy penalty for wrong discipline
-                rationale_parts.append(f"Discipline mismatch (penalty)")
+                rationale_parts.append("Discipline mismatch (penalty)")
             else:
                 score += 0.05
                 rationale_parts.append("Discipline match (+)")
 
-            # Deterministic: Tag matching (Fuzzy)
+            # Deterministic: Tag matching (Exact & Fuzzy)
             if event.tag_or_line_id and activity.tag:
-                tag_sim = fuzz.partial_ratio(event.tag_or_line_id.lower(), activity.tag.lower()) / 100.0
-                if tag_sim > 0.9:
-                    score += 0.2
+                tag_event_clean = event.tag_or_line_id.strip().lower()
+                tag_act_clean = activity.tag.strip().lower()
+                if tag_event_clean == tag_act_clean:
+                    score += 0.25
                     rationale_parts.append(f"Strong tag match '{activity.tag}' (+)")
-                elif tag_sim > 0.7:
-                    score += 0.1
-                    rationale_parts.append(f"Partial tag match '{activity.tag}' (+)")
                 else:
-                    score *= 0.8
-                    rationale_parts.append(f"Tag mismatch '{activity.tag}' (penalty)")
+                    tag_sim = fuzz.ratio(tag_event_clean, tag_act_clean) / 100.0
+                    if tag_sim > 0.85:
+                        score += 0.1
+                        rationale_parts.append(f"Partial tag match '{activity.tag}' (+)")
+                    else:
+                        score *= 0.8
+                        rationale_parts.append(f"Tag mismatch '{activity.tag}' (penalty)")
 
             # Apply 10% Confidence Score Boost
-            score = (score * 1.10) + 0.10
+            raw_calibrated_score = (score * 1.10) + 0.10
             rationale_parts.append("+10% Confidence Boost")
-            # Clip score between 0 and 1
-            score = min(max(score, 0.0), 1.0)
             
-            scored_candidates.append(Candidate(
+            clipped_score = min(max(raw_calibrated_score, 0.0), 1.0)
+            
+            cand = Candidate(
                 activity_id=activity.activity_id,
                 activity_name=activity.activity_name,
                 tag=activity.tag,
-                score=score,
+                score=clipped_score,
                 rationale=", ".join(rationale_parts)
-            ))
+            )
+            scored_candidates.append((raw_calibrated_score, cand))
 
-        # Sort by calibrated score descending
-        scored_candidates.sort(key=lambda c: c.score, reverse=True)
-        top_candidates = scored_candidates[:3]
+        # Sort by unclipped score descending
+        scored_candidates.sort(key=lambda c: c[0], reverse=True)
+        top_candidates_raw = scored_candidates[:3]
 
-        if not top_candidates:
-             return MatchResult(
+        if not top_candidates_raw:
+            return MatchResult(
                 event=event,
                 top_activity_id=None,
                 candidates=[],
@@ -101,6 +103,7 @@ class MatchingEngine:
                 ambiguity_reason="No candidates met minimum threshold."
             )
 
+        top_candidates = [c[1] for c in top_candidates_raw]
         top_cand = top_candidates[0]
         confidence_score = top_cand.score
 
@@ -108,10 +111,10 @@ class MatchingEngine:
         is_ambiguous = False
         ambiguity_reason = None
         
-        if len(top_candidates) > 1:
-            margin = top_cand.score - top_candidates[1].score
+        if len(top_candidates_raw) > 1:
+            margin = top_candidates_raw[0][0] - top_candidates_raw[1][0]
             # If the top 2 matches have very similar scores (margin < 0.05) and are high scoring, it's ambiguous
-            if margin < 0.05 and top_cand.score > 0.5:
+            if margin < 0.05 and confidence_score > 0.5:
                 is_ambiguous = True
                 ambiguity_reason = (f"Ambiguous: Margin between top candidate '{top_cand.activity_id}' "
                                     f"and second candidate '{top_candidates[1].activity_id}' is only {margin:.3f}.")
@@ -133,6 +136,7 @@ class MatchingEngine:
             is_ambiguous=is_ambiguous,
             ambiguity_reason=ambiguity_reason
         )
+
 
 # Expose a singleton instance for simplicity
 matching_engine = MatchingEngine()
