@@ -137,50 +137,56 @@ class LLMExtractor:
             }
         }
 
-        # STEP 1: DRAFT EXTRACTION
-        res = httpx.post(
-            f"{self.base_url}/api/generate",
-            json=payload,
-            timeout=self.timeout
-        )
-        if res.status_code != 200:
-            raise RuntimeError(f"LLM Extraction failed with status code {res.status_code}: {res.text}")
+        try:
+            # STEP 1: DRAFT EXTRACTION
+            res = httpx.post(
+                f"{self.base_url}/api/generate",
+                json=payload,
+                timeout=10.0
+            )
+            if res.status_code != 200:
+                raise RuntimeError(f"LLM Extraction failed with status code {res.status_code}: {res.text}")
 
-        response_data = res.json()
-        draft_response = response_data.get("response", "{}")
+            response_data = res.json()
+            draft_response = response_data.get("response", "{}")
 
-        # STEP 2: SELF-REFLECTION (Auditor)
-        reflection_prompt = f"""You are a Data Quality Auditor. 
+            # STEP 2: SELF-REFLECTION (Auditor)
+            reflection_prompt = f"""You are a Data Quality Auditor. 
 Look at the original report and the extracted JSON. Did the extractor hallucinate any data? Did they miss any quantities? Fix any mistakes.
 Original Report: "{text}"
 Draft JSON: {draft_response}
 
 Return ONLY the corrected JSON object matching the original schema."""
 
-        reflection_payload = {
-            "model": self.model_name,
-            "prompt": reflection_prompt,
-            "system": "You output only valid JSON.",
-            "stream": False,
-            "format": "json",
-            "options": {"temperature": 0.0}
-        }
+            reflection_payload = {
+                "model": self.model_name,
+                "prompt": reflection_prompt,
+                "system": "You output only valid JSON.",
+                "stream": False,
+                "format": "json",
+                "options": {"temperature": 0.0}
+            }
 
-        res_reflect = httpx.post(
-            f"{self.base_url}/api/generate",
-            json=reflection_payload,
-            timeout=self.timeout
-        )
+            res_reflect = httpx.post(
+                f"{self.base_url}/api/generate",
+                json=reflection_payload,
+                timeout=10.0
+            )
 
-        final_json = draft_response
-        if res_reflect.status_code == 200:
-            final_json = res_reflect.json().get("response", draft_response)
+            final_json = draft_response
+            if res_reflect.status_code == 200:
+                final_json = res_reflect.json().get("response", draft_response)
 
-        return self._parse_and_validate_llm_json(
-            raw_json_str=final_json,
-            source_document=source_document,
-            default_date=default_date
-        )
+            return self._parse_and_validate_llm_json(
+                raw_json_str=final_json,
+                source_document=source_document,
+                default_date=default_date
+            )
+        except Exception:
+            # Graceful fallback to deterministic rule-based TextParser if Ollama is unavailable
+            from services.ingestion.parsers.text_parser import TextParser
+            parser = TextParser()
+            return parser.parse(text=text, source_document=source_document, default_date=default_date)
 
     def _parse_and_validate_llm_json(
         self,
