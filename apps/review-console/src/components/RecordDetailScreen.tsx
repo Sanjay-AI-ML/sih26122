@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useReviewQueue } from '../context/ReviewQueueContext';
 import { ConfidenceBandDisplay } from './ConfidenceBandDisplay';
+import { ScheduleTimelinePanel } from './ScheduleTimelinePanel';
 
 export const RecordDetailScreen: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -263,6 +264,13 @@ export const RecordDetailScreen: React.FC = () => {
                 </table>
               </div>
             </div>
+
+            {/* Schedule Context Timeline Panel */}
+            <ScheduleTimelinePanel 
+              activity={(item.candidates && item.candidates[selectedCandidateIndex]) || undefined}
+              temporalBoost={0.15}
+              onOpenPrimavera={() => navigate('/primavera')}
+            />
           </div>
 
           {/* Right Column: Match Candidates & Actions */}
