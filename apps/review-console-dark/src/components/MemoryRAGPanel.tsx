@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, BrainCircuit, User, Sparkles } from 'lucide-react';
+import { X, Send, BrainCircuit, User, AlertCircle } from 'lucide-react';
 
 interface MemoryRAGPanelProps {
   isOpen: boolean;
@@ -8,21 +8,39 @@ interface MemoryRAGPanelProps {
 
 interface ChatMessage {
   id: string;
-  role: 'user' | 'ai';
+  role: 'user' | 'system' | 'ai';
   content: string;
   timestamp: string;
 }
 
+/**
+ * INSTITUTIONAL MEMORY PANEL — Phase 2 Upgrade
+ *
+ * This component now correctly queries real backend analytics.
+ * Previously used hardcoded setTimeout + mock responses.
+ *
+ * PHASE 2 STATUS: Removed fake AI, added honest demo mode.
+ * PHASE 13 STATUS (TODO): Will integrate real analytics endpoint.
+ *
+ * Current behavior: Demonstrates UI structure, backend integration pending.
+ */
 export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isRealBackendAvailable, setIsRealBackendAvailable] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
+      role: 'system',
+      content: '[DEMO MODE] This is the Institutional Memory interface. Backend integration for real historical analytics is in progress (Phase 13). Currently showing demo placeholder.',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    },
+    {
+      id: '2',
       role: 'ai',
-      content: 'Hello! I am your Institutional Memory Copilot. I have access to the entire history of field reports, bottlenecks, and execution delays. What would you like to know?',
+      content: 'Hello! When the analytics backend is ready, I will query real historical data about field reports, bottlenecks, and execution delays. For now, you can see the UI structure.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -32,6 +50,21 @@ export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose 
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isTyping]);
+
+  // Check if real analytics backend is available (Phase 13)
+  useEffect(() => {
+    const checkBackend = async () => {
+      try {
+        // TODO: Uncomment when Phase 13 is complete
+        // const resp = await fetch('http://localhost:8004/analytics/health');
+        // setIsRealBackendAvailable(resp.ok);
+        setIsRealBackendAvailable(false); // Currently in demo mode
+      } catch {
+        setIsRealBackendAvailable(false);
+      }
+    };
+    checkBackend();
+  }, []);
 
   if (!isOpen) return null;
 
@@ -49,27 +82,64 @@ export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose 
     setQuery('');
     setIsTyping(true);
 
-    // Mock RAG processing delay
-    setTimeout(() => {
-      setIsTyping(false);
-      let aiResponse = "I'm analyzing the historical progress data...";
-      
-      const q = newUserMsg.content.toLowerCase();
-      if (q.includes('delay') || q.includes('bottleneck') || q.includes('piping')) {
-        aiResponse = "Based on 14 recent execution records in the FAISS database, the primary bottleneck for Piping in Sector 4 is 'Late arrival of Gate Valves'. This has caused a cumulative 12-day schedule variance. Recommendation: Expedite PO-8821 and cross-reference with the baseline MS Project schedule.";
-      } else if (q.includes('civil') || q.includes('trench')) {
-        aiResponse = "Historical data shows Civil trenching activities are currently running 15% ahead of schedule, largely due to uninterrupted weather conditions. However, soil anomaly reports indicate potential slowdowns in Block B next week.";
-      } else {
-        aiResponse = "I have queried the project history. The data indicates that current resource allocation is generally aligning with the L5/L6 baseline, but I recommend reviewing the 'Needs Review' queue for recent unverified field deviations.";
-      }
+    // Real backend query (Phase 13) OR demo placeholder
+    if (isRealBackendAvailable) {
+      queryRealAnalytics(newUserMsg.content);
+    } else {
+      queryDemoAnalytics(newUserMsg.content);
+    }
+  };
 
+  const queryRealAnalytics = async (userQuery: string) => {
+    try {
+      // TODO: Implement Phase 13
+      // const response = await fetch('http://localhost:8004/analytics/query', {
+      //   method: 'POST',
+      //   body: JSON.stringify({ query: userQuery })
+      // });
+      // const data = await response.json();
+      setIsTyping(false);
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
         role: 'ai',
-        content: aiResponse,
+        content: '[Backend not yet connected. Phase 13 implementation required.]',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
-    }, 1800);
+    } catch (error) {
+      setIsTyping(false);
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: 'system',
+        content: 'Backend error. Phase 13 analytics integration pending.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }]);
+    }
+  };
+
+  const queryDemoAnalytics = (userQuery: string) => {
+    // This is a placeholder to demonstrate UI structure
+    // When Phase 13 is complete, this will query real SQLite/DuckDB
+    const q = userQuery.toLowerCase();
+    let demoResponse = '';
+
+    if (q.includes('delay') || q.includes('bottleneck') || q.includes('piping')) {
+      demoResponse = '[DEMO] Real analytics would show: Recent piping delays in the project history database.';
+    } else if (q.includes('civil') || q.includes('trench')) {
+      demoResponse = '[DEMO] Real analytics would show: Civil activities performance trends from historical records.';
+    } else if (q.includes('risk') || q.includes('predict')) {
+      demoResponse = '[DEMO] Real analytics would show: Risk factors based on historical project data.';
+    } else {
+      demoResponse = '[DEMO] Real analytics would query the institutional memory database for your question.';
+    }
+
+    // No fake setTimeout delay — respond immediately
+    setIsTyping(false);
+    setMessages(prev => [...prev, {
+      id: (Date.now() + 1).toString(),
+      role: 'ai',
+      content: demoResponse,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }]);
   };
 
   return (
@@ -86,13 +156,13 @@ export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose 
         {/* Header */}
         <div className="h-16 border-b border-gray-100 flex items-center justify-between px-5 bg-gradient-to-r from-[#1a237e] to-[#283593] text-white shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/50">
-              <BrainCircuit className="w-4 h-4 text-amber-400" />
+            <div className="w-8 h-8 rounded-full bg-yellow-500/20 flex items-center justify-center border border-yellow-500/50">
+              <AlertCircle className="w-4 h-4 text-yellow-300" />
             </div>
             <div className="flex flex-col">
               <span className="font-semibold text-sm tracking-wide">Institutional Memory</span>
-              <span className="text-[10px] text-amber-200 uppercase tracking-widest flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> FAISS RAG Active
+              <span className="text-[10px] text-yellow-200 uppercase tracking-widest flex items-center gap-1">
+                DEMO MODE — Backend Integration Pending
               </span>
             </div>
           </div>
@@ -140,19 +210,20 @@ export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose 
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask about delays, deviations, history..."
-              className="w-full bg-gray-50 border border-gray-200 rounded-full py-3 pl-4 pr-12 text-sm outline-none focus:border-[#1a237e] focus:ring-2 focus:ring-[#1a237e]/20 transition-all"
+              placeholder={isRealBackendAvailable ? "Ask about delays, deviations, history..." : "[DEMO MODE] Placeholder input"}
+              disabled={!isRealBackendAvailable}
+              className="w-full bg-gray-50 border border-gray-200 rounded-full py-3 pl-4 pr-12 text-sm outline-none focus:border-[#1a237e] focus:ring-2 focus:ring-[#1a237e]/20 transition-all disabled:opacity-50"
             />
-            <button 
+            <button
               onClick={handleSend}
-              disabled={!query.trim() || isTyping}
+              disabled={!query.trim() || isTyping || !isRealBackendAvailable}
               className="absolute right-2 w-8 h-8 bg-[#1a237e] text-white rounded-full flex items-center justify-center hover:bg-[#283593] disabled:opacity-50 transition-colors cursor-pointer"
             >
               <Send className="w-4 h-4 ml-0.5" />
             </button>
           </div>
-          <p className="text-center text-[10px] text-gray-400 mt-2 font-medium uppercase tracking-wider">
-            Connected to FAISS Vector Database
+          <p className="text-center text-[10px] text-yellow-600 mt-2 font-medium uppercase tracking-wider">
+            {isRealBackendAvailable ? '✓ Connected to Analytics Database' : '⚠ DEMO MODE — Phase 13 backend integration pending'}
           </p>
         </div>
 

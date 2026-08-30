@@ -7,21 +7,29 @@ interface DelayRiskDashboardProps {
   onClose: () => void;
 }
 
-// Rich realistic fallback data for presentation demo
-const SAMPLE_BOTTLENECKS = [
-  { id: "Q-1001", reason: "Crane availability delay for 12-inch heavy valve lifting at Cooling Line", activity: "Cooling Line 24-CW Valve Erection (L6-PIP-402)", discipline: "Piping", delayDays: 12 },
-  { id: "Q-1002", reason: "Monsoon rainwater accumulation in Substation Transformer pit", activity: "Substation Transformer Concrete Pouring (L6-CIV-104)", discipline: "Civil", delayDays: 8 },
-  { id: "Q-1003", reason: "Cable tray alignment conflict with overhead HVAC ducting", activity: "11kV Substation Feeder Cable Pulling (L6-ELE-201)", discipline: "Electrical", delayDays: 5 },
-  { id: "Q-1004", reason: "Scaffold re-certification pending at Hydrocracker Unit 3", activity: "Hydrocracker Area Weekly Safety Audit (L6-HSE-301)", discipline: "HSE", delayDays: 3 },
-  { id: "Q-1005", reason: "Calibration rig test certificate delay from supplier", activity: "Boiler Control Pressure Calibration (L6-INS-509)", discipline: "Instrumentation", delayDays: 2 }
+/**
+ * PHASE 14 UPGRADE: Removed hardcoded SAMPLE_BOTTLENECKS
+ *
+ * Previously this dashboard showed fabricated sample data as if it were
+ * real analytics. This has been replaced with:
+ *
+ * 1. Real queue items (from ReviewQueueContext)
+ * 2. Honest labeling when data is unavailable
+ * 3. Placeholder for Phase 14 real analytics integration
+ *
+ * When Phase 14 is complete, this will query:
+ * - SQLite for historical variance
+ * - Real delay patterns from approved events
+ * - DuckDB for analytics aggregations
+ */
+
+// Demo/placeholder data shown only when no real data is available
+const DEMO_BOTTLENECKS = [
+  { id: "DEMO-1", reason: "[DEMO] Sample bottleneck example", activity: "[DEMO] Sample Activity", discipline: "Piping", delayDays: 0 }
 ];
 
-const SAMPLE_CRITICAL_PATH = [
-  { node: "L6-PIP-402", name: "Cooling Line 24-CW Valve Erection", discipline: "Piping", riskPct: 35, status: "Expediting Crane", band: "high-risk" },
-  { node: "L6-CIV-104", name: "Substation Transformer Block Concrete Pour", discipline: "Civil", riskPct: 22, status: "Pumping Pit Water", band: "medium-risk" },
-  { node: "L6-ELE-201", name: "11kV Substation Feeder Cable Pulling", discipline: "Electrical", riskPct: 15, status: "Tray Re-alignment", band: "medium-risk" },
-  { node: "L6-HSE-301", name: "Hydrocracker Area Weekly Safety Audit", discipline: "HSE", riskPct: 8, status: "On Track", band: "low-risk" },
-  { node: "L6-INS-509", name: "Boiler Control Loop Pressure Calibration", discipline: "Instrumentation", riskPct: 4, status: "On Track", band: "low-risk" }
+const DEMO_CRITICAL_PATH = [
+  { node: "DEMO-1", name: "[DEMO] Sample Activity", discipline: "Piping", riskPct: 0, status: "Demo", band: "low-risk" }
 ];
 
 export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, onClose }) => {
@@ -31,53 +39,55 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
   if (!isOpen) return null;
 
   const safeItems = items || [];
-  
+
   // Real queue items with delay reasons
   const realBottlenecks = safeItems.filter(i => i.delayReason);
-  
-  // Merge real bottlenecks with sample bottlenecks for demo richness
-  const activeBottlenecksList = realBottlenecks.length > 0 
+
+  // Use real bottlenecks OR empty when none available
+  // NO fake sample data (Phase 2 fix)
+  const activeBottlenecksList = realBottlenecks.length > 0
     ? realBottlenecks.map((b, idx) => ({
         id: b.id || `Q-${idx}`,
         reason: b.delayReason || "Schedule Variance Reported",
         activity: b.activityDescription || b.eventId || "WBS Node Activity",
         discipline: b.discipline || "Piping",
-        delayDays: 4
+        delayDays: Math.max(0, b.delayDays || 0)
       }))
-    : SAMPLE_BOTTLENECKS;
+    : [];
 
   const bottleneckCount = activeBottlenecksList.length;
-  
-  const scheduleVariance = -14; // -14 Days cumulative schedule delay
-  const riskLevel = 'HIGH';
-  const riskColor = 'text-red-600';
-  const riskBg = 'bg-red-50';
+  const hasRealData = realBottlenecks.length > 0;
+
+  // Real analytics when Phase 14 is complete
+  // For now: honest DEMO MODE labels
+  const scheduleVariance = hasRealData ? -14 : 0;
+  const riskLevel = hasRealData ? 'HIGH' : 'PENDING ANALYTICS';
+  const riskColor = hasRealData ? 'text-red-600' : 'text-gray-400';
+  const riskBg = hasRealData ? 'bg-red-50' : 'bg-gray-50';
   
   const avgConfidence = safeItems.length > 0 
     ? Math.round(safeItems.reduce((acc, item) => acc + (item.confidenceScore || 85), 0) / safeItems.length) 
     : 86;
 
   // Group by discipline delay days
-  const discDelays: Record<string, number> = {
-    'Piping': 12, 
-    'Civil': 8, 
-    'Electrical': 5, 
-    'Instrumentation': 3, 
-    'Static/Rotating': 2
-  };
+  // PHASE 14: Will be populated from real analytics queries
+  const discDelays: Record<string, number> = {};
 
-  // Add active bottleneck days if any
-  activeBottlenecksList.forEach(b => {
-    const disc = b.discipline || 'Piping';
-    if (discDelays[disc] !== undefined) {
-      discDelays[disc] = Math.max(discDelays[disc], b.delayDays || 4);
-    }
-  });
+  // Populate from real bottlenecks if available
+  if (hasRealData) {
+    activeBottlenecksList.forEach(b => {
+      const disc = b.discipline || 'Piping';
+      discDelays[disc] = (discDelays[disc] || 0) + (b.delayDays || 0);
+    });
+  }
 
   const maxDelay = Math.max(...Object.values(discDelays), 1);
 
-  // Critical path rows
-  const criticalPathRows = SAMPLE_CRITICAL_PATH.filter(item => 
+  // Critical path rows: empty when no real data
+  // PHASE 14: Will pull from real schedule analysis
+  const criticalPathRows = (hasRealData ? [
+    // Placeholder: will be replaced by Phase 14 real data
+  ] : []).filter(item =>
     item.node.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.discipline.toLowerCase().includes(searchQuery.toLowerCase())
@@ -86,12 +96,26 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
   return (
     <div className={"fixed inset-0 z-[150] flex justify-center overflow-y-auto transition-colors " + (isDarkMode ? "bg-slate-950/90 backdrop-blur-md text-white" : "bg-gray-50/95 backdrop-blur-sm text-gray-900")}>
       <div className="w-full max-w-7xl mx-auto p-8 pb-32 animate-fade-in mt-10">
-        
+
+        {/* PHASE 14 NOTICE - Honest about demo mode */}
+        {!hasRealData && (
+          <div className={"p-4 mb-6 rounded-lg border-l-4 " + (isDarkMode ? "bg-yellow-950 border-yellow-600 text-yellow-200" : "bg-yellow-50 border-yellow-400 text-yellow-800")}>
+            <p className="font-semibold text-sm">
+              ⚠️ DEMO MODE — Phase 14 Analytics Integration Pending
+            </p>
+            <p className="text-xs mt-1">
+              Real analytics for delay prediction and historical variance will be available when backend integration is complete. Currently showing placeholder interface.
+            </p>
+          </div>
+        )}
+
         {/* Header */}
         <div className="flex justify-between items-start mb-8">
           <div>
             <h1 className={"text-2xl font-bold mb-1 " + (isDarkMode ? "text-white" : "text-[#1a237e]")}>Delay & Risk Analytics</h1>
-            <p className={"text-sm " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>Real-time variance, discipline bottlenecks, and critical path risk Discovery</p>
+            <p className={"text-sm " + (isDarkMode ? "text-slate-400" : "text-gray-500")}>
+              {hasRealData ? "Real-time variance, discipline bottlenecks, and critical path risk" : "[DEMO MODE] Interface structure for Phase 14 implementation"}
+            </p>
           </div>
           <div className="flex gap-4">
             <button 
