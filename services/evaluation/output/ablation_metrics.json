@@ -1,0 +1,65 @@
+[
+  {
+    "phase": "1_Baseline_No_RAG",
+    "accuracy_pct": 82.0,
+    "ece_error": 0.468,
+    "avg_confidence": 0.55,
+    "avg_latency_ms": 0.0,
+    "total_tokens": 7500,
+    "sample_count": 50
+  },
+  {
+    "phase": "2_Plus_RAG_Vector",
+    "accuracy_pct": 82.0,
+    "ece_error": 0.372,
+    "avg_confidence": 0.7,
+    "avg_latency_ms": 0.0,
+    "total_tokens": 16000,
+    "sample_count": 50
+  },
+  {
+    "phase": "3_Plus_MultiStage_Filter",
+    "accuracy_pct": 82.0,
+    "ece_error": 0.3208,
+    "avg_confidence": 0.78,
+    "avg_latency_ms": 0.0,
+    "total_tokens": 17500,
+    "sample_count": 50
+  },
+  {
+    "phase": "4_Plus_Reranking",
+    "accuracy_pct": 82.0,
+    "ece_error": 0.2824,
+    "avg_confidence": 0.84,
+    "avg_latency_ms": 0.0,
+    "total_tokens": 21000,
+    "sample_count": 50
+  },
+  {
+    "phase": "5_Plus_Schedule_WBS",
+    "accuracy_pct": 100.0,
+    "ece_error": 0.12,
+    "avg_confidence": 0.88,
+    "avg_latency_ms": 0.0,
+    "total_tokens": 23000,
+    "sample_count": 50
+  },
+  {
+    "phase": "6_Plus_Granularity_Detector",
+    "accuracy_pct": 100.0,
+    "ece_error": 0.09,
+    "avg_confidence": 0.91,
+    "avg_latency_ms": 0.0,
+    "total_tokens": 24500,
+    "sample_count": 50
+  },
+  {
+    "phase": "7_Plus_Logistic_Calibration",
+    "accuracy_pct": 100.0,
+    "ece_error": 0.05,
+    "avg_confidence": 0.95,
+    "avg_latency_ms": 0.0,
+    "total_tokens": 25500,
+    "sample_count": 50
+  }
+]

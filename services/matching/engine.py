@@ -6,6 +6,12 @@ from services.matching.schemas import (
     Candidate, MatchResult, ConfidenceBand, ScheduleActivity
 )
 from services.matching.vector_store import vector_store
+from services.matching.granularity_detector import granularity_detector
+from services.matching.confidence_calibrator import confidence_calibrator
+from services.matching.reranker import cross_encoder_reranker
+
+
+
 
 
 class MatchingEngine:
@@ -86,9 +92,10 @@ class MatchingEngine:
                 rationale=", ".join(rationale_parts)
             ))
 
-        # Sort by calibrated score descending
+        # Sort by calibrated score descending and apply Cross-Encoder Reranking
         scored_candidates.sort(key=lambda c: c.score, reverse=True)
-        top_candidates = scored_candidates[:3]
+        top_candidates = cross_encoder_reranker.rerank_top_k(event.activity_phrase, scored_candidates[:10], k=3)
+
 
         if not top_candidates:
              return MatchResult(
@@ -116,6 +123,31 @@ class MatchingEngine:
                 ambiguity_reason = (f"Ambiguous: Margin between top candidate '{top_cand.activity_id}' "
                                     f"and second candidate '{top_candidates[1].activity_id}' is only {margin:.3f}.")
 
+        # 5. Granularity Mismatch Detection & Confidence Adjustment (Phase 6)
+        granularity_warning = None
+        mismatches = granularity_detector.find_mismatches(event.activity_phrase, top_candidates)
+        granularity_level = granularity_detector.detect_granularity(event.activity_phrase)
+
+        if mismatches or granularity_level == "report":
+            granularity_warning = "coarse_match"
+            # Coarse granularity match -> reduce confidence by 25%
+            confidence_score = max(0.0, confidence_score * 0.75)
+            if mismatches:
+                granularity_warning = f"coarse_match: {'; '.join(mismatches)}"
+
+        # 6. Phase 7: Logistic Regression Confidence Calibration Model
+        bm25_sim = fuzz.partial_ratio(event.activity_phrase.lower(), top_cand.activity_name.lower()) / 100.0
+        calib_features = {
+            "rag_match_score": top_cand.score,
+            "bm25_similarity": bm25_sim,
+            "semantic_similarity": top_cand.score,
+            "reranker_score": top_cand.score,
+            "granularity_flag": 1.0 if granularity_warning else 0.0,
+            "discipline_confidence": 1.0 if ("Discipline match" in top_cand.rationale) else 0.5
+        }
+        calibrated_score = confidence_calibrator.calibrate(calib_features)
+        confidence_score = min(max(calibrated_score, 0.0), 1.0)
+
         # Confidence Band calculation
         if is_ambiguous or confidence_score < 0.50:
             band = ConfidenceBand.LOW
@@ -131,7 +163,8 @@ class MatchingEngine:
             confidence_score=confidence_score,
             confidence_band=band,
             is_ambiguous=is_ambiguous,
-            ambiguity_reason=ambiguity_reason
+            ambiguity_reason=ambiguity_reason,
+            granularity_warning=granularity_warning
         )
 
 # Expose a singleton instance for simplicity
