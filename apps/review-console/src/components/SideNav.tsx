@@ -150,11 +150,17 @@ export const SideNav: React.FC = () => {
               <span className="font-body-sm text-sm">Institutional Memory</span>
             </button>
             <button 
-              onClick={() => setIsAnalyticsOpen(true)}
-              className="flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors text-on-surface-variant hover:bg-surface-container"
+              onClick={() => {
+                navigate('/analytics');
+                setIsAnalyticsOpen(true);
+                closeMobileSidebar();
+              }}
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors text-on-surface-variant hover:bg-surface-container ${
+                location.pathname === '/analytics' ? 'bg-red-100 text-red-900 font-bold ring-1 ring-red-400' : ''
+              }`}
             >
               <span className="material-symbols-outlined text-[16px] text-red-600">trending_up</span>
-              <span className="font-body-sm text-sm">Delay / Risk Analytics</span>
+              <span className="font-body-sm text-sm font-semibold">Delay / Risk Analytics</span>
             </button>
           </div>
 

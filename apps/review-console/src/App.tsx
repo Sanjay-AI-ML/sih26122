@@ -1,11 +1,12 @@
 import { KeycloakLoginScreen } from './components/KeycloakLoginScreen';
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, useNavigate } from 'react-router-dom';
 import { ReviewQueueProvider, useReviewQueue } from './context/ReviewQueueContext';
 import { TopAppBar } from './components/TopAppBar';
 import { SideNav } from './components/SideNav';
 import { ReviewQueueScreen } from './components/ReviewQueueScreen';
 import { PrimaveraP6Screen } from './components/PrimaveraP6Screen';
+import { DelayRiskDashboard } from './components/DelayRiskDashboard';
 import { RecordDetailScreen } from './components/RecordDetailScreen';
 import { ScheduleMatchModal } from './components/ScheduleMatchModal';
 import { CreateActivityModal } from './components/CreateActivityModal';
@@ -15,6 +16,7 @@ import { Toast } from './components/Toast';
 
 const RouteHandler: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { setIsCreateActivityModalOpen, setIsExportModalOpen } = useReviewQueue();
 
   useEffect(() => {
@@ -29,6 +31,7 @@ const RouteHandler: React.FC = () => {
     <Routes>
       <Route path="/" element={<ReviewQueueScreen />} />
       <Route path="/primavera" element={<PrimaveraP6Screen />} />
+      <Route path="/analytics" element={<DelayRiskDashboard isOpen={true} onClose={() => navigate("/")} />} />
       <Route path="/record/:id" element={<RecordDetailScreen />} />
       <Route path="/create" element={<ReviewQueueScreen />} />
       <Route path="/export" element={<ReviewQueueScreen />} />
