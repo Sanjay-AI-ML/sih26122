@@ -6,6 +6,8 @@ from services.matching.schemas import (
     Candidate, MatchResult, ConfidenceBand, ScheduleActivity
 )
 from services.matching.vector_store import vector_store
+from services.matching.granularity_detector import granularity_detector
+
 
 
 class MatchingEngine:
@@ -116,6 +118,18 @@ class MatchingEngine:
                 ambiguity_reason = (f"Ambiguous: Margin between top candidate '{top_cand.activity_id}' "
                                     f"and second candidate '{top_candidates[1].activity_id}' is only {margin:.3f}.")
 
+        # 5. Granularity Mismatch Detection & Confidence Adjustment (Phase 6)
+        granularity_warning = None
+        mismatches = granularity_detector.find_mismatches(event.activity_phrase, top_candidates)
+        granularity_level = granularity_detector.detect_granularity(event.activity_phrase)
+
+        if mismatches or granularity_level == "report":
+            granularity_warning = "coarse_match"
+            # Coarse granularity match -> reduce confidence by 25%
+            confidence_score = max(0.0, confidence_score * 0.75)
+            if mismatches:
+                granularity_warning = f"coarse_match: {'; '.join(mismatches)}"
+
         # Confidence Band calculation
         if is_ambiguous or confidence_score < 0.50:
             band = ConfidenceBand.LOW
@@ -131,7 +145,8 @@ class MatchingEngine:
             confidence_score=confidence_score,
             confidence_band=band,
             is_ambiguous=is_ambiguous,
-            ambiguity_reason=ambiguity_reason
+            ambiguity_reason=ambiguity_reason,
+            granularity_warning=granularity_warning
         )
 
 # Expose a singleton instance for simplicity

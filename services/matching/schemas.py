@@ -35,3 +35,5 @@ class MatchResult(BaseModel):
     confidence_band: ConfidenceBand
     is_ambiguous: bool
     ambiguity_reason: Optional[str] = None
+    granularity_warning: Optional[str] = None
+
