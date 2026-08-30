@@ -33,6 +33,32 @@ const resolveTag = (event: any, matchData: any) => {
   return `TAG-${disc}-${cleanId}`;
 };
 
+// UNIFIED EXTRACTION FUNCTION - Uses ONLY Claude Intelligence
+const extractFieldReport = async (text: string, source: string = "field_input"): Promise<any> => {
+  try {
+    const response = await fetch("http://localhost:8001/ingest/llm", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: text,
+        source_document: source,
+        default_date: new Date().toISOString().split("T")[0]
+      })
+    });
+
+    if (!response.ok) throw new Error(`Extraction failed: ${response.status}`);
+
+    const data = await response.json();
+    if (!data.events || data.events.length === 0) return null;
+
+    // Return ONLY first event - prevents duplicate extractions
+    return data.events[0];
+  } catch (err: any) {
+    console.error("Extraction error:", err);
+    throw err;
+  }
+};
+
 const i18n: any = {
   "EN": {
     "greeting": "Good evening. Ready to log your field progress? Type an update or upload a DPR file.",
@@ -557,18 +583,12 @@ function App() {
 
         setIsTyping(true);
         try {
-          const ingestRes = await fetch("http://localhost:8001/ingest/llm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: newMsg.text, source_document: "field_agent_chat", default_date: new Date().toISOString().split("T")[0] })
-          });
-          if (!ingestRes.ok) throw new Error("Ingest HTTP " + ingestRes.status);
-          const ingestData = await ingestRes.json();
-          if (!ingestData.events || ingestData.events.length === 0) {
+          // Use UNIFIED extraction function - ensures Claude Intelligence only
+          const event = await extractFieldReport(newMsg.text, "field_agent_chat");
+          if (!event) {
             setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "noProgressUpdate", vars: undefined, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
             return;
           }
-          const event = ingestData.events[0];
           const matchRes = await fetch("http://localhost:8002/match", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -633,57 +653,47 @@ function App() {
           return;
         }
 
-        const formData = new FormData();
-        formData.append("file", file);
         setIsTyping(true);
         setMessages((prev: any[]) => [...prev, { id: Date.now(), type: "user", text: "Uploading: " + file.name, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
-        
+
         try {
-          const res = await fetch("http://localhost:8001/ingest/file", { method: "POST", body: formData });
-          if (!res.ok) throw new Error("Upload HTTP " + res.status);
-          const data = await res.json();
-          
-          if (!data.events || data.events.length === 0) {
+          // Read file as text and use UNIFIED extraction function
+          const fileText = await file.text();
+          const event = await extractFieldReport(fileText, `file_${file.name}`);
+
+          if (!event) {
             setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "noActivitiesExtracted", vars: { filename: file.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
-          } else {
-            setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "extractedEventsProcessing", vars: { count: String(data.total_events), filename: file.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
-            
-            for (let i = 0; i < data.events.length; i++) {
-              const event = data.events[i];
-              const matchRes = await fetch("http://localhost:8002/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(event) });
-              
-              if (matchRes.ok) {
-                const matchData = await matchRes.json();
-                
-                try {
-                  await fetch("http://localhost:8003/queue/add", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ event: event, match: matchData })
-                  });
-                } catch(err) {
-                  console.error("Queue add failed", err);
-                }
-                
-                if (i === 0) {
-                  setMessages((prev: any[]) => [...prev, {
-                    id: Date.now() + 2, type: "card",
-                    activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
-                    discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
-                    tag: resolveTag(event, matchData),
-                    start: event.event_date || "-", finish: "-",
-                    linkedActivityId: (matchData.confidence_band !== "low" && (matchData.confidence_score || 0) >= 0.5) ? (matchData.top_activity_id || null) : null,
-                    confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
-                    confidenceBand: matchData.confidence_band || 'low',
-                    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                  }]);
-                }
-              }
+            return;
+          }
+
+          setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "extractedEventsProcessing", vars: { count: "1", filename: file.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+
+          const matchRes = await fetch("http://localhost:8002/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(event) });
+
+          if (matchRes.ok) {
+            const matchData = await matchRes.json();
+
+            try {
+              await fetch("http://localhost:8003/queue/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ event: event, match: matchData })
+              });
+            } catch(err) {
+              console.error("Queue add failed", err);
             }
-            
-            if (data.events.length > 1) {
-              setMessages((prev: any[]) => [...prev, { id: Date.now() + 3, type: "bot", text: "moreEventsQueued", vars: { count: String(data.events.length - 1) }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
-            }
+
+            setMessages((prev: any[]) => [...prev, {
+              id: Date.now() + 2, type: "card",
+              activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
+              discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
+              tag: resolveTag(event, matchData),
+              start: event.event_date || "-", finish: "-",
+              linkedActivityId: (matchData.confidence_band !== "low" && (matchData.confidence_score || 0) >= 0.5) ? (matchData.top_activity_id || null) : null,
+              confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
+              confidenceBand: matchData.confidence_band || 'low',
+              time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            }]);
           }
         } catch (err: any) {
           setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "uploadError", vars: { error: err.message }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
