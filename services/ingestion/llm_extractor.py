@@ -120,13 +120,21 @@ class LLMExtractor:
                     "prompt": (
                         "You are an assistant for an oil & gas infrastructure project "
                         "tracking system (piping, civil, electrical, instrumentation, "
-                        "static/rotating equipment, HSE). Answer the question using ONLY "
-                        "the project data below. Be concise and specific. If the data "
-                        "doesn't cover the question, say so plainly.\n\n"
+                        "static/rotating equipment, HSE).\n\n"
+                        "STRICT RULES:\n"
+                        "1. Answer using ONLY facts explicitly present in PROJECT DATA below.\n"
+                        "2. NEVER invent, guess, or extrapolate numbers, dates, names, contractors, "
+                        "budgets, costs, deadlines, or causes that are not explicitly stated in "
+                        "PROJECT DATA - not even as a 'typical' or 'likely' example.\n"
+                        "3. If PROJECT DATA does not contain the answer, say exactly: "
+                        "\"I don't have that information in the current project data.\" "
+                        "Do not fill the gap with general industry knowledge.\n"
+                        "4. Keep answers concise and cite the specific numbers/activity IDs from "
+                        "PROJECT DATA that support your answer.\n\n"
                         f"PROJECT DATA:\n{context}\n\nQUESTION: {question}\n\nANSWER:"
                     ),
                     "stream": False,
-                    "options": {"temperature": 0.2},
+                    "options": {"temperature": 0.0},
                 },
                 timeout=self.timeout,
             )

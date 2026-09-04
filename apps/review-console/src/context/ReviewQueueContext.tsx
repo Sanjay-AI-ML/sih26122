@@ -573,37 +573,44 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
   }, [showToast]);
 
   const confirmScheduleMatch = useCallback((itemId: string, candidate: ScheduleCandidate) => {
-    setItems(prevItems =>
-      prevItems.map(item => {
-        if (item.id === itemId || item.eventId === itemId) {
-          // Fire-and-forget writeback to backend
-          removeFromQueue(item.id).catch(() => {}); writebackApprove({
-            activity_id: candidate.id,
-            discipline: item.discipline,
-            event_date: item.date || new Date().toISOString().split('T')[0],
-            confidence_score: candidate.matchScore,
-            confidence_band: candidate.matchScore >= 0.8 ? 'high' : candidate.matchScore >= 0.5 ? 'medium' : 'low',
-            was_ambiguous: item.candidates.length > 1,
-            source_document: item.formatTabs?.dprText ? 'dpr_input' : 'review_console',
-            source_excerpt: item.sourceText || item.activityDescription,
-            approved_by: 'S. Gogoi',
-            delay_reason: item.delayReason || null,
-          }).catch(err => console.warn('Writeback approve failed (offline?):', err));
+    // React may invoke a setState updater function more than once per commit
+    // (StrictMode double-invoke, or re-renders during concurrent scheduling).
+    // A side effect (the writeback POST) that lived inside the updater below
+    // was firing 2-3x per click, writing duplicate "approved" rows to the
+    // database for a single approval - which then polluted every downstream
+    // count (analytics, delay %, and the Institutional Memory RAG context,
+    // which reads real backend data and correctly but misleadingly reported
+    // the inflated numbers). Look the item up and fire the writeback once,
+    // outside setItems, which now only performs the pure state update.
+    const item = items.find(i => i.id === itemId || i.eventId === itemId);
+    if (!item) return;
 
-          return {
-            ...item,
-            status: 'auto_approved' as StatusType,
-            statusLabel: 'Approved',
-            linkedActivity: candidate.id,
-            confidenceScore: Math.round(candidate.matchScore * 100)
-          };
-        }
-        return item;
-      })
+    removeFromQueue(item.id).catch(() => {});
+    writebackApprove({
+      activity_id: candidate.id,
+      discipline: item.discipline,
+      event_date: item.date || new Date().toISOString().split('T')[0],
+      confidence_score: candidate.matchScore,
+      confidence_band: candidate.matchScore >= 0.8 ? 'high' : candidate.matchScore >= 0.5 ? 'medium' : 'low',
+      was_ambiguous: item.candidates.length > 1,
+      source_document: item.formatTabs?.dprText ? 'dpr_input' : 'review_console',
+      source_excerpt: item.sourceText || item.activityDescription,
+      approved_by: 'S. Gogoi',
+      delay_reason: item.delayReason || null,
+    }).catch(err => console.warn('Writeback approve failed (offline?):', err));
+
+    setItems(prevItems =>
+      prevItems.map(it => (it.id === itemId || it.eventId === itemId) ? {
+        ...it,
+        status: 'auto_approved' as StatusType,
+        statusLabel: 'Approved',
+        linkedActivity: candidate.id,
+        confidenceScore: Math.round(candidate.matchScore * 100)
+      } : it)
     );
     const auditId = Math.random().toString(36).substring(2, 10).toUpperCase();
     showToast('Schedule matched & saved', auditId, 'success');
-  }, [showToast]);
+  }, [items, showToast]);
 
   const discardItem = useCallback((itemId: string) => {
     const item = items.find(i => i.id === itemId || i.eventId === itemId);

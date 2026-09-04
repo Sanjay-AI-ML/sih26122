@@ -108,8 +108,21 @@ export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose 
             .map((d: { discipline: string; avg_delay_pct: number }) => `${d.discipline}: ${Math.round(d.avg_delay_pct)}% of activities delayed`)
             .join('; ') || 'no delays recorded'
         : 'unavailable';
-      const recentActivities = Array.isArray(history) && history.length > 0
-        ? history.slice(0, 10).map((h: { activity_id: string; discipline: string; status: string; delay_reason?: string | null }) =>
+      // Repeated identical approvals (e.g. a double-click writing the same
+      // activity twice) must not be presented to the model as N distinct
+      // activities - dedupe by activity+excerpt before it ever reaches the
+      // prompt, so a data glitch can't inflate what looks like a fact.
+      const seenActivities = new Set<string>();
+      const dedupedHistory = Array.isArray(history)
+        ? history.filter((h: { activity_id: string; source_excerpt?: string }) => {
+            const key = `${h.activity_id}|${h.source_excerpt || ''}`;
+            if (seenActivities.has(key)) return false;
+            seenActivities.add(key);
+            return true;
+          })
+        : [];
+      const recentActivities = dedupedHistory.length > 0
+        ? dedupedHistory.slice(0, 10).map((h: { activity_id: string; discipline: string; status: string; delay_reason?: string | null }) =>
             `${h.activity_id} (${h.discipline}, ${h.status}${h.delay_reason ? `, delay: ${h.delay_reason}` : ''})`
           ).join('; ')
         : 'none yet';

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Database, CheckCircle2, AlertTriangle, PauseCircle, Download, Search, ArrowRight, RefreshCw } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { useReviewQueue } from '../context/ReviewQueueContext';
 import { getScheduleActivities, getAuditHistory, type ScheduleActivity, type ApprovalPayload } from '../lib/api';
 
@@ -83,6 +85,39 @@ export const PrimaveraP6Screen: React.FC = () => {
     return matchesDiscipline && matchesSearch;
   });
 
+  const exportPdf = () => {
+    if (filteredRows.length === 0) return;
+    const doc = new jsPDF({ orientation: 'landscape' });
+    doc.setFontSize(16);
+    doc.text('Kadam - Primavera P6 Schedule Report', 14, 18);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 25);
+    doc.text(
+      `Discipline: ${selectedDiscipline}   |   Activities: ${filteredRows.length}   |   Completed: ${completedCount}   |   Delayed: ${delayedCount}   |   Not Started: ${notStartedCount}`,
+      14, 31
+    );
+
+    autoTable(doc, {
+      head: [['Activity ID', 'Activity Name', 'Discipline', 'WBS Path', 'Status', 'Delay Reason']],
+      body: filteredRows.map(r => [
+        r.activity_id,
+        r.activity_name,
+        r.discipline.replace('_', ' '),
+        r.wbs_path,
+        r.status,
+        r.delayReason || '-'
+      ]),
+      startY: 36,
+      theme: 'grid',
+      styles: { fontSize: 7.5, cellPadding: 2, overflow: 'linebreak' },
+      headStyles: { fillColor: [26, 35, 126], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [245, 245, 245] },
+      margin: { top: 36, right: 10, bottom: 14, left: 10 }
+    });
+
+    doc.save(`kadam_p6_schedule_${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   const totalCount = rows.length;
   const completedCount = rows.filter((r) => r.status === 'Completed').length;
   const delayedCount = rows.filter((r) => r.status === 'Delayed').length;
@@ -127,9 +162,10 @@ export const PrimaveraP6Screen: React.FC = () => {
             Refresh
           </button>
           <button
-            onClick={() => window.print()}
+            onClick={exportPdf}
+            disabled={filteredRows.length === 0}
             style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', color: isDarkMode ? '#f8fafc' : '#0f172a', borderColor: isDarkMode ? '#334155' : '#cbd5e1' }}
-            className="border rounded-lg px-4 py-2 text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+            className="border rounded-lg px-4 py-2 text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Download className="w-4 h-4 text-blue-600" />
             Export PDF

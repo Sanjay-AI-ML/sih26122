@@ -1,5 +1,7 @@
 import React from 'react';
 import { X, Download, TrendingDown, AlertTriangle, Activity, BrainCircuit, Search, CheckCircle } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { useReviewQueue } from '../context/ReviewQueueContext';
 import { useProjectMetrics, useAnalyticsData } from '../lib/dataIntegration';
 import { useRealTimeDataPolling } from '../hooks/useRealTimeData';
@@ -19,7 +21,7 @@ interface CriticalPathItem {
 }
 
 export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, onClose }) => {
-  const { setIsExportModalOpen, isDarkMode } = useReviewQueue();
+  const { isDarkMode } = useReviewQueue();
   const { metrics, isLoading } = useProjectMetrics();
   const { data: rawData } = useAnalyticsData();
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -90,6 +92,58 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
 
   const maxDelay = Math.max(...Object.values(discDelays), 1);
 
+  // Real Delay & Risk PDF report - previously "Export Report" here opened
+  // the review-queue export modal, which has no connection to anything
+  // shown on this screen (KPIs, discipline delay %, bottleneck list).
+  const exportPdf = () => {
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('Kadam - Delay & Risk Analytics Report', 14, 18);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 25);
+
+    autoTable(doc, {
+      head: [['Metric', 'Value']],
+      body: [
+        ['Cumulative Schedule Variance', `${scheduleVariance} Days`],
+        ['Active Bottlenecks', String(bottleneckCount)],
+        ['Predicted Risk Level', riskLevel],
+        ['AI Match Confidence', `${avgConfidence}%`],
+      ],
+      startY: 32,
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 2.5 },
+      headStyles: { fillColor: [26, 35, 126], textColor: [255, 255, 255], fontStyle: 'bold' },
+    });
+
+    const afterKpis = (doc as any).lastAutoTable.finalY + 8;
+    autoTable(doc, {
+      head: [['Discipline', '% Delayed']],
+      body: Object.keys(discDelays).length > 0
+        ? Object.entries(discDelays).map(([disc, pct]) => [disc, `${pct}%`])
+        : [['Piping', '0%'], ['Civil', '0%'], ['Electrical', '0%'], ['Instrumentation', '0%'], ['Static/Rotating', '0%']],
+      startY: afterKpis,
+      theme: 'grid',
+      styles: { fontSize: 9, cellPadding: 2.5 },
+      headStyles: { fillColor: [26, 35, 126], textColor: [255, 255, 255], fontStyle: 'bold' },
+    });
+
+    const afterDisc = (doc as any).lastAutoTable.finalY + 8;
+    autoTable(doc, {
+      head: [['#', 'Reason', 'Activity', 'Discipline']],
+      body: activeBottlenecksList.length > 0
+        ? activeBottlenecksList.map((b, idx) => [String(idx + 1), b.reason, b.activity, b.discipline])
+        : [['-', 'No bottlenecks reported', '-', '-']],
+      startY: afterDisc,
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 2, overflow: 'linebreak' },
+      headStyles: { fillColor: [26, 35, 126], textColor: [255, 255, 255], fontStyle: 'bold' },
+      margin: { left: 14, right: 14 },
+    });
+
+    doc.save(`kadam_delay_risk_report_${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
   // Critical path rows: empty when no real data
   // PHASE 14: Will pull from real schedule analysis
   const criticalPathRows: CriticalPathItem[] = (hasRealData ? [
@@ -124,8 +178,8 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
             </p>
           </div>
           <div className="flex gap-4">
-            <button 
-              onClick={() => { onClose(); setIsExportModalOpen(true); }}
+            <button
+              onClick={exportPdf}
               className="bg-[#1a237e] hover:bg-[#283593] text-white px-4 py-2 rounded-md flex items-center gap-2 text-sm font-medium transition-colors cursor-pointer"
             >
               <Download className="w-4 h-4" /> Export Report
