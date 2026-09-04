@@ -69,7 +69,8 @@ Rules:
 3. If Hinglish phrases like "finish ho gaya", "done", "completed" appear, map event_type to "finish".
 4. Return ONLY the JSON object. Do not include markdown preamble.
 5. CRITICAL: If the input is conversational (e.g. "hi", "hello", "good morning", "thanks") or lacks ANY actual field work, return exactly {"events": []}. Do NOT hallucinate.
-6. CONFIDENCE HINT: High (0.9+) if discipline clearly stated, medium (0.7-0.9) if inferred, low (0.5-0.7) if ambiguous"""
+6. CONFIDENCE HINT: High (0.9+) if discipline clearly stated, medium (0.7-0.9) if inferred, low (0.5-0.7) if ambiguous
+7. CRITICAL - ONE EVENT PER ACTIVITY: A report often describes several DIFFERENT activities, one per discipline or team (e.g. "Piping team completed X. Civil team finished Y. Electrical crew did Z."). Each such activity is a SEPARATE event object in the array, even when they appear back-to-back in the same paragraph or are separated only by a period. NEVER merge two different disciplines, teams, or activity_phrases into one event object. Count the distinct activities described before writing the JSON, and emit exactly that many event objects. A report naming N teams/disciplines with N distinct actions must produce N events, not fewer."""
 
 
 class LLMExtractor:
@@ -125,7 +126,7 @@ class LLMExtractor:
                         f"PROJECT DATA:\n{context}\n\nQUESTION: {question}\n\nANSWER:"
                     ),
                     "stream": False,
-                    "temperature": 0.2,
+                    "options": {"temperature": 0.2},
                 },
                 timeout=self.timeout,
             )
@@ -200,27 +201,25 @@ class LLMExtractor:
         # Build prompt with RAG context
         system_prompt = self.build_system_prompt(text, retrieve_context=retrieve_context)
 
-        # TRY OLLAMA QWEN3-4B FIRST
+        # Small local models (llama3.2:3B, qwen3:4b) do NOT reliably split
+        # multiple distinct activities out of one paragraph even when told to
+        # ("ONE EVENT PER ACTIVITY" rule) - they merge 3-4 sentences into a
+        # single event. So we split the report into per-sentence chunks
+        # ourselves and call the LLM once per chunk - each call then only
+        # ever sees ONE activity, which the model handles reliably.
+        chunks = self._split_into_activity_chunks(text)
+
         try:
-            res = httpx.post(
-                f"{self.base_url}/api/generate",
-                json={
-                    "model": self.model_name,
-                    "prompt": f"{system_prompt}\n\nExtract structured events from this report:\n\n{text}",
-                    "stream": False,
-                    "temperature": 0.1,
-                },
-                timeout=self.timeout
-            )
-            if res.status_code == 200:
-                resp_data = res.json()
-                raw_text = resp_data.get("response", "")
-                print(f"[LLM] Ollama extraction succeeded via {self.model_name}")
-                return self._parse_and_validate_llm_json(
-                    raw_json_str=raw_text,
-                    source_document=source_document,
-                    default_date=default_date
-                )
+            if len(chunks) <= 1:
+                all_events = self._extract_chunk(text, system_prompt, source_document, default_date)
+            else:
+                all_events: List[ExtractedEvent] = []
+                for chunk in chunks:
+                    all_events.extend(
+                        self._extract_chunk(chunk, system_prompt, source_document, default_date)
+                    )
+            print(f"[LLM] Ollama extraction succeeded via {self.model_name} ({len(chunks)} chunk(s), {len(all_events)} raw event(s))")
+            return self._consolidate_and_rank_events(all_events)
         except Exception as e:
             print(f"[LLM] Ollama extraction failed: {e}")
 
@@ -228,11 +227,62 @@ class LLMExtractor:
         print(f"[LLM] Falling back to offline extraction")
         return self._offline_smart_extractor(text, source_document, default_date)
 
+    def _split_into_activity_chunks(self, text: str) -> List[str]:
+        """
+        Splits report text into per-sentence chunks so each LLM call only
+        ever has to parse ONE activity. Splits on newlines first, then on
+        sentence boundaries within each line. Chunks under 8 chars (stray
+        punctuation) are dropped.
+        """
+        chunks: List[str] = []
+        for line in text.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z])", line)
+            for s in sentences:
+                s = s.strip()
+                if len(s) >= 8:
+                    chunks.append(s)
+        return chunks or ([text.strip()] if text.strip() else [])
+
+    def _extract_chunk(
+        self,
+        chunk_text: str,
+        system_prompt: str,
+        source_document: str,
+        default_date: Optional[str]
+    ) -> List[ExtractedEvent]:
+        """Runs one Ollama call over a single chunk and returns validated (unconsolidated) events."""
+        res = httpx.post(
+            f"{self.base_url}/api/generate",
+            json={
+                "model": self.model_name,
+                "prompt": f"{system_prompt}\n\nExtract structured events from this report:\n\n{chunk_text}",
+                "stream": False,
+                # Ollama's /api/generate ignores a top-level "temperature" —
+                # it must be nested under "options" or the request silently
+                # runs at Ollama's default temperature instead.
+                "options": {"temperature": 0.0},
+            },
+            timeout=self.timeout
+        )
+        if res.status_code != 200:
+            return []
+        raw_text = res.json().get("response", "")
+        return self._parse_and_validate_llm_json(
+            raw_json_str=raw_text,
+            source_document=source_document,
+            default_date=default_date,
+            consolidate=False
+        )
+
     def _parse_and_validate_llm_json(
         self,
         raw_json_str: str,
         source_document: str,
-        default_date: Optional[str]
+        default_date: Optional[str],
+        consolidate: bool = True
     ) -> List[ExtractedEvent]:
         """Cleans, parses, and validates LLM-generated JSON into ExtractedEvent models."""
         cleaned = re.sub(r"```json\s*", "", raw_json_str)
@@ -294,7 +344,7 @@ class LLMExtractor:
                 print(f"[Validation] Skipping event: {e}")
                 continue
 
-        return self._consolidate_and_rank_events(validated_events)
+        return self._consolidate_and_rank_events(validated_events) if consolidate else validated_events
 
     def _consolidate_and_rank_events(self, events: List[ExtractedEvent]) -> List[ExtractedEvent]:
         """

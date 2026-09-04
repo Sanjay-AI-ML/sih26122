@@ -39,7 +39,10 @@ export interface IngestResponse {
 }
 
 export async function ingestText(text: string, sourceDoc = 'review_console_manual'): Promise<IngestResponse> {
-  const res = await fetch(`${INGEST}/ingest/text`, {
+  // /ingest/llm runs the local LLM (Ollama) with RAG context, which splits
+  // multi-activity reports far more reliably than /ingest/text's offline
+  // rule-based parser (which merges/drops activities in longer reports).
+  const res = await fetch(`${INGEST}/ingest/llm`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({

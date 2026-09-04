@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
 import type { QueueItem, NewReportInput, CreateActivityInput, StatusType, DisciplineType, InputFormatType, ScheduleCandidate } from "../types";
 import { initialQueueItems } from '../data/mockData';
-import { ingestText, ingestFile, matchEvent, writebackApprove, writebackReject, addScheduleActivity, getPendingQueue, removeFromQueue } from '../lib/api';
+import { ingestText, ingestFile, matchEvent, writebackApprove, writebackReject, addScheduleActivity, getPendingQueue, removeFromQueue, type IngestEvent } from '../lib/api';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -667,40 +667,104 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setItems(prev => [baseItem, ...prev]);
     showToast('Processing report through AI engine…', undefined, 'info');
 
-    // Async: call ingest → match → update item with real candidates
+    // Async: call ingest → match → update item(s) with real candidates.
+    // A single report can describe multiple activities (e.g. "Piping team
+    // completed X. Civil team finished Y."), so ingestText can return more
+    // than one event — every one of them needs its own queue item, not just
+    // the first.
     (async () => {
       try {
         const ingestRes = await ingestText(newReport.activityPhrase, 'review_console_new_report');
-        const event = ingestRes.events[0];
-        if (!event) throw new Error('No events extracted');
+        const events = ingestRes.events;
+        if (!events || events.length === 0) throw new Error('No events extracted');
 
-        const matchRes = await matchEvent(event);
-        const realCandidates: ScheduleCandidate[] = matchRes.candidates.map(c => ({
-          id: c.activity_id,
-          wbsPath: `Primavera Schedule / ${c.activity_id}`,
-          discipline: newReport.discipline,
-          title: c.activity_name,
-          plannedStart: today,
-          plannedFinish: today,
-          durationDays: 0,
-          responsibility: 'Field Engineering',
-          resources: [],
-          matchScore: c.score,
-          isRecommended: c.activity_id === matchRes.top_activity_id,
-          rationale: c.rationale,
-        }));
+        const matchAndApply = async (event: IngestEvent, targetId: string) => {
+          const matchRes = await matchEvent(event);
+          const realCandidates: ScheduleCandidate[] = matchRes.candidates.map(c => ({
+            id: c.activity_id,
+            wbsPath: `Primavera Schedule / ${c.activity_id}`,
+            discipline: (event.discipline as DisciplineType) || newReport.discipline,
+            title: c.activity_name,
+            plannedStart: today,
+            plannedFinish: today,
+            durationDays: 0,
+            responsibility: 'Field Engineering',
+            resources: [],
+            matchScore: c.score,
+            isRecommended: c.activity_id === matchRes.top_activity_id,
+            rationale: c.rationale,
+          }));
 
-        setItems(prev => prev.map(it => it.id === recordId ? {
-          ...it,
-          confidenceScore: Math.round(matchRes.confidence_score * 100),
-          candidates: realCandidates,
-          tagId: event.tag_or_line_id || newReport.tagId || 'N/A',
-          discipline: (event.discipline as DisciplineType) || newReport.discipline,
-          linkedActivity: matchRes.top_activity_id || undefined,
-          status: matchRes.confidence_score >= 0.8 ? 'auto_approved' : 'review',
-          statusLabel: matchRes.confidence_score >= 0.8 ? 'Auto-Approved' : 'Review',
-        } : it));
-        showToast('Report processed & matched to schedule', undefined, 'success');
+          const isAutoApproved = matchRes.confidence_score >= 0.8 && !!matchRes.top_activity_id;
+
+          setItems(prev => prev.map(it => it.id === targetId ? {
+            ...it,
+            confidenceScore: Math.round(matchRes.confidence_score * 100),
+            candidates: realCandidates,
+            tagId: event.tag_or_line_id || newReport.tagId || 'N/A',
+            discipline: (event.discipline as DisciplineType) || newReport.discipline,
+            linkedActivity: matchRes.top_activity_id || undefined,
+            status: isAutoApproved ? 'auto_approved' : 'review',
+            statusLabel: isAutoApproved ? 'Auto-Approved' : 'Review',
+          } : it));
+
+          // "Auto-Approved" must actually reach the database, or Analytics /
+          // Delay-Risk / Primavera status never see it — it previously only
+          // existed in this browser tab's React state.
+          if (isAutoApproved && matchRes.top_activity_id) {
+            try {
+              await writebackApprove({
+                activity_id: matchRes.top_activity_id,
+                discipline: (event.discipline as DisciplineType) || newReport.discipline,
+                event_date: event.event_date || today,
+                quantity: event.quantity,
+                unit: event.unit,
+                confidence_score: Math.round(matchRes.confidence_score * 100),
+                confidence_band: matchRes.confidence_band,
+                was_ambiguous: matchRes.is_ambiguous,
+                source_document: event.source_document,
+                source_excerpt: event.source_excerpt,
+                approved_by: 'Auto (high confidence)',
+                delay_reason: event.delay_reason,
+              });
+            } catch (writebackErr) {
+              console.warn('Auto-approve writeback failed:', writebackErr);
+            }
+          }
+        };
+
+        if (events.length === 1) {
+          // Single activity: update the placeholder item in place.
+          await matchAndApply(events[0], recordId);
+        } else {
+          // Multiple activities: replace the single placeholder with one
+          // real item per extracted event.
+          const extraItems: QueueItem[] = events.map((event) => {
+            const n = Math.floor(1000 + Math.random() * 9000);
+            return {
+              ...baseItem,
+              id: `OIL-2026-X${n.toString().substring(0, 3)}`,
+              eventId: `EV-${n}A`,
+              activityPhrase: event.activity_phrase,
+              activityDescription: event.activity_phrase,
+              discipline: (event.discipline as DisciplineType) || newReport.discipline,
+              sourceText: event.source_excerpt,
+              formatTabs: { dprText: event.source_excerpt },
+              extractedFields: [
+                { fieldName: 'Activity', extractedValue: event.activity_phrase, systemMapping: '-' },
+                { fieldName: 'Discipline', extractedValue: event.discipline, systemMapping: event.discipline },
+                { fieldName: 'Tag ID', extractedValue: event.tag_or_line_id || 'N/A', systemMapping: event.tag_or_line_id || '-' },
+              ],
+            };
+          });
+          setItems(prev => [...extraItems, ...prev.filter(it => it.id !== recordId)]);
+          await Promise.all(events.map((event, idx) => matchAndApply(event, extraItems[idx].id)));
+        }
+        showToast(
+          events.length > 1 ? `${events.length} activities extracted & matched` : 'Report processed & matched to schedule',
+          undefined,
+          'success'
+        );
       } catch (err) {
         console.warn('AI pipeline failed, keeping item as manual review:', err);
         // Update with a fallback candidate
@@ -792,14 +856,39 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
               rationale: c.rationale,
             }));
 
+            const isAutoApproved = matchRes.confidence_score >= 0.8 && !!matchRes.top_activity_id;
+
             setItems(prev => prev.map(it => it.id === recordId ? {
               ...it,
               confidenceScore: Math.round(matchRes.confidence_score * 100),
               candidates: realCandidates,
               linkedActivity: matchRes.top_activity_id || undefined,
-              status: matchRes.confidence_score >= 0.8 ? 'auto_approved' : 'review',
-              statusLabel: matchRes.confidence_score >= 0.8 ? 'Auto-Approved' : 'Review',
+              status: isAutoApproved ? 'auto_approved' : 'review',
+              statusLabel: isAutoApproved ? 'Auto-Approved' : 'Review',
             } : it));
+
+            // Persist auto-approvals for real, same as the manual text path —
+            // otherwise Analytics/Delay-Risk never learn this event happened.
+            if (isAutoApproved && matchRes.top_activity_id) {
+              try {
+                await writebackApprove({
+                  activity_id: matchRes.top_activity_id,
+                  discipline: baseItem.discipline,
+                  event_date: event.event_date || today,
+                  quantity: event.quantity,
+                  unit: event.unit,
+                  confidence_score: Math.round(matchRes.confidence_score * 100),
+                  confidence_band: matchRes.confidence_band,
+                  was_ambiguous: matchRes.is_ambiguous,
+                  source_document: event.source_document,
+                  source_excerpt: event.source_excerpt,
+                  approved_by: 'Auto (high confidence)',
+                  delay_reason: event.delay_reason,
+                });
+              } catch (writebackErr) {
+                console.warn('Auto-approve writeback failed:', writebackErr);
+              }
+            }
           } catch (matchErr) {
             console.warn('Matching failed for file-extracted event:', matchErr);
           }
