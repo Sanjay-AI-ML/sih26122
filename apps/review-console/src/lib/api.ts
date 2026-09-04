@@ -97,6 +97,22 @@ export async function addScheduleActivity(activity: {
   if (!res.ok) throw new Error(`Add activity failed: ${res.status}`);
 }
 
+export interface ScheduleActivity {
+  activity_id: string;
+  activity_name: string;
+  discipline: string;
+  tag: string;
+  wbs_path: string;
+  planned_start: string;
+  planned_finish: string;
+}
+
+export async function getScheduleActivities(): Promise<ScheduleActivity[]> {
+  const res = await fetch(`${MATCH}/schedule/activities`);
+  if (!res.ok) throw new Error(`Schedule activities fetch failed: ${res.status}`);
+  return res.json();
+}
+
 // ── Writeback ─────────────────────────────────────────────────
 export interface ApprovalPayload {
   activity_id: string;
@@ -111,6 +127,8 @@ export interface ApprovalPayload {
   source_excerpt: string;
   approved_by: string;
   delay_reason?: string | null;
+  status?: string;
+  id?: number;
 }
 
 export async function writebackApprove(payload: ApprovalPayload): Promise<void> {

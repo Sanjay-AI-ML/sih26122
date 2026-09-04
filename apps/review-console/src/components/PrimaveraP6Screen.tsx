@@ -1,195 +1,191 @@
-import React, { useState } from 'react';
-import { Database, Layers, CheckCircle2, Clock, AlertTriangle, PauseCircle, RefreshCw, Download, Search, ArrowRight } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Database, CheckCircle2, AlertTriangle, PauseCircle, Download, Search, ArrowRight, RefreshCw } from 'lucide-react';
 import { useReviewQueue } from '../context/ReviewQueueContext';
+import { getScheduleActivities, getAuditHistory, type ScheduleActivity, type ApprovalPayload } from '../lib/api';
+
+interface ScheduleRow extends ScheduleActivity {
+  status: 'Completed' | 'Delayed' | 'Not Started';
+  progress: number;
+  delayReason: string | null;
+}
+
+const DISCIPLINE_STYLES: Record<string, string> = {
+  piping: 'bg-teal-100 text-teal-900 border-teal-300 dark:bg-teal-950 dark:text-teal-200 dark:border-teal-800',
+  civil: 'bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800',
+  electrical: 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800',
+  instrumentation: 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800',
+  static_rotating: 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950 dark:text-purple-200 dark:border-purple-800',
+  hse: 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800',
+};
 
 export const PrimaveraP6Screen: React.FC = () => {
-  const { isDarkMode, language } = useReviewQueue();
-  const [selectedLevel, setSelectedLevel] = useState<string>("ALL");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const isHi = language === 'HI';
+  const { isDarkMode } = useReviewQueue();
+  const [selectedDiscipline, setSelectedDiscipline] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [rows, setRows] = useState<ScheduleRow[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // WBS summary cards data
-  const wbsSummary = [
-    { level: "L1", labelHi: "\u092a\u094d\u0930\u094b\u091c\u0946\u0915\u094d\u091f \u092e\u093e\u0938\u094d\u091f\u0930", labelEn: "Project Master", pct: "100%", finished: isHi ? "1 / 1 \u0938\u092e\u093e\u092a\u094d\u0924" : "1 / 1 Finished", active: isHi ? "0 \u0938\u0915\u094d\u0930\u093f\u092f" : "0 Active", barWidth: "100%", statusColor: "bg-emerald-600 text-white font-extrabold" },
-    { level: "L2", labelHi: "\u092f\u0942\u0928\u093f\u091f \u0938\u094d\u0924\u0930", labelEn: "Unit Level", pct: "95%", finished: isHi ? "19 / 20 \u0938\u092e\u093e\u092a\u094d\u0924" : "19 / 20 Finished", active: isHi ? "1 \u0938\u0915\u094d\u0930\u093f\u092f" : "1 Active", barWidth: "95%", statusColor: "bg-emerald-600 text-white font-extrabold" },
-    { level: "L3", labelHi: "\u0938\u093f\u0938\u094d\u091f\u092e \u092a\u0948\u0915\u0946\u091c", labelEn: "System Package", pct: "72%", finished: isHi ? "45 / 62 \u0938\u092e\u093e\u092a\u094d\u0924" : "45 / 62 Finished", active: isHi ? "17 \u0938\u0915\u094d\u0930\u093f\u092f" : "17 Active", barWidth: "72%", statusColor: "bg-amber-500 text-slate-950 font-black" },
-    { level: "L4", labelHi: "\u0938\u092c-\u0938\u093f\u0938\u094d\u091f\u092e / \u092e\u094c\u0921 me\u094d\u092f\u0942\u0932", labelEn: "Sub-System / Module", pct: "50%", finished: isHi ? "120 / 240 \u0938\u092e\u093e\u092a\u094d\u0924" : "120 / 240 Finished", active: isHi ? "80 \u0938\u0915\u094d\u0930\u093f\u092f" : "80 Active", barWidth: "50%", statusColor: "bg-amber-500 text-slate-950 font-black" },
-    { level: "L5", labelHi: "\u0935\u0930\u094d\u0915 \u092a\u0948\u0915\u0946\u091c", labelEn: "Work Package", pct: "15%", finished: isHi ? "25 / 165 \u0938\u092e\u093e\u092a\u094d\u0924" : "25 / 165 Finished", active: isHi ? "140 \u0938\u0915\u094d\u0930\u093f\u092f" : "140 Active", barWidth: "15%", statusColor: "bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 font-bold" },
-    { level: "L6", labelHi: "\u092b\u093c\u0940\u0932\u094d\u0921 \u091f\u093e\u0938\u094d\u0915 \u0928\u094b\u0921", labelEn: "Field Task Node", pct: "2%", finished: isHi ? "4 / 200 \u0938\u092e\u093e\u092a\u094d\u0924" : "4 / 200 Finished", active: isHi ? "196 \u0938\u0915\u094d\u0930\u093f\u092f" : "196 Active", barWidth: "2%", statusColor: "bg-slate-200 text-slate-800 dark:bg-slate-800 dark:text-slate-200 font-bold" },
-  ];
+  const loadData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [activities, history] = await Promise.all([
+        getScheduleActivities(),
+        getAuditHistory().catch(() => [] as ApprovalPayload[]),
+      ]);
 
-  // Master schedule activities with explicit text color overrides
-  const masterActivities = [
-    { id: "HCU3-000", level: "L1", nameHi: "\u0939\u093e\u0904\u0921\u094d\u0930\u094b\u0915\u094d\u0930\u0948\u0915\u0930 \u0935\u093f\u0938\u094d\u0924\u093e\u0930 \u092f\u0942\u0928\u093f\u091f 3 \u092a\u0930\u093f\u092f\u094b\u091c\u0928\u093e \u0906\u0930\u0902\u092d", nameEn: "Hydrocracker Expansion Unit 3 Project Initiation", disciplineHi: "\u092a\u094d\u0930\u092c\u0902\u0920\u0928", disciplineEn: "Management", discColor: "bg-indigo-100 text-indigo-900 border-indigo-300 dark:bg-indigo-950 dark:text-indigo-200 dark:border-indigo-800", status: "Completed", start: "2024-01-01", finish: "2024-03-31", progress: 100 },
-    { id: "HCU3-ENG-105", level: "L3", nameHi: "\u092e\u0941\u0916\u094d\u092f \u0930 me\u0940\u090f\u0915 me\u094d\u091f\u0930 \u092a me\u094b\u0924 \u0915 me\u0947 \u0932 me\u093f\u090f \u0935 me\u093f\u0938 me\u094d\u0924 me\u0943\u0924 \u0904\u0902\u091c me\u0940\u0928 me\u093f\u092f me\u0930 me\u093f\u0902\u0917 \u0921 me\u093f me\u091c me\u093e me\u0904\u0928", nameEn: "Detailed Engineering Design for Main Reactor Vessel", disciplineHi: "\u0904\u0902\u091c me\u0940\u0928 me\u093f\u092f me\u0930 me\u093f\u0902\u0917", disciplineEn: "Engineering", discColor: "bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950 dark:text-purple-200 dark:border-purple-800", status: "In Progress", start: "2024-04-01", finish: "2024-11-15", progress: 75 },
-    { id: "HCU3-CIV-202", level: "L4", nameHi: "\u0928\u0940\u0902\u0935 \u0915\u0940 \u0916\u0941\u0926\u093e\u0908 \u0914\u0930 \u092a\u093e\u0904\u0932\u093f\u0902\u0917 \u0915\u093e\u0930\u094d\u092f - \u091c me\u094b\u0928 B", nameEn: "Foundation Excavation and Piling Works - Zone B", disciplineHi: "\u0938\u093f\u0935\u093f\u0932", disciplineEn: "Civil", discColor: "bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950 dark:text-blue-200 dark:border-blue-800", status: "Delayed", start: "2024-09-01", finish: "2024-12-30", progress: 40 },
-    { id: "HCU3-MEC-310", level: "L5", nameHi: "\u0909\u091a\u094d\u091a \u0926\u092c\u093e\u0935 \u0939\u0940\u091f \u090f\u0915 me\u094d\u0938\u091a me\u0947 me\u0902\u091c me\u0930 me\u094b me\u0902 (E-101 A/B) \u0915\u0940 \u0938\u094d\u0925\u093e\u092a\u0928\u093e", nameEn: "Installation of High-Pressure Heat Exchangers (E-101 A/B)", disciplineHi: "\u092e me\u0948\u0915 me\u0947\u0928 me\u093f\u0915\u0932", disciplineEn: "Mechanical", discColor: "bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800", status: "Not Started", start: "2025-02-15", finish: "2025-05-20", progress: 0 },
-    { id: "HCU3-INS-405-A", level: "L6", nameHi: "\u092b me\u094d\u0932\u094b \u091f me\u094d\u0930\u093e\u0902\u0938 me\u092e me\u0940\u091f\u0930 me\u094b me\u0902 \u0915\u093e \u0932 me\u0942\u092a \u091a me\u0947\u0915 me\u093f\u0902\u0917 \u0914\u0930 \u0915 me\u0948\u0932 me\u093f\u092c me\u094d\u0930 me\u0947\u0936 me\u0928", nameEn: "Loop Checking and Calibration of Flow Transmitters (FT-201 to FT-250)", disciplineHi: "\u0904\u0902\u0938 me\u094d\u091f me\u094d\u0930 me\u0942\u092e me\u0947\u0902\u091f me\u0947\u0936 me\u0928", disciplineEn: "Instrumentation", discColor: "bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800", status: "Not Started", start: "2025-08-01", finish: "2025-09-15", progress: 0 },
-  ];
+      // Cross-reference the real schedule (matching engine) with the real
+      // approval history (writeback DB) to derive each activity's status.
+      // There is no "in progress" signal anywhere in the pipeline yet — an
+      // activity is either matched-and-approved or it isn't — so status is
+      // deliberately binary plus a delay flag, not a fabricated percentage.
+      const byActivity = new Map<string, ApprovalPayload>();
+      for (const h of history) {
+        if (h.status === 'approved' && !byActivity.has(h.activity_id)) {
+          byActivity.set(h.activity_id, h);
+        }
+      }
 
-  const filteredActivities = masterActivities.filter(act => {
-    const name = isHi ? act.nameHi : act.nameEn;
-    const matchesLevel = selectedLevel === "ALL" || act.level === selectedLevel;
-    const matchesSearch = searchQuery === "" || act.id.toLowerCase().includes(searchQuery.toLowerCase()) || name.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesLevel && matchesSearch;
+      const merged: ScheduleRow[] = activities.map((act) => {
+        const approval = byActivity.get(act.activity_id);
+        if (approval?.delay_reason) {
+          return { ...act, status: 'Delayed', progress: 60, delayReason: approval.delay_reason };
+        }
+        if (approval) {
+          return { ...act, status: 'Completed', progress: 100, delayReason: null };
+        }
+        return { ...act, status: 'Not Started', progress: 0, delayReason: null };
+      });
+
+      setRows(merged);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load schedule');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const disciplines = Array.from(new Set(rows.map((r) => r.discipline))).sort();
+
+  const filteredRows = rows.filter((row) => {
+    const matchesDiscipline = selectedDiscipline === 'ALL' || row.discipline === selectedDiscipline;
+    const q = searchQuery.toLowerCase();
+    const matchesSearch =
+      q === '' ||
+      row.activity_id.toLowerCase().includes(q) ||
+      row.activity_name.toLowerCase().includes(q) ||
+      row.wbs_path.toLowerCase().includes(q);
+    return matchesDiscipline && matchesSearch;
   });
 
+  const totalCount = rows.length;
+  const completedCount = rows.filter((r) => r.status === 'Completed').length;
+  const delayedCount = rows.filter((r) => r.status === 'Delayed').length;
+  const notStartedCount = rows.filter((r) => r.status === 'Not Started').length;
+
+  const card = (label: string, value: React.ReactNode, valueClass: string) => (
+    <div
+      style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }}
+      className="border rounded-xl p-4 flex flex-col gap-1 shadow-xs transition-colors"
+    >
+      <span className="text-[10.5px] font-black tracking-wider uppercase text-slate-500 dark:text-slate-400">{label}</span>
+      <span className={`text-3xl font-black ${valueClass}`}>{value}</span>
+    </div>
+  );
 
   return (
-    <main 
+    <main
       style={{ backgroundColor: isDarkMode ? '#020617' : '#f8fafc', color: isDarkMode ? '#f8fafc' : '#0f172a' }}
       className="lg:ml-[240px] ml-0 mt-[56px] flex-1 overflow-y-auto p-4 lg:p-6 min-h-[calc(100vh-56px)] flex flex-col gap-6 transition-colors"
     >
-      
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="p-2.5 rounded-xl bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center border border-blue-500/20">
             <Database className="w-6 h-6" />
           </div>
-          <h2 
-            style={{ color: isDarkMode ? '#ffffff' : '#0f172a' }}
-            className="text-xl sm:text-2xl font-black tracking-tight"
-          >
-            {isHi ? "\u092a\u094d\u0930\u093f\u092e\u093e\u0935\u0947\u0930\u093e P6 \u092e\u093e\u0938\u094d\u091f\u0930 \u0905\u0928 me\u0941\u0938\u0942\u091a\u0940 (L1 \u0938\u0947 L6)" : "Primavera P6 Master Schedule (L1 to L6)"}
+          <h2 style={{ color: isDarkMode ? '#ffffff' : '#0f172a' }} className="text-xl sm:text-2xl font-black tracking-tight">
+            Schedule (Matching Engine Sample Data)
           </h2>
-          <span className="bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 px-3.5 py-1.5 rounded-full font-mono text-xs font-black flex items-center gap-2 shadow-xs whitespace-nowrap">
-            <RefreshCw className="w-3.5 h-3.5 animate-spin text-emerald-600 dark:text-emerald-400" />
-            Live P6 API (PRM-OIL-2026-HCU3)
+          <span className="bg-slate-500/15 text-slate-700 dark:text-slate-300 border border-slate-500/30 px-3.5 py-1.5 rounded-full font-mono text-xs font-black flex items-center gap-2 shadow-xs whitespace-nowrap">
+            Not connected to a real Primavera P6 instance &mdash; sample dataset used for matching
           </span>
         </div>
 
         <div className="flex items-center gap-3">
-          <button 
+          <button
+            onClick={loadData}
+            style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', color: isDarkMode ? '#f8fafc' : '#0f172a', borderColor: isDarkMode ? '#334155' : '#cbd5e1' }}
+            className="border rounded-lg px-4 py-2 text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+          >
+            <RefreshCw className={`w-4 h-4 text-blue-600 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+          <button
             onClick={() => window.print()}
             style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', color: isDarkMode ? '#f8fafc' : '#0f172a', borderColor: isDarkMode ? '#334155' : '#cbd5e1' }}
             className="border rounded-lg px-4 py-2 text-xs font-black flex items-center gap-2 transition-all cursor-pointer shadow-xs"
           >
             <Download className="w-4 h-4 text-blue-600" />
-            {isHi ? "PDF \u0928\u093f\u0930\u094d\u092f\u093e\u0924 \u0915\u0930\u0947\u0902" : "Export PDF"}
+            Export PDF
           </button>
         </div>
       </div>
 
-      {/* KPI Row (4 Cards) */}
+      {error && (
+        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 text-sm font-bold">
+          {error} &mdash; is the matching service (port 8002) running?
+        </div>
+      )}
+
+      {/* KPI Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-        <div 
-          style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }}
-          className="border rounded-xl p-4 flex flex-col gap-1 shadow-xs transition-colors"
-        >
-          <span className="text-[10.5px] font-black tracking-wider uppercase text-slate-500 dark:text-slate-400">
-            {isHi ? "\u0915\u0941\u0932 \u092e\u093e\u0938\u094d\u091f\u0930 WBS \u0928\u094b\u0921\u094d\u0938" : "TOTAL MASTER WBS NODES"}
-          </span>
-          <span className="text-3xl font-black text-blue-600 dark:text-sky-400">508</span>
-        </div>
-
-        <div 
-          style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }}
-          className="border rounded-xl p-4 flex flex-col gap-1 shadow-xs transition-colors"
-        >
-          <span className="text-[10.5px] font-black tracking-wider uppercase text-slate-500 dark:text-slate-400">
-            {isHi ? "\u092a\u0942\u0930\u094d\u0923 \u0915 me\u093f\u090f \u0917 me\u090f \u0928\u094b\u0921\u094d\u0938" : "FINISHED NODES"}
-          </span>
-          <span className="text-3xl font-black text-emerald-600 dark:text-emerald-400">325</span>
-        </div>
-
-        <div 
-          style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }}
-          className="border rounded-xl p-4 flex flex-col gap-1 shadow-xs transition-colors"
-        >
-          <span className="text-[10.5px] font-black tracking-wider uppercase text-slate-500 dark:text-slate-400">
-            {isHi ? "\u092a\u094d\u0930\u0917\u0924\u093f \u092e me\u0947\u0902 \u0928\u094b\u0921\u094d\u0938" : "IN PROGRESS NODES"}
-          </span>
-          <span className="text-3xl font-black text-amber-600 dark:text-amber-500">145</span>
-        </div>
-
-        <div 
-          style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }}
-          className="border rounded-xl p-4 flex flex-col gap-1 shadow-xs transition-colors"
-        >
-          <span className="text-[10.5px] font-black tracking-wider uppercase text-slate-500 dark:text-slate-400">
-            {isHi ? "\u0935\u093f\u0932\u0902\u092c\u093f\u0924 \u0915\u094d\u0930\u093f\u091f me\u093f\u0915\u0932 \u092a\u093e\u0925" : "DELAYED CRITICAL PATH"}
-          </span>
-          <span className="text-3xl font-black text-red-600 dark:text-red-500">38</span>
-        </div>
+        {card('TOTAL SCHEDULE ACTIVITIES', totalCount, 'text-blue-600 dark:text-sky-400')}
+        {card('COMPLETED (APPROVED)', completedCount, 'text-emerald-600 dark:text-emerald-400')}
+        {card('NOT STARTED', notStartedCount, 'text-slate-500 dark:text-slate-400')}
+        {card('DELAYED', delayedCount, 'text-red-600 dark:text-red-500')}
       </div>
 
-      {/* WBS Level-Wise Progress Summary (6 Cards Grid) */}
-      <div className="flex flex-col gap-3">
-        <h3 className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
-          <Layers className="w-4 h-4 text-blue-600" />
-          {isHi ? "WBS \u0938\u094d\u0924\u0930\u0935\u093e\u0930 \u092a\u094d\u0930\u0917\u0924\u093f \u092c\u094d\u0930\u0947\u0915\u0921\u093e\u0909\u0928 (L1 - L6)" : "WBS Level-Wise Progress Summary"}
-        </h3>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          {wbsSummary.map((item) => (
-            <div 
-              key={item.level}
-              onClick={() => setSelectedLevel(selectedLevel === item.level ? "ALL" : item.level)}
-              style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }}
-              className={`border rounded-xl flex flex-col overflow-hidden transition-all cursor-pointer ${
-                selectedLevel === item.level ? 'ring-2 ring-blue-600 border-blue-600' : 'hover:border-blue-400'
-              }`}
-            >
-              <div className="p-3.5 flex-1 flex flex-col justify-between gap-2">
-                <div className="flex justify-between items-start">
-                  <span className="font-black text-lg text-blue-600 dark:text-sky-400">{item.level}</span>
-                  <span className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wider ${item.statusColor}`}>
-                    {item.pct} {isHi ? "\u092a\u0942\u0930\u094d\u0923" : "DONE"}
-                  </span>
-                </div>
-                <div className="text-xs text-slate-600 dark:text-slate-400 font-bold flex flex-col gap-0.5">
-                  <div>{item.finished}</div>
-                  <div>{item.active}</div>
-                </div>
-              </div>
-              <div className="w-full h-1.5 bg-slate-200 dark:bg-slate-800">
-                <div className="h-full bg-emerald-500 rounded-r-full transition-all" style={{ width: item.barWidth }}></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Master Activity Table Section */}
-      <div 
+      {/* Activity Table Section */}
+      <div
         style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }}
         className="border rounded-xl flex flex-col shadow-xs overflow-hidden"
       >
-        
         {/* Toolbar */}
-        <div 
+        <div
           style={{ backgroundColor: isDarkMode ? '#020617' : '#f1f5f9', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0' }}
           className="p-4 border-b flex flex-wrap items-center gap-4"
         >
-          <span 
-            style={{ color: isDarkMode ? '#94a3b8' : '#334155' }}
-            className="text-xs font-black uppercase tracking-wider"
-          >
-            {isHi ? "WBS \u0938\u094d\u0924\u0930 \u091a me\u0941\u0928 me\u0947\u0902:" : "SELECT WBS LEVEL:"}
+          <span style={{ color: isDarkMode ? '#94a3b8' : '#334155' }} className="text-xs font-black uppercase tracking-wider">
+            DISCIPLINE:
           </span>
           <div className="flex items-center gap-2 flex-wrap text-xs">
-            <button 
-              onClick={() => setSelectedLevel("ALL")}
+            <button
+              onClick={() => setSelectedDiscipline('ALL')}
               className={`px-3 py-1 rounded-md font-extrabold transition-all cursor-pointer ${
-                selectedLevel === "ALL" 
-                  ? 'bg-blue-600 text-white shadow-xs' 
+                selectedDiscipline === 'ALL'
+                  ? 'bg-blue-600 text-white shadow-xs'
                   : isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white border border-slate-300 text-slate-800 hover:bg-slate-100'
               }`}
             >
-              {isHi ? "\u0938\u092d\u0940 \u0938\u094d\u0924\u0930" : "ALL LEVELS"}
+              ALL
             </button>
-            {["L1", "L2", "L3", "L4", "L5", "L6"].map(lvl => (
+            {disciplines.map((d) => (
               <button
-                key={lvl}
-                onClick={() => setSelectedLevel(lvl)}
-                className={`px-3 py-1 rounded-md font-extrabold transition-all cursor-pointer ${
-                  selectedLevel === lvl 
-                    ? 'bg-blue-600 text-white shadow-xs' 
+                key={d}
+                onClick={() => setSelectedDiscipline(d)}
+                className={`px-3 py-1 rounded-md font-extrabold uppercase transition-all cursor-pointer ${
+                  selectedDiscipline === d
+                    ? 'bg-blue-600 text-white shadow-xs'
                     : isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-white border border-slate-300 text-slate-800 hover:bg-slate-100'
                 }`}
               >
-                {lvl}
+                {d.replace('_', ' ')}
               </button>
             ))}
           </div>
@@ -200,148 +196,107 @@ export const PrimaveraP6Screen: React.FC = () => {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={isHi ? "\u0917\u0924\u093f\u0935\u093f\u0925\u093f ID \u0916\u094b\u091c\u0947\u0902..." : "Search Activity ID..."}
+              placeholder="Search Activity ID or name..."
               style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff', color: isDarkMode ? '#f8fafc' : '#0f172a', borderColor: isDarkMode ? '#334155' : '#cbd5e1' }}
               className="w-full pl-9 pr-3 py-1.5 border rounded-md text-xs font-bold outline-none transition-colors"
             />
           </div>
         </div>
 
-        {/* Table - HIGH CONTRAST IN LIGHT MODE AND DARK MODE WITH EXPLICIT INLINE COLOR OVERRIDES */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse min-w-[900px]">
-            <thead 
+            <thead
               style={{ backgroundColor: isDarkMode ? '#020617' : '#e2e8f0', color: isDarkMode ? '#cbd5e1' : '#0f172a' }}
               className="border-b border-slate-300 dark:border-slate-800"
             >
               <tr>
-                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-16 text-center">
-                  {isHi ? "\u0938\u094d\u0924\u0930" : "LEVEL"}
-                </th>
-                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-36">
-                  {isHi ? "P6 \u0917\u0924\u093f\u0935\u093f\u0925\u093f ID" : "P6 ACTIVITY ID"}
-                </th>
-                <th className="py-3.5 px-4 font-black uppercase tracking-wider min-w-[320px]">
-                  {isHi ? "\u092e\u093e\u0938\u094d\u091f\u0930 \u0917\u0924\u093f\u0935\u093f\u0925\u093f \u0928\u093e\u092e" : "MASTER ACTIVITY NAME"}
-                </th>
-                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-28">
-                  {isHi ? "\u0905\u0928\u0941\u0936\u093e\u0938\u0928" : "DISCIPLINE"}
-                </th>
-                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-32">
-                  {isHi ? "\u0938\u094d\u0925\u093f\u0924\u093f" : "STATUS"}
-                </th>
-                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-52">
-                  {isHi ? "\u0928\u093f\u092f\u094b\u091c\u093f\u0924 \u0924\u093f\u0925\u093f\u092f\u093e\u0902" : "PLANNED DATES"}
-                </th>
-                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-40">
-                  {isHi ? "\u092a\u094d\u0930\u0917\u0924\u093f %" : "PROGRESS %"}
-                </th>
+                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-36">Activity ID</th>
+                <th className="py-3.5 px-4 font-black uppercase tracking-wider min-w-[280px]">Activity Name</th>
+                <th className="py-3.5 px-4 font-black uppercase tracking-wider min-w-[200px]">WBS Path</th>
+                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-32">Discipline</th>
+                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-32">Status</th>
+                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-52">Planned Dates</th>
+                <th className="py-3.5 px-4 font-black uppercase tracking-wider w-32">Progress</th>
               </tr>
             </thead>
             <tbody className={`divide-y ${isDarkMode ? 'divide-slate-800' : 'divide-slate-200'}`}>
-              {filteredActivities.map((row) => (
-                <tr 
-                  key={row.id} 
-                  style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }}
-                  className="transition-colors hover:bg-blue-50/60 dark:hover:bg-slate-800/60"
-                >
-                  <td className="py-3.5 px-4 text-center">
-                    <span className="bg-blue-600/10 text-blue-700 dark:text-sky-400 px-2 py-0.5 rounded font-black text-xs border border-blue-500/20">
-                      {row.level}
-                    </span>
-                  </td>
-                  {/* P6 Activity ID: SOLID #0f172a in Light Mode, #f8fafc in Dark Mode */}
-                  <td 
-                    style={{ color: isDarkMode ? '#f8fafc' : '#0f172a' }}
-                    className="py-3.5 px-4 font-mono font-black whitespace-nowrap text-sm"
-                  >
-                    {row.id}
-                  </td>
-                  {/* Master Activity Name: SOLID #0f172a in Light Mode, #ffffff in Dark Mode */}
-                  <td 
-                    style={{ color: isDarkMode ? '#ffffff' : '#0f172a' }}
-                    className="py-3.5 px-4 font-black whitespace-normal text-sm leading-snug"
-                  >
-                    {isHi ? row.nameHi : row.nameEn}
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <span className={`px-2.5 py-1 rounded text-xs font-black border ${row.discColor}`}>
-                      {isHi ? row.disciplineHi : row.disciplineEn}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4">
-                    {row.status === 'Completed' ? (
-                      <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-black">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" /> {isHi ? "\u092a\u0942\u0930\u094d\u0923" : "Completed"}
-                      </span>
-                    ) : row.status === 'Delayed' ? (
-                      <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400 text-xs font-black">
-                        <AlertTriangle className="w-4 h-4 text-red-600" /> {isHi ? "\u0935\u093f\u0932\u0902\u092c\u093f\u0924" : "Delayed"}
-                      </span>
-                    ) : row.status === 'In Progress' ? (
-                      <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 text-xs font-black">
-                        <Clock className="w-4 h-4 text-amber-500" /> {isHi ? "\u092a\u094d\u0930\u0917\u0924\u093f \u092a\u0930" : "In Progress"}
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs font-bold">
-                        <PauseCircle className="w-4 h-4 text-slate-400" /> {isHi ? "\u0906\u0930\u0902\u092d \u0928\u0939\u0940\u0902" : "Not Started"}
-                      </span>
-                    )}
-                  </td>
-                  {/* Planned Dates: SOLID #1e293b in Light Mode, #cbd5e1 in Dark Mode */}
-                  <td 
-                    style={{ color: isDarkMode ? '#cbd5e1' : '#1e293b' }}
-                    className="py-3.5 px-4 font-mono text-[11.5px] font-black whitespace-nowrap"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <span>{row.start}</span>
-                      <ArrowRight className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                      <span>{row.finish}</span>
-                    </div>
-                  </td>
-                  {/* Progress %: SOLID #0f172a in Light Mode */}
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full rounded-full ${
-                            row.status === 'Completed' ? 'bg-emerald-500' : row.status === 'Delayed' ? 'bg-red-500' : 'bg-amber-500'
-                          }`} 
-                          style={{ width: `${row.progress}%` }}
-                        ></div>
-                      </div>
-                      <span 
-                        style={{ color: row.status === 'Delayed' ? '#dc2626' : (isDarkMode ? '#ffffff' : '#0f172a') }}
-                        className="font-mono text-xs font-black min-w-[36px]"
-                      >
-                        {row.progress}%
-                      </span>
-                    </div>
-                  </td>
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-500">Loading schedule...</td>
                 </tr>
-              ))}
+              ) : filteredRows.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-8 text-center text-slate-500">No activities match.</td>
+                </tr>
+              ) : (
+                filteredRows.map((row) => (
+                  <tr key={row.activity_id} style={{ backgroundColor: isDarkMode ? '#0f172a' : '#ffffff' }} className="transition-colors hover:bg-blue-50/60 dark:hover:bg-slate-800/60">
+                    <td style={{ color: isDarkMode ? '#f8fafc' : '#0f172a' }} className="py-3.5 px-4 font-mono font-black whitespace-nowrap text-sm">
+                      {row.activity_id}
+                    </td>
+                    <td style={{ color: isDarkMode ? '#ffffff' : '#0f172a' }} className="py-3.5 px-4 font-black whitespace-normal text-sm leading-snug">
+                      {row.activity_name}
+                      {row.delayReason && (
+                        <div className="text-[11px] font-semibold text-red-500 mt-0.5">{row.delayReason}</div>
+                      )}
+                    </td>
+                    <td style={{ color: isDarkMode ? '#cbd5e1' : '#1e293b' }} className="py-3.5 px-4 text-xs font-bold">
+                      {row.wbs_path}
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className={`px-2.5 py-1 rounded text-xs font-black border ${DISCIPLINE_STYLES[row.discipline] || DISCIPLINE_STYLES.civil}`}>
+                        {row.discipline.replace('_', ' ')}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      {row.status === 'Completed' ? (
+                        <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-black">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Completed
+                        </span>
+                      ) : row.status === 'Delayed' ? (
+                        <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400 text-xs font-black">
+                          <AlertTriangle className="w-4 h-4 text-red-600" /> Delayed
+                        </span>
+                      ) : (
+                        <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 text-xs font-bold">
+                          <PauseCircle className="w-4 h-4 text-slate-400" /> Not Started
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ color: isDarkMode ? '#cbd5e1' : '#1e293b' }} className="py-3.5 px-4 font-mono text-[11.5px] font-black whitespace-nowrap">
+                      <div className="flex items-center gap-1.5">
+                        <span>{row.planned_start}</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                        <span>{row.planned_finish}</span>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-2.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${row.status === 'Completed' ? 'bg-emerald-500' : row.status === 'Delayed' ? 'bg-red-500' : 'bg-amber-500'}`}
+                            style={{ width: `${row.progress}%` }}
+                          />
+                        </div>
+                        <span style={{ color: row.status === 'Delayed' ? '#dc2626' : (isDarkMode ? '#ffffff' : '#0f172a') }} className="font-mono text-xs font-black min-w-[36px]">
+                          {row.progress}%
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
 
-        {/* Footer / Pagination */}
-        <div 
+        <div
           style={{ backgroundColor: isDarkMode ? '#020617' : '#f1f5f9', borderColor: isDarkMode ? '#1e293b' : '#e2e8f0', color: isDarkMode ? '#94a3b8' : '#475569' }}
           className="p-3.5 border-t flex justify-between items-center text-xs font-bold"
         >
-          <span>{isHi ? "508 \u0928\u094b\u0921\u094d\u0938 \u092e me\u0947\u0902 \u0938\u0947 1-5 \u092a\u094d\u0930\u0926\u0930 me\u094d\u0936\u093f\u0924" : "Showing 1-5 of 508 nodes"}</span>
-          <div className="flex gap-1">
-            <button className="px-2.5 py-1 border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-900 disabled:opacity-50 text-xs font-bold cursor-not-allowed" disabled>&lt; {isHi ? "\u092a\u093f\u091b\u0932\u093e" : "Prev"}</button>
-            <button className="px-2.5 py-1 border border-blue-600 rounded bg-blue-600 text-white font-extrabold text-xs">1</button>
-            <button className="px-2.5 py-1 border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-900 text-xs font-bold">2</button>
-            <button className="px-2.5 py-1 border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-900 text-xs font-bold">3</button>
-            <span className="px-1 py-1">...</span>
-            <button className="px-2.5 py-1 border border-slate-300 dark:border-slate-700 rounded bg-white dark:bg-slate-900 text-xs font-bold">{isHi ? "\u0905\u0917\u0932\u093e" : "Next"} &gt;</button>
-          </div>
+          <span>Showing {filteredRows.length} of {totalCount} activities</span>
         </div>
-
       </div>
-
     </main>
   );
 };

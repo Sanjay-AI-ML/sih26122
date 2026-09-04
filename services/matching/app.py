@@ -1,4 +1,5 @@
 import csv
+import os
 from io import StringIO
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,20 +17,49 @@ app = FastAPI(
     version="1.0.0"
 )
 
+DEFAULT_SCHEDULE_CSV = os.path.join(
+    os.path.dirname(__file__), "..", "..", "shared", "sample-data", "l6_schedule.csv"
+)
+
+
+def _load_activities_from_csv(path: str) -> list:
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        activities = []
+        for row in reader:
+            disc_str = row.get("discipline", "").strip().lower()
+            try:
+                discipline = DisciplineEnum(disc_str)
+            except ValueError:
+                discipline = DisciplineEnum.CIVIL
+            activities.append(ScheduleActivity(
+                activity_id=row["activity_id"],
+                activity_name=row["activity_name"],
+                discipline=discipline,
+                tag=row.get("tag", ""),
+                wbs_path=row.get("wbs_path", ""),
+                planned_start=row.get("planned_start", ""),
+                planned_finish=row.get("planned_finish", "")
+            ))
+        return activities
+
 
 def seed_default_schedule():
-    from services.matching.schemas import ScheduleActivity, DisciplineEnum
-    default_activities = [
+    """Seeds the schedule from shared/sample-data/l6_schedule.csv (the real sample
+    dataset shared across services), falling back to a small inline set only if
+    that file is missing."""
+    if os.path.exists(DEFAULT_SCHEDULE_CSV):
+        try:
+            vector_store.load_activities(_load_activities_from_csv(DEFAULT_SCHEDULE_CSV))
+            return
+        except Exception as e:
+            print(f"Failed to load {DEFAULT_SCHEDULE_CSV}: {e}")
+
+    vector_store.load_activities([
         ScheduleActivity(activity_id="L6-ELE-201", activity_name="Cable pulling for main electrical substation", discipline=DisciplineEnum.ELECTRICAL, tag="TAG-201", wbs_path="Substation / Wiring", planned_start="2026-08-01", planned_finish="2026-08-30"),
         ScheduleActivity(activity_id="L6-PIP-402", activity_name="Hydro-testing primary cooling water line", discipline=DisciplineEnum.PIPING, tag="TAG-402", wbs_path="Cooling / Piping", planned_start="2026-08-01", planned_finish="2026-08-30"),
         ScheduleActivity(activity_id="L6-CIV-104", activity_name="Poured foundation concrete for generator block B", discipline=DisciplineEnum.CIVIL, tag="TAG-104", wbs_path="Civil / Foundation", planned_start="2026-08-01", planned_finish="2026-08-30"),
-        ScheduleActivity(activity_id="L6-HSE-301", activity_name="Completed safety briefing and HSE site inspection", discipline=DisciplineEnum.HSE, tag="TAG-301", wbs_path="HSE / Safety", planned_start="2026-08-01", planned_finish="2026-08-30"),
-        ScheduleActivity(activity_id="L6-INS-505", activity_name="Calibrated pressure transmitters for Unit 2", discipline=DisciplineEnum.INSTRUMENTATION, tag="TAG-505", wbs_path="Instrumentation / Transmitters", planned_start="2026-08-01", planned_finish="2026-08-30"),
-        ScheduleActivity(activity_id="L6-PIP-403", activity_name="Alignment & welding of 6-inch cooling pipe", discipline=DisciplineEnum.PIPING, tag="TAG-403", wbs_path="Cooling / Piping", planned_start="2026-08-01", planned_finish="2026-08-30"),
-        ScheduleActivity(activity_id="L6-CIV-402", activity_name="Completed excavation for foundation block B4", discipline=DisciplineEnum.CIVIL, tag="TAG-402", wbs_path="Civil / Excavation", planned_start="2026-08-01", planned_finish="2026-08-30"),
-        ScheduleActivity(activity_id="L6-ELE-404", activity_name="Cable tray laying & junction box mounting", discipline=DisciplineEnum.ELECTRICAL, tag="TAG-404", wbs_path="Substation / Wiring", planned_start="2026-08-01", planned_finish="2026-08-30")
-    ]
-    vector_store.load_activities(default_activities)
+    ])
 
 @app.on_event("startup")
 async def startup_event():
@@ -85,6 +115,11 @@ async def load_schedule(file: UploadFile = File(...)):
     vector_store.load_activities(activities)
     
     return {"message": f"Successfully loaded {len(activities)} activities into FAISS vector store."}
+
+@app.get("/schedule/activities", response_model=list)
+async def list_activities():
+    """Returns every schedule activity currently loaded in the matching engine."""
+    return [a.model_dump() for a in vector_store.activities]
 
 @app.post("/schedule/activities", response_model=dict)
 async def add_activity(activity: ScheduleActivity):
