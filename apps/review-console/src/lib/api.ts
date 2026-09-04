@@ -52,6 +52,18 @@ export async function ingestText(text: string, sourceDoc = 'review_console_manua
   return res.json();
 }
 
+export async function ingestFile(file: File): Promise<IngestResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('default_date', new Date().toISOString().split('T')[0]);
+  const res = await fetch(`${INGEST}/ingest/file`, {
+    method: 'POST',
+    body: formData
+  });
+  if (!res.ok) throw new Error(`File ingestion failed: ${res.status}`);
+  return res.json();
+}
+
 // ── Matching ─────────────────────────────────────────────────
 export interface MatchCandidate {
   activity_id: string;

@@ -2,8 +2,14 @@ import React, { useState } from 'react';
 import { useReviewQueue } from '../context/ReviewQueueContext';
 import type { DisciplineType, InputFormatType } from "../types";
 
+const FILE_ACCEPT: Partial<Record<InputFormatType, string>> = {
+  spreadsheet: '.csv,.xlsx,.xls',
+  scan: '.pdf,.jpg,.jpeg,.png,.tiff,.bmp',
+  voice: '.wav,.mp3,.m4a,.ogg,.flac',
+};
+
 export const NewReportModal: React.FC = () => {
-  const { isNewReportModalOpen, setIsNewReportModalOpen, addNewReport, t } = useReviewQueue();
+  const { isNewReportModalOpen, setIsNewReportModalOpen, addNewReport, addFileReport, t } = useReviewQueue();
 
   const [activityPhrase, setActivityPhrase] = useState('');
   const [discipline, setDiscipline] = useState<DisciplineType>('Piping');
@@ -14,11 +20,32 @@ export const NewReportModal: React.FC = () => {
   const [actualFinish, _setActualFinish] = useState('');
   const [inputFormat, setInputFormat] = useState<InputFormatType>('dpr');
   const [exceptionNote, setExceptionNote] = useState('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   if (!isNewReportModalOpen) return null;
 
+  const requiresFile = inputFormat === 'spreadsheet' || inputFormat === 'scan' || inputFormat === 'voice';
+  const isUnsupportedFormat = inputFormat === 'telemetry';
+
+  const resetForm = () => {
+    setActivityPhrase('');
+    setTagId('');
+    setProgress(50);
+    setSelectedFile(null);
+    setInputFormat('dpr');
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (requiresFile) {
+      if (!selectedFile) return;
+      addFileReport(selectedFile, discipline);
+      setIsNewReportModalOpen(false);
+      resetForm();
+      return;
+    }
+
     if (!activityPhrase.trim()) return;
 
     addNewReport({
@@ -34,10 +61,7 @@ export const NewReportModal: React.FC = () => {
     });
 
     setIsNewReportModalOpen(false);
-    // Reset form
-    setActivityPhrase('');
-    setTagId('');
-    setProgress(50);
+    resetForm();
   };
 
   return (
@@ -63,18 +87,44 @@ export const NewReportModal: React.FC = () => {
 
         <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden min-h-0">
           <div className="p-3 sm:p-4 overflow-y-auto flex flex-col gap-3 custom-scrollbar">
-            <div>
-              <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 text-[10px]">
-                ACTIVITY {t('descriptionCol')}
-              </label>
-              <textarea 
-                value={activityPhrase}
-                onChange={(e) => setActivityPhrase(e.target.value)}
-                placeholder="e.g. Pump P-1102 alignment and grouting completed by evening shift. Area cleared."
-                className="w-full p-2.5 bg-surface border border-border-standard rounded font-body-sm text-body-sm text-on-surface input-focus min-h-[70px]"
-                required
-              />
-            </div>
+            {!requiresFile && (
+              <div>
+                <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 text-[10px]">
+                  ACTIVITY {t('descriptionCol')}
+                </label>
+                <textarea
+                  value={activityPhrase}
+                  onChange={(e) => setActivityPhrase(e.target.value)}
+                  placeholder="e.g. Pump P-1102 alignment and grouting completed by evening shift. Area cleared."
+                  className="w-full p-2.5 bg-surface border border-border-standard rounded font-body-sm text-body-sm text-on-surface input-focus min-h-[70px]"
+                  required={!requiresFile}
+                />
+              </div>
+            )}
+
+            {requiresFile && (
+              <div>
+                <label className="block font-label-caps text-label-caps text-on-surface-variant mb-1 text-[10px]">
+                  FILE UPLOAD
+                </label>
+                <input
+                  type="file"
+                  accept={FILE_ACCEPT[inputFormat]}
+                  onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-on-surface file:mr-3 file:h-8 file:px-3 file:rounded file:border-0 file:bg-primary file:text-on-primary file:text-xs file:font-semibold file:cursor-pointer cursor-pointer"
+                  required={requiresFile}
+                />
+                {selectedFile && (
+                  <p className="text-[11px] text-on-surface-variant mt-1">{selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)</p>
+                )}
+              </div>
+            )}
+
+            {isUnsupportedFormat && (
+              <div className="text-xs text-warning bg-warning/10 border border-warning/30 rounded p-2">
+                Telemetry feed ingestion is not implemented in this pipeline yet. Choose a different input format.
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
@@ -189,11 +239,12 @@ export const NewReportModal: React.FC = () => {
             >
               Cancel
             </button>
-            <button 
+            <button
               type="submit"
-              className="px-4 py-1.5 rounded font-body-sm text-body-sm font-medium text-on-primary bg-primary hover:bg-primary-container transition-colors shadow-xs cursor-pointer text-xs"
+              disabled={isUnsupportedFormat || (requiresFile && !selectedFile)}
+              className="px-4 py-1.5 rounded font-body-sm text-body-sm font-medium text-on-primary bg-primary hover:bg-primary-container transition-colors shadow-xs cursor-pointer text-xs disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {t('approveBtn')}
+              {requiresFile ? 'Upload & Extract' : t('approveBtn')}
             </button>
           </div>
         </form>

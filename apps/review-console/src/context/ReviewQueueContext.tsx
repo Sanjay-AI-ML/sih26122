@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useMemo, useCallback, useEffect } from 'react';
 import type { QueueItem, NewReportInput, CreateActivityInput, StatusType, DisciplineType, InputFormatType, ScheduleCandidate } from "../types";
 import { initialQueueItems } from '../data/mockData';
-import { ingestText, matchEvent, writebackApprove, writebackReject, addScheduleActivity, getPendingQueue, removeFromQueue } from '../lib/api';
+import { ingestText, ingestFile, matchEvent, writebackApprove, writebackReject, addScheduleActivity, getPendingQueue, removeFromQueue } from '../lib/api';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -376,6 +376,7 @@ interface ReviewQueueContextType {
   confirmScheduleMatch: (itemId: string, candidate: ScheduleCandidate) => void;
   discardItem: (itemId: string) => void;
   addNewReport: (report: NewReportInput) => void;
+  addFileReport: (file: File, discipline: DisciplineType) => void;
   createMasterActivity: (activity: CreateActivityInput) => void;
   exportData: (format: 'CSV' | 'Excel' | 'PDF', columns: string[]) => void;
 }
@@ -726,6 +727,92 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
     })();
   }, [showToast]);
 
+  const addFileReport = useCallback((file: File, discipline: DisciplineType) => {
+    const today = new Date().toISOString().split('T')[0];
+    showToast(`Uploading ${file.name}…`, undefined, 'info');
+
+    (async () => {
+      try {
+        const ingestRes = await ingestFile(file);
+        if (!ingestRes.events || ingestRes.events.length === 0) {
+          showToast(`No activities extracted from ${file.name}`, undefined, 'info');
+          return;
+        }
+
+        for (const event of ingestRes.events) {
+          const randomNum = Math.floor(1000 + Math.random() * 9000);
+          const recordId = `OIL-2026-X${randomNum.toString().substring(0, 3)}`;
+          const eventId = `EV-${randomNum}A`;
+
+          const baseItem: QueueItem = {
+            id: recordId,
+            eventId,
+            status: 'review',
+            statusLabel: 'Review',
+            activityPhrase: event.activity_phrase,
+            activityDescription: event.activity_phrase,
+            discipline: (event.discipline as DisciplineType) || discipline,
+            inputFormat: (event.input_format as QueueItem['inputFormat']) || 'manual',
+            timestamp: 'Just now',
+            date: today,
+            confidenceScore: 0,
+            tagId: event.tag_or_line_id || 'N/A',
+            contractor: event.contractor || 'Internal Field Team',
+            exceptionNote: event.delay_reason || undefined,
+            actualStart: event.event_date || today,
+            actualFinish: '',
+            progress: event.quantity || 0,
+            sourceText: event.source_excerpt,
+            priority: 'Medium',
+            formatTabs: { dprText: event.source_excerpt },
+            extractedFields: [
+              { fieldName: 'Activity', extractedValue: event.activity_phrase, systemMapping: '-' },
+              { fieldName: 'Discipline', extractedValue: event.discipline, systemMapping: event.discipline },
+              { fieldName: 'Tag ID', extractedValue: event.tag_or_line_id || 'N/A', systemMapping: event.tag_or_line_id || '-' },
+            ],
+            candidates: []
+          };
+
+          setItems(prev => [baseItem, ...prev]);
+
+          try {
+            const matchRes = await matchEvent(event);
+            const realCandidates: ScheduleCandidate[] = matchRes.candidates.map(c => ({
+              id: c.activity_id,
+              wbsPath: `Primavera Schedule / ${c.activity_id}`,
+              discipline: baseItem.discipline,
+              title: c.activity_name,
+              plannedStart: today,
+              plannedFinish: today,
+              durationDays: 0,
+              responsibility: 'Field Engineering',
+              resources: [],
+              matchScore: c.score,
+              isRecommended: c.activity_id === matchRes.top_activity_id,
+              rationale: c.rationale,
+            }));
+
+            setItems(prev => prev.map(it => it.id === recordId ? {
+              ...it,
+              confidenceScore: Math.round(matchRes.confidence_score * 100),
+              candidates: realCandidates,
+              linkedActivity: matchRes.top_activity_id || undefined,
+              status: matchRes.confidence_score >= 0.8 ? 'auto_approved' : 'review',
+              statusLabel: matchRes.confidence_score >= 0.8 ? 'Auto-Approved' : 'Review',
+            } : it));
+          } catch (matchErr) {
+            console.warn('Matching failed for file-extracted event:', matchErr);
+          }
+        }
+
+        showToast(`${ingestRes.events.length} activit${ingestRes.events.length === 1 ? 'y' : 'ies'} extracted from ${file.name}`, undefined, 'success');
+      } catch (err) {
+        console.error('File ingestion failed:', err);
+        showToast(`Failed to process ${file.name}: ${err instanceof Error ? err.message : 'unknown error'}`, undefined, 'error');
+      }
+    })();
+  }, [showToast]);
+
   const createMasterActivity = useCallback((activity: CreateActivityInput) => {
     const randomId = `L6-${activity.discipline.substring(0, 3).toUpperCase()}-${Math.floor(4000 + Math.random() * 1000)}`;
     const newCandidate: ScheduleCandidate = {
@@ -950,6 +1037,7 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
         confirmScheduleMatch,
         discardItem,
         addNewReport,
+        addFileReport,
         createMasterActivity,
         exportData
       }}
