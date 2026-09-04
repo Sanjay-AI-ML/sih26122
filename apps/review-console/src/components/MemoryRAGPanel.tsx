@@ -14,13 +14,14 @@ interface ChatMessage {
 }
 
 /**
- * INSTITUTIONAL MEMORY PANEL — Claude-Powered Analysis
+ * INSTITUTIONAL MEMORY PANEL — Local LLM Q&A over project data
  *
- * Integrated with Local Claude + Analytics Backend
- * - Port 8001/8002: Local Claude (via Ingestion/Matching services)
- * - Port 8004: Analytics service for historical data
+ * - Port 8001: /assistant/query (ingestion service, local Ollama LLM)
+ * - Port 8003: audit history (writeback)
+ * - Port 8004: analytics stats
  *
- * Uses local Claude to analyze historical patterns, delays, and bottlenecks
+ * Fetches real project data, then asks the local LLM to answer the user's
+ * question grounded in that data.
  */
 export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose }) => {
   const [query, setQuery] = useState('');
@@ -32,13 +33,13 @@ export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose 
     {
       id: '1',
       role: 'system',
-      content: '✓ Connected to Local Claude + Analytics Backend. I can analyze field reports, identify bottlenecks, and provide insights based on project history.',
+      content: '✓ Connected to local LLM + analytics backend. I can analyze field reports, identify bottlenecks, and provide insights based on project history.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     },
     {
       id: '2',
       role: 'ai',
-      content: 'Hello! I\'m your institutional memory assistant powered by local Claude. I can help you understand project patterns, identify delays, and predict bottlenecks based on historical data. Try asking about specific disciplines or recent delays.',
+      content: 'Hello! I\'m your institutional memory assistant, backed by a local LLM. I can help you understand project patterns, identify delays, and spot bottlenecks based on historical data. Try asking about specific disciplines or recent delays.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     }
   ]);
@@ -93,54 +94,63 @@ export const MemoryRAGPanel: React.FC<MemoryRAGPanelProps> = ({ isOpen, onClose 
 
   const queryLocalClaude = async (userQuery: string) => {
     try {
-      // Query analytics backend for historical context
-      const analyticsPromise = fetch('http://localhost:8004/analytics/stats')
-        .then(r => r.json())
-        .catch(() => ({ message: 'Analytics service not yet connected' }));
+      const [stats, history] = await Promise.all([
+        fetch('http://localhost:8004/analytics/stats').then(r => r.json()).catch(() => null),
+        fetch('http://localhost:8003/audit/history?limit=20').then(r => r.json()).catch(() => []),
+      ]);
 
-      const analyticsData = await analyticsPromise;
+      const disciplineBreakdown = Array.isArray(stats?.discipline_breakdown)
+        ? stats.discipline_breakdown.map((d: { discipline: string; count: number }) => `${d.discipline}=${d.count}`).join(', ')
+        : 'none';
+      const delayAnalysis = Array.isArray(stats?.delay_analysis)
+        ? stats.delay_analysis
+            .filter((d: { has_delays: number }) => d.has_delays)
+            .map((d: { discipline: string; avg_delay_pct: number }) => `${d.discipline}: ${Math.round(d.avg_delay_pct)}% of activities delayed`)
+            .join('; ') || 'no delays recorded'
+        : 'unavailable';
+      const recentActivities = Array.isArray(history) && history.length > 0
+        ? history.slice(0, 10).map((h: { activity_id: string; discipline: string; status: string; delay_reason?: string | null }) =>
+            `${h.activity_id} (${h.discipline}, ${h.status}${h.delay_reason ? `, delay: ${h.delay_reason}` : ''})`
+          ).join('; ')
+        : 'none yet';
 
-      // Build context from historical data
-      const context = `
-Based on project history and extracted activities:
-- Total Activities: ${(analyticsData as any).total_activities || 'N/A'}
-- Discipline Breakdown: ${(analyticsData as any).discipline_breakdown || 'N/A'}
-- Average Confidence: ${(analyticsData as any).avg_confidence || 'N/A'}
-- Recent Activities: ${(analyticsData as any).recent_activities || 'None yet'}
+      const context = [
+        `Total approved/rejected events: ${stats?.total_events ?? 'unknown'}`,
+        `Approved: ${stats?.approved ?? 'unknown'}, Rejected: ${stats?.rejected ?? 'unknown'}, Ambiguous: ${stats?.ambiguous ?? 'unknown'}`,
+        `Discipline breakdown: ${disciplineBreakdown}`,
+        `Delay analysis: ${delayAnalysis}`,
+        `Recent activities: ${recentActivities}`,
+      ].join('\n');
 
-User Query: ${userQuery}
-
-Provide insights based on the Oil India infrastructure project patterns, delays, and execution status.`;
-
-      // Send to local Claude via ingestion service for analysis
-      const claudeResponse = await fetch('http://localhost:8001/ingest/text', {
+      const res = await fetch('http://localhost:8001/assistant/query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: context,
-          source_document: 'institutional_memory_query',
-          default_date: new Date().toISOString().split('T')[0]
-        })
+        body: JSON.stringify({ question: userQuery, context })
       });
 
-      if (claudeResponse.ok) {
-        const data = await claudeResponse.json();
-        setIsTyping(false);
+      setIsTyping(false);
+      if (res.ok) {
+        const data = await res.json();
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
           role: 'ai',
-          content: `📊 Analysis from Local Claude:\n\nBased on project history and extracted activities:\n\n${JSON.stringify(data.events?.[0]?.activity_phrase || 'Unable to analyze at this moment') || 'Processing your query...'}\n\nNote: Full analytics backend integration is in progress.`,
+          content: data.answer,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }]);
       } else {
-        throw new Error('Claude response failed');
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: 'system',
+          content: '⚠ Local LLM (Ollama) is not available. Start it and try again.',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }]);
       }
     } catch (error) {
       setIsTyping(false);
       setMessages(prev => [...prev, {
         id: (Date.now() + 1).toString(),
-        role: 'ai',
-        content: `📊 Local Claude Analysis:\n\nYour query: "${userQuery}"\n\nBased on project patterns, I can help analyze:\n• Equipment installation and welding activities\n• Schedule delays and bottlenecks\n• Discipline-specific execution trends\n• Quality metrics and confidence scores\n\nTry asking about piping delays, civil activities, or schedule risks!`,
+        role: 'system',
+        content: `⚠ Query failed: ${error instanceof Error ? error.message : 'unknown error'}`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       }]);
     }
@@ -176,7 +186,7 @@ Provide insights based on the Oil India infrastructure project patterns, delays,
             <div className="flex flex-col">
               <span className="font-semibold text-sm tracking-wide">Institutional Memory</span>
               <span className="text-[10px] text-green-200 uppercase tracking-widest flex items-center gap-1">
-                ✓ Local Claude Connected
+                ✓ Local LLM Connected
               </span>
             </div>
           </div>
@@ -237,7 +247,7 @@ Provide insights based on the Oil India infrastructure project patterns, delays,
             </button>
           </div>
           <p className="text-center text-[10px] text-yellow-600 mt-2 font-medium uppercase tracking-wider">
-            {isBackendAvailable ? '✓ Connected to Local Claude' : '⚠ Backend services unavailable'}
+            {isBackendAvailable ? '✓ Connected to local LLM' : '⚠ Backend services unavailable'}
           </p>
         </div>
 

@@ -276,6 +276,37 @@ def ingest_llm_endpoint(payload: TextIngestRequest):
     )
 
 
+class AssistantQueryRequest(BaseModel):
+    question: str
+    context: str
+
+
+class AssistantQueryResponse(BaseModel):
+    answer: str
+    llm_available: bool
+
+
+@app.post(
+    "/assistant/query",
+    response_model=AssistantQueryResponse,
+    tags=["Assistant"],
+    summary="Free-form Q&A over supplied project context (Institutional Memory)"
+)
+def assistant_query(payload: AssistantQueryRequest):
+    """
+    Answers a natural-language question using the local LLM, grounded in the
+    caller-supplied context (analytics stats, audit history, etc). Returns a
+    plain-text answer, not a structured ExtractedEvent list.
+    """
+    answer = engine.llm_extractor.ask(payload.question, payload.context)
+    if answer is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Local LLM (Ollama) is not available."
+        )
+    return AssistantQueryResponse(answer=answer, llm_available=True)
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("services.ingestion.app:app", host="0.0.0.0", port=8001, reload=True)

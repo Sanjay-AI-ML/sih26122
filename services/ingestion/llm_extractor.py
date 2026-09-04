@@ -102,6 +102,39 @@ class LLMExtractor:
         except Exception:
             return False
 
+    def ask(self, question: str, context: str) -> Optional[str]:
+        """
+        Free-form question answering over supplied project context (analytics
+        stats, audit history, etc). Unlike extract_with_llm, this does NOT try
+        to parse structured field events — it returns a plain-text answer, or
+        None if Ollama is unavailable or the call fails.
+        """
+        if not self.is_available():
+            return None
+        try:
+            res = httpx.post(
+                f"{self.base_url}/api/generate",
+                json={
+                    "model": self.model_name,
+                    "prompt": (
+                        "You are an assistant for an oil & gas infrastructure project "
+                        "tracking system (piping, civil, electrical, instrumentation, "
+                        "static/rotating equipment, HSE). Answer the question using ONLY "
+                        "the project data below. Be concise and specific. If the data "
+                        "doesn't cover the question, say so plainly.\n\n"
+                        f"PROJECT DATA:\n{context}\n\nQUESTION: {question}\n\nANSWER:"
+                    ),
+                    "stream": False,
+                    "temperature": 0.2,
+                },
+                timeout=self.timeout,
+            )
+            if res.status_code == 200:
+                return res.json().get("response", "").strip() or None
+        except Exception as e:
+            print(f"[LLM] ask() failed: {e}")
+        return None
+
     def build_system_prompt(self, text: str, retrieve_context: bool = True) -> str:
         """
         Builds the system prompt, injecting retrieved domain glossary context.
