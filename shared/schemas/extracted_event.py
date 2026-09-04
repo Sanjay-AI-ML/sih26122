@@ -22,6 +22,7 @@ class EventTypeEnum(str, Enum):
     START = "start"
     FINISH = "finish"
     PROGRESS = "progress"
+    DELAY_STOPPAGE = "delay_stoppage"
     UNSPECIFIED = "unspecified"
 
 

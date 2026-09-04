@@ -57,11 +57,11 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
   let riskBg = 'bg-gray-50';
 
   if (hasRealData) {
-    if (criticalPathDelay > 7) {
+    if (criticalPathDelay > 30) {
       riskLevel = 'HIGH';
       riskColor = 'text-red-600';
       riskBg = 'bg-red-50';
-    } else if (criticalPathDelay > 2) {
+    } else if (criticalPathDelay > 10) {
       riskLevel = 'MEDIUM';
       riskColor = 'text-amber-600';
       riskBg = 'bg-amber-50';
@@ -211,7 +211,7 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
                   <div key={disc}>
                     <div className="flex justify-between mb-1">
                       <span className={"text-sm font-semibold " + (isDarkMode ? "text-slate-200" : "text-gray-800")}>{disc}</span>
-                      <span className={"text-sm font-bold " + (isDarkMode ? "text-white" : "text-gray-900")}>{delay} days delay</span>
+                      <span className={"text-sm font-bold " + (isDarkMode ? "text-white" : "text-gray-900")}>{delay}% delayed</span>
                     </div>
                     <div className={"w-full rounded-full h-2.5 " + (isDarkMode ? "bg-slate-700" : "bg-gray-100")}>
                       <div className={`${color} h-2.5 rounded-full transition-all duration-1000`} style={{ width: `${Math.max(pct, 12)}%` }}></div>

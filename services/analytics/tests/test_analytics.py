@@ -19,6 +19,7 @@ def setup_mock_sqlite():
     
     # Create mock SQLite table with some data
     with sqlite3.connect(test_db_path) as conn:
+        conn.execute("DROP TABLE IF EXISTS audit_log")
         conn.execute('''
             CREATE TABLE IF NOT EXISTS audit_log (
                 id INTEGER PRIMARY KEY,
@@ -27,15 +28,16 @@ def setup_mock_sqlite():
                 event_date TEXT,
                 quantity REAL,
                 status TEXT,
+                confidence_score REAL,
                 confidence_band TEXT,
                 was_ambiguous BOOLEAN
             )
         ''')
         conn.execute("DELETE FROM audit_log")
-        conn.execute("INSERT INTO audit_log VALUES (1, 'A1', 'piping', '2026-08-01', 10.0, 'approved', 'high', 0)")
-        conn.execute("INSERT INTO audit_log VALUES (2, 'A1', 'piping', '2026-08-02', 15.0, 'approved', 'medium', 0)")
-        conn.execute("INSERT INTO audit_log VALUES (3, 'A2', 'civil', '2026-08-01', 50.0, 'approved', 'low', 1)")
-        conn.execute("INSERT INTO audit_log VALUES (4, 'A3', 'piping', '2026-08-03', NULL, 'rejected', 'low', 1)")
+        conn.execute("INSERT INTO audit_log VALUES (1, 'A1', 'piping', '2026-08-01', 10.0, 'approved', 90.0, 'high', 0)")
+        conn.execute("INSERT INTO audit_log VALUES (2, 'A1', 'piping', '2026-08-02', 15.0, 'approved', 75.0, 'medium', 0)")
+        conn.execute("INSERT INTO audit_log VALUES (3, 'A2', 'civil', '2026-08-01', 50.0, 'approved', 45.0, 'low', 1)")
+        conn.execute("INSERT INTO audit_log VALUES (4, 'A3', 'piping', '2026-08-03', NULL, 'rejected', 45.0, 'low', 1)")
     
     yield
     
@@ -75,5 +77,6 @@ def test_stats():
     data = response.json()
     
     assert data["total_events"] == 4
-    assert data["ambiguous_events"] == 2
-    assert data["auto_suggested"] == 1
+    assert data["ambiguous"] == 2
+    assert data["approved"] == 3
+    assert data["rejected"] == 1

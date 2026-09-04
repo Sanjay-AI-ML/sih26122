@@ -1,0 +1,183 @@
+{
+  "sample_daily_progress_reports": [
+    {
+      "date": "2026-09-04",
+      "site": "Oil India Refinery Expansion - Unit 2",
+      "report_text": "DPR for 04-SEP-2026. PIPING: Spool erection at Sector 4 completed. 24-inch main feedline spol #PL-001 erected and fit-up done. Welding inspection passed. Confidence HIGH. CIVIL: Foundation excavation for Block B4 started today. First 50 cum of earthwork cleared. Weather good, no delays. ELECTRICAL: Cable tray installation at Unit A ongoing, 75% complete. Terminal box mounting started. Contractor: L&T Heavy Engineering."
+    },
+    {
+      "date": "2026-09-04",
+      "site": "Oil India Refinery Expansion - Unit 2",
+      "report_text": "Morning Standup: Piping discipline - welding joint P-201A complete, radiography scheduled. Static/Rotating: Pump P-101 alignment completed, nozzle connection next. Civil: Concrete pour for plinth foundation delayed due to material shortage - awaiting cement shipment from supplier. Est. 3-day delay. HSE: Toolbox meeting conducted, no incidents."
+    },
+    {
+      "date": "2026-09-03",
+      "site": "Oil India Refinery Expansion - Unit 2",
+      "report_text": "Spool fabrication: 12 spools completed this week in piping discipline. Hydro testing of main line scheduled for next week. Instrumentation: Loop check ongoing for DCS panel. Transmitter calibration 80% done. Electrical: Switchgear panel wiring finished. MCC installation started. No bottlenecks reported."
+    },
+    {
+      "date": "2026-09-02",
+      "site": "Oil India Refinery Expansion - Unit 2",
+      "report_text": "CIVIL WORK: Blast wall construction frame erected. Structural steel welding in progress. Rebar placement 60% complete. PIPING: Heat exchanger nozzle welding started. Joint count: 15 joints targeted, 8 completed. INSTRUMENTATION: Pressure gauge installation finished for Unit 1. Flow meter calibration pending supplier data. ELECTRICAL: HT cable pulling commenced, 3 of 8 runs completed."
+    },
+    {
+      "date": "2026-09-01",
+      "site": "Oil India Refinery Expansion - Unit 2",
+      "report_text": "Weekly Summary: Piping 85% scheduled progress, civil 92%, electrical 78%. Main delay: instrumentation awaiting impulse tubing from vendor (2-day delay expected). All discipline leads confirmed no safety issues. Next week priority: complete hydro testing, finish switchgear panel, pour concrete foundation Block C."
+    }
+  ],
+  "sample_spreadsheet_entries": [
+    {
+      "activity_id": "L6-PIP-401",
+      "activity_name": "Spool erection and fit-up",
+      "discipline": "piping",
+      "tag": "24-PL-001",
+      "location": "Sector 4",
+      "event_date": "2026-09-04",
+      "event_type": "finish",
+      "quantity": 5,
+      "unit": "spools",
+      "contractor": "L&T Heavy Engineering"
+    },
+    {
+      "activity_id": "L6-CIV-104",
+      "activity_name": "Foundation excavation for Block B4",
+      "discipline": "civil",
+      "tag": null,
+      "location": "Block B4",
+      "event_date": "2026-09-04",
+      "event_type": "start",
+      "quantity": 50,
+      "unit": "cum",
+      "contractor": null
+    },
+    {
+      "activity_id": "L6-ELE-201",
+      "activity_name": "Cable tray installation at Unit A",
+      "discipline": "electrical",
+      "tag": "TAG-201",
+      "location": "Unit A",
+      "event_date": "2026-09-04",
+      "event_type": "progress",
+      "quantity": 75,
+      "unit": "%",
+      "contractor": "L&T Construction"
+    },
+    {
+      "activity_id": "L6-PIP-402",
+      "activity_name": "Welding joint inspection P-201A",
+      "discipline": "piping",
+      "tag": "P-201A",
+      "location": null,
+      "event_date": "2026-09-04",
+      "event_type": "finish",
+      "quantity": 1,
+      "unit": "joint",
+      "contractor": "L&T"
+    },
+    {
+      "activity_id": "L6-INS-505",
+      "activity_name": "Transmitter calibration",
+      "discipline": "instrumentation",
+      "tag": null,
+      "location": "Unit 1",
+      "event_date": "2026-09-04",
+      "event_type": "progress",
+      "quantity": 80,
+      "unit": "%",
+      "contractor": null
+    },
+    {
+      "activity_id": "L6-CIV-402",
+      "activity_name": "Concrete pour foundation plinth",
+      "discipline": "civil",
+      "tag": null,
+      "location": "Foundation Block C",
+      "event_date": "2026-09-05",
+      "event_type": "delay_stoppage",
+      "quantity": null,
+      "unit": null,
+      "contractor": "Tata Projects",
+      "delay_reason": "Material shortage - awaiting cement shipment from supplier"
+    }
+  ],
+  "sample_voice_transcripts": [
+    "Piping discipline, Sector 4. Spool P-401, the 24-inch main line, erection finished. Fit-up complete, welding joints ready for inspection. I'm confident on this one, 95 percent sure. No issues today.",
+    "Civil work update: Foundation excavation for Block B4 started this morning. We moved 50 cubic meters of earth. Good progress, no delays. Weather is perfect for digging. Expecting to finish the excavation phase in 3 days.",
+    "Electrical team checking in. Cable tray installation at Unit A - we're at 75 percent completion now. Junction box mounting about to start. Should wrap up by end of week, no safety concerns reported.",
+    "Instrumentation discipline: Loop check ongoing for the DCS panel. Pressure transmitters for Unit 2 - calibration is 80 percent done. Waiting on customer approval to proceed with final acceptance. Should be done by tomorrow.",
+    "HSE briefing: We conducted a toolbox meeting this morning. No incidents reported. All workers are properly equipped with personal protective equipment. Safety audit passed for the week."
+  ],
+  "sample_l5_l6_schedule": [
+    {
+      "activity_id": "L6-PIP-401",
+      "activity_name": "Spool erection and fit-up - Main cooling line",
+      "discipline": "piping",
+      "tag": "24-PL-001",
+      "wbs_path": "2.3.1.1 Piping / Main Cooling Circuit",
+      "planned_start": "2026-08-20",
+      "planned_finish": "2026-09-10",
+      "planned_duration": 22
+    },
+    {
+      "activity_id": "L6-PIP-402",
+      "activity_name": "Welding and joint inspection",
+      "discipline": "piping",
+      "tag": "P-201A",
+      "wbs_path": "2.3.1.2 Piping / Welding",
+      "planned_start": "2026-09-01",
+      "planned_finish": "2026-09-15",
+      "planned_duration": 15
+    },
+    {
+      "activity_id": "L6-CIV-104",
+      "activity_name": "Excavation and foundation Block B4",
+      "discipline": "civil",
+      "tag": null,
+      "wbs_path": "2.1.1 Civil / Foundations",
+      "planned_start": "2026-08-25",
+      "planned_finish": "2026-09-20",
+      "planned_duration": 27
+    },
+    {
+      "activity_id": "L6-CIV-402",
+      "activity_name": "Concrete pour - Foundation plinth",
+      "discipline": "civil",
+      "tag": null,
+      "wbs_path": "2.1.2 Civil / Concrete",
+      "planned_start": "2026-09-05",
+      "planned_finish": "2026-09-12",
+      "planned_duration": 8
+    },
+    {
+      "activity_id": "L6-ELE-201",
+      "activity_name": "Cable tray installation",
+      "discipline": "electrical",
+      "tag": "TAG-201",
+      "wbs_path": "2.4.1 Electrical / Cable Trays",
+      "planned_start": "2026-08-15",
+      "planned_finish": "2026-09-05",
+      "planned_duration": 22
+    },
+    {
+      "activity_id": "L6-INS-505",
+      "activity_name": "Transmitter calibration - Unit 2",
+      "discipline": "instrumentation",
+      "tag": null,
+      "wbs_path": "2.5.1 Instrumentation / Calibration",
+      "planned_start": "2026-09-01",
+      "planned_finish": "2026-09-10",
+      "planned_duration": 10
+    },
+    {
+      "activity_id": "L6-HSE-301",
+      "activity_name": "Safety briefing and HSE inspection",
+      "discipline": "hse",
+      "tag": null,
+      "wbs_path": "2.6.1 HSE / Site Safety",
+      "planned_start": "2026-08-01",
+      "planned_finish": "2026-09-30",
+      "planned_duration": 61
+    }
+  ]
+}

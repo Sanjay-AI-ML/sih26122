@@ -29,5 +29,6 @@ class AuditLog(Base):
     # Source traceability
     source_document = Column(String, nullable=False)
     source_excerpt = Column(String, nullable=False)
+    delay_reason = Column(String, nullable=True)
     
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))

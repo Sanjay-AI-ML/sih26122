@@ -3,4 +3,4 @@ uvicorn
 sqlalchemy
 pydantic
 pytest
-httpx
+httpx<0.28

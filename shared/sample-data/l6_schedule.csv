@@ -1,0 +1,13 @@
+activity_id,activity_name,discipline,tag,wbs_path,planned_start,planned_finish
+L6-PIP-401,Spool erection and fit-up - Main cooling line,piping,24-PL-001,2.3.1.1 Piping / Main Cooling Circuit,2026-08-20,2026-09-10
+L6-PIP-402,Welding and joint inspection,piping,P-201A,2.3.1.2 Piping / Welding,2026-09-01,2026-09-15
+L6-PIP-403,Hydro testing primary line,piping,24-PL-001,2.3.1.3 Piping / Testing,2026-09-10,2026-09-20
+L6-CIV-104,Excavation and foundation Block B4,civil,,2.1.1 Civil / Foundations,2026-08-25,2026-09-20
+L6-CIV-402,Concrete pour - Foundation plinth,civil,,2.1.2 Civil / Concrete,2026-09-05,2026-09-12
+L6-CIV-501,Blast wall construction,civil,,2.1.3 Civil / Structures,2026-09-01,2026-09-25
+L6-ELE-201,Cable tray installation,electrical,TAG-201,2.4.1 Electrical / Cable Trays,2026-08-15,2026-09-05
+L6-ELE-404,Switchgear panel wiring,electrical,TAG-404,2.4.2 Electrical / Panels,2026-08-20,2026-09-10
+L6-INS-505,Transmitter calibration - Unit 2,instrumentation,,2.5.1 Instrumentation / Calibration,2026-09-01,2026-09-10
+L6-INS-506,Flow meter calibration,instrumentation,,2.5.2 Instrumentation / Meters,2026-09-08,2026-09-15
+L6-HSE-301,Safety briefing and HSE inspection,hse,,2.6.1 HSE / Site Safety,2026-08-01,2026-09-30
+L6-ROT-301,Pump alignment and grouting,static_rotating,P-101,2.2.1 Mechanical / Rotating,2026-09-01,2026-09-12

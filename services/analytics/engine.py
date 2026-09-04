@@ -54,7 +54,9 @@ class AnalyticsEngine:
                 FROM audit_log
             """
             result_df = self.con.execute(query).fetchdf()
-            return result_df.to_dict(orient="records")[0] if not result_df.empty else {}
+            record = result_df.to_dict(orient="records")[0] if not result_df.empty else {}
+            # SUM/COUNT over zero rows can come back as NaN, which is not valid JSON.
+            return {k: (0 if pd.isna(v) else v) for k, v in record.items()}
         except duckdb.CatalogException:
             return {}
 
@@ -107,7 +109,7 @@ class AnalyticsEngine:
             """
             result_df = self.con.execute(query).fetchdf()
             return result_df.to_dict(orient="records")
-        except duckdb.CatalogException:
+        except (duckdb.CatalogException, duckdb.BinderException):
             return []
 
     def get_confidence_metrics(self):
@@ -126,8 +128,10 @@ class AnalyticsEngine:
                 WHERE status = 'approved'
             """
             result_df = self.con.execute(query).fetchdf()
-            return result_df.to_dict(orient="records")[0] if not result_df.empty else {}
-        except duckdb.CatalogException:
+            record = result_df.to_dict(orient="records")[0] if not result_df.empty else {}
+            # AVG/MIN/MAX over zero rows come back as NaN, which is not valid JSON.
+            return {k: (0 if pd.isna(v) else v) for k, v in record.items()}
+        except (duckdb.CatalogException, duckdb.BinderException):
             return {}
 
 analytics_engine = AnalyticsEngine()

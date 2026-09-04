@@ -18,6 +18,7 @@ from services.ingestion.config import (
     KNOWN_CONTRACTORS,
     STANDARD_UNITS,
 )
+from services.shared.fuzzy_match import tokenize, keyword_in_text
 
 
 class TextParser:
@@ -271,9 +272,10 @@ class TextParser:
                 else:
                     scores["static_rotating"] += 3
 
+        tokens = tokenize(text_lower)
         for disc, kw_set in DISCIPLINE_KEYWORDS.items():
             for kw in kw_set:
-                if kw in text_lower:
+                if keyword_in_text(text_lower, tokens, kw):
                     scores[disc] += 1
 
         best_disc = max(scores, key=scores.get)

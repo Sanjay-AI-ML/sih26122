@@ -586,6 +586,7 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
             source_document: item.formatTabs?.dprText ? 'dpr_input' : 'review_console',
             source_excerpt: item.sourceText || item.activityDescription,
             approved_by: 'S. Gogoi',
+            delay_reason: item.delayReason || null,
           }).catch(err => console.warn('Writeback approve failed (offline?):', err));
 
           return {
@@ -616,6 +617,7 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
         source_document: 'review_console',
         source_excerpt: item.sourceText || item.activityDescription,
         approved_by: 'S. Gogoi',
+        delay_reason: item.delayReason || null,
       }).catch(err => console.warn('Writeback reject failed (offline?):', err));
     }
     setItems(prevItems => prevItems.filter(i => i.id !== itemId && i.eventId !== itemId));

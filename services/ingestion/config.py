@@ -39,10 +39,11 @@ DISCIPLINE_KEYWORDS: Dict[str, Set[str]] = {
         "blind", "tie-in", "pipe support", "insulation", "wrapping", "coating"
     },
     "civil": {
-        "civil", "excavation", "foundation", "concrete", "rebar", "shuttering",
+        "civil", "excavation", "excavate", "foundation", "concrete", "rebar", "shuttering",
         "plinth", "trench", "earthwork", "raft", "piling", "soil", "compaction",
         "slab", "blast wall", "structural steel", "column", "pedestal", "grading",
-        "backfilling", "brickwork", "drain", "road", "paving", "culvert"
+        "backfilling", "brickwork", "drain", "road", "paving", "culvert",
+        "mine", "mining", "quarry", "borrow pit", "muck", "overburden", "dredging"
     },
     "static_rotating": {
         "pump", "compressor", "heat exchanger", "vessel", "tank", "reactor",

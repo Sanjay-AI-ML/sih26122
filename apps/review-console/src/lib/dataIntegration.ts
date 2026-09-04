@@ -37,7 +37,7 @@ export interface ProjectMetrics {
 
 class DataIntegrationService {
   private subscribers: Set<(data: AnalyticsData) => void> = new Set();
-  private pollingInterval: NodeJS.Timeout | null = null;
+  private pollingInterval: ReturnType<typeof setInterval> | null = null;
   private lastData: AnalyticsData | null = null;
   private pollingDelay = 5000; // 5 seconds for demo, adjust for production
 
@@ -93,17 +93,25 @@ class DataIntegrationService {
     const rejectedEvents = stats.rejected || 0;
     const ambiguousEvents = stats.ambiguous || 0;
 
-    // Calculate discipline metrics
-    const disciplineBreakdown = stats.discipline_breakdown || {};
-    const disciplineMetrics: DisciplineMetrics[] = Object.entries(disciplineBreakdown).map(
-      ([discipline, count]: [string, any]) => ({
+    // Calculate discipline metrics.
+    // The analytics API returns two separate arrays keyed by discipline:
+    //   discipline_breakdown: [{ discipline, count }]
+    //   delay_analysis:       [{ discipline, total_activities, avg_delay_pct, has_delays }]
+    const disciplineBreakdown: { discipline: string; count: number }[] = stats.discipline_breakdown || [];
+    const delayAnalysis: { discipline: string; avg_delay_pct?: number }[] = stats.delay_analysis || [];
+    const delayPctByDiscipline: Record<string, number> = {};
+    delayAnalysis.forEach(d => { delayPctByDiscipline[d.discipline] = d.avg_delay_pct || 0; });
+
+    const disciplineMetrics: DisciplineMetrics[] = disciplineBreakdown.map(({ discipline, count }) => {
+      const delayPct = delayPctByDiscipline[discipline] || 0;
+      return {
         discipline,
-        totalEvents: count.total || count,
-        averageDelay: count.avg_delay || 0,
-        completionRate: count.completion_rate || 0,
-        riskLevel: getRiskLevel(count.avg_delay || 0)
-      })
-    );
+        totalEvents: count,
+        averageDelay: Math.round(delayPct), // % of approved events flagged as delayed/stopped
+        completionRate: 100,
+        riskLevel: getRiskLevel(delayPct)
+      };
+    });
 
     // Calculate overall metrics
     const overallConfidence = totalEvents > 0
@@ -189,9 +197,10 @@ class DataIntegrationService {
   }
 }
 
-function getRiskLevel(delayDays: number): 'LOW' | 'MEDIUM' | 'HIGH' {
-  if (delayDays <= 2) return 'LOW';
-  if (delayDays <= 7) return 'MEDIUM';
+// delayPct is the % of a discipline's approved events flagged with a delay/stoppage reason.
+function getRiskLevel(delayPct: number): 'LOW' | 'MEDIUM' | 'HIGH' {
+  if (delayPct <= 10) return 'LOW';
+  if (delayPct <= 30) return 'MEDIUM';
   return 'HIGH';
 }
 

@@ -16,6 +16,7 @@ from shared.schemas.extracted_event import (
     InputFormatEnum,
 )
 from services.ingestion.config import DISCIPLINE_KEYWORDS
+from services.shared.fuzzy_match import tokenize, keyword_in_text
 
 
 class SpreadsheetParser:
@@ -273,9 +274,10 @@ class SpreadsheetParser:
 
         # Fallback to keyword search in fallback_text
         text_lower = fallback_text.lower()
+        tokens = tokenize(text_lower)
         for disc, keywords in DISCIPLINE_KEYWORDS.items():
             for kw in keywords:
-                if kw in text_lower:
+                if keyword_in_text(text_lower, tokens, kw):
                     return DisciplineEnum(disc)
         return DisciplineEnum.PIPING
 

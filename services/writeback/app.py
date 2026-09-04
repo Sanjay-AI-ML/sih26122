@@ -38,6 +38,7 @@ class ApprovalRequest(BaseModel):
     source_document: str
     source_excerpt: str
     approved_by: Optional[str] = None
+    delay_reason: Optional[str] = None
 
 class AuditLogResponse(ApprovalRequest):
     model_config = ConfigDict(from_attributes=True)
@@ -91,6 +92,7 @@ def approve_event(request: ApprovalRequest, db: Session = Depends(get_db)):
         was_ambiguous=request.was_ambiguous,
         source_document=request.source_document,
         source_excerpt=request.source_excerpt,
+        delay_reason=request.delay_reason,
         status="approved",
         approved_by=request.approved_by,
         approved_at=datetime.now(timezone.utc)
@@ -114,6 +116,7 @@ def reject_event(request: ApprovalRequest, db: Session = Depends(get_db)):
         was_ambiguous=request.was_ambiguous,
         source_document=request.source_document,
         source_excerpt=request.source_excerpt,
+        delay_reason=request.delay_reason,
         status="rejected",
         approved_by=request.approved_by, # user who rejected it
         approved_at=datetime.now(timezone.utc)

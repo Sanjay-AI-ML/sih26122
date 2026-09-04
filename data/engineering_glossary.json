@@ -64,13 +64,14 @@
     },
     {
       "canonical_term": "excavation",
-      "synonyms": ["digging", "earthwork", "trench", "soil excavation"],
+      "synonyms": ["digging", "earthwork", "trench", "soil excavation", "mining", "mine", "quarrying", "overburden removal"],
       "discipline": "civil",
       "activity_type": "preparation",
       "examples": [
         "foundation excavation completed",
         "trench digging finished",
-        "earthwork in progress"
+        "earthwork in progress",
+        "excavated mines for foundation work"
       ],
       "related_terms": ["foundation", "compaction", "backfilling"]
     },
@@ -173,6 +174,42 @@
         "gauge installation in progress"
       ],
       "related_terms": ["calibration", "loop checking"]
+    }
+  ],
+  "static_rotating": [
+    {
+      "canonical_term": "equipment alignment",
+      "synonyms": ["shaft alignment", "coupling alignment", "pump alignment"],
+      "discipline": "static_rotating",
+      "activity_type": "installation",
+      "examples": [
+        "pump P-101 alignment completed",
+        "shaft alignment in progress",
+        "coupling alignment finished"
+      ],
+      "related_terms": ["grouting", "commissioning"]
+    },
+    {
+      "canonical_term": "equipment grouting",
+      "synonyms": ["baseplate grouting", "skid grouting"],
+      "discipline": "static_rotating",
+      "activity_type": "installation",
+      "examples": [
+        "compressor baseplate grouting completed",
+        "skid grouting in progress"
+      ],
+      "related_terms": ["alignment", "foundation"]
+    },
+    {
+      "canonical_term": "equipment box-up",
+      "synonyms": ["vessel box-up", "internals installation", "nozzle installation"],
+      "discipline": "static_rotating",
+      "activity_type": "installation",
+      "examples": [
+        "reactor internals box-up completed",
+        "vessel nozzle installation finished"
+      ],
+      "related_terms": ["alignment", "commissioning"]
     }
   ],
   "hse": [

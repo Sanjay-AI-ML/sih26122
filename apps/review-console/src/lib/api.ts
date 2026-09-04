@@ -110,6 +110,7 @@ export interface ApprovalPayload {
   source_document: string;
   source_excerpt: string;
   approved_by: string;
+  delay_reason?: string | null;
 }
 
 export async function writebackApprove(payload: ApprovalPayload): Promise<void> {

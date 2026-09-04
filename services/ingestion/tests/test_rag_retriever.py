@@ -4,7 +4,7 @@ Unit and Integration Tests for RAG Retriever & LLM Extractor Domain Context Inje
 """
 
 import pytest
-from services.ingestion.rag_retriever import RAGRetriever, default_rag_retriever
+from services.ingestion.rag_retriever import RAGRetriever
 from services.ingestion.llm_extractor import LLMExtractor, EXTRACTION_SYSTEM_PROMPT
 from shared.schemas.extracted_event import DisciplineEnum, EventTypeEnum
 

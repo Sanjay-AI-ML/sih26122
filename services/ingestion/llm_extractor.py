@@ -1,7 +1,7 @@
 """
 LLM / SLM Extraction Module for Setu (SIH26122 - Member A).
-Performs schema-constrained natural language extraction using local models (Qwen / Mistral via Ollama/LiteLLM)
-or Claude API, with RAG-based domain context injection and strict Pydantic validation fallback.
+Performs schema-constrained natural language extraction using Ollama Qwen3-4B
+with RAG-based domain context injection and strict Pydantic validation fallback.
 """
 
 import json
@@ -17,11 +17,6 @@ from shared.schemas.extracted_event import (
     DisciplineEnum,
     EventTypeEnum,
     InputFormatEnum,
-)
-from services.ingestion.config import (
-    DISCIPLINE_KEYWORDS,
-    KNOWN_CONTRACTORS,
-    STANDARD_UNITS,
 )
 from services.ingestion.rag_retriever import RAGRetriever
 
@@ -74,43 +69,13 @@ Rules:
 3. If Hinglish phrases like "finish ho gaya", "done", "completed" appear, map event_type to "finish".
 4. Return ONLY the JSON object. Do not include markdown preamble.
 5. CRITICAL: If the input is conversational (e.g. "hi", "hello", "good morning", "thanks") or lacks ANY actual field work, return exactly {"events": []}. Do NOT hallucinate.
-6. CONFIDENCE HINT: High (0.9+) if discipline clearly stated, medium (0.7-0.9) if inferred, low (0.5-0.7) if ambiguous
-
-TRAINING DATA - PIPING ACTIVITIES (Confidence 0.95+):
-Input: "24-inch spol erection completed at sector 4. Piping discipline."
-Output: {"events": [{"activity_phrase": "24-inch spool erection completed", "discipline": "piping", "tag_or_line_id": "24-PL-001", "location": "Sector 4", "event_type": "finish", "event_date": null, "quantity": 1, "unit": "spool", "contractor": null, "delay_reason": null, "source_excerpt": "24-inch spol erection completed at sector 4", "raw_confidence_hint": 0.95}]}
-
-Input: "Spool erection at Sector 4 - PIPING - 100% complete"
-Output: {"events": [{"activity_phrase": "Spool erection", "discipline": "piping", "tag_or_line_id": null, "location": "Sector 4", "event_type": "progress", "event_date": null, "quantity": 100, "unit": "%", "contractor": null, "delay_reason": null, "source_excerpt": "Spool erection at Sector 4 - PIPING", "raw_confidence_hint": 0.95}]}
-
-Input: "spol erected at sector 4. Piping work finished."
-Output: {"events": [{"activity_phrase": "spool erected", "discipline": "piping", "tag_or_line_id": null, "location": "Sector 4", "event_type": "finish", "event_date": null, "quantity": null, "unit": null, "contractor": null, "delay_reason": null, "source_excerpt": "spol erected at sector 4", "raw_confidence_hint": 0.95}]}
-
-Input: "Welding inspection completed. Piping discipline. L&T contractor."
-Output: {"events": [{"activity_phrase": "Welding inspection completed", "discipline": "piping", "tag_or_line_id": null, "location": null, "event_type": "finish", "event_date": null, "quantity": null, "unit": null, "contractor": "L&T", "delay_reason": null, "source_excerpt": "Welding inspection completed", "raw_confidence_hint": 0.95}]}
-
-TRAINING DATA - CIVIL ACTIVITIES (Confidence 0.95+):
-Input: "Excavation for foundation block B4 completed. Civil 100%"
-Output: {"events": [{"activity_phrase": "Excavation for foundation block B4", "discipline": "civil", "tag_or_line_id": null, "location": "Block B4", "event_type": "finish", "event_date": null, "quantity": 100, "unit": "%", "contractor": null, "delay_reason": null, "source_excerpt": "Excavation for foundation block B4 completed", "raw_confidence_hint": 0.95}]}
-
-Input: "Foundation work excavtion started. Civil discipline."
-Output: {"events": [{"activity_phrase": "Foundation work excavation", "discipline": "civil", "tag_or_line_id": null, "location": null, "event_type": "start", "event_date": null, "quantity": null, "unit": null, "contractor": null, "delay_reason": null, "source_excerpt": "Foundation work excavtion started", "raw_confidence_hint": 0.95}]}
-
-TRAINING DATA - ELECTRICAL ACTIVITIES (Confidence 0.95+):
-Input: "Cable pulling and installation at Unit A completed. Electrical 100%"
-Output: {"events": [{"activity_phrase": "Cable pulling and installation", "discipline": "electrical", "tag_or_line_id": null, "location": "Unit A", "event_type": "finish", "event_date": null, "quantity": 100, "unit": "%", "contractor": null, "delay_reason": null, "source_excerpt": "Cable pulling and installation at Unit A", "raw_confidence_hint": 0.95}]}
-
-INPUT WITH MIXED TYPOS (Key Example):
-Input: "Spool erection at sector 4. Spol erected finished. 95% complet. Piping."
-Expected: SINGLE extraction normalized to "Spool erection" with discipline "piping" (0.95 confidence)
-NOT two separate events with PIPING and CIVIL.
-"""
+6. CONFIDENCE HINT: High (0.9+) if discipline clearly stated, medium (0.7-0.9) if inferred, low (0.5-0.7) if ambiguous"""
 
 
 class LLMExtractor:
     """
-    Local SLM / LLM extractor using Claude / Ollama / LiteLLM with RAG domain context injection
-    and strict rule-based fallback.
+    Ollama Qwen3-4B extractor with RAG domain context injection
+    and strict rule-based fallback for offline mode.
     """
 
     def __init__(
@@ -126,19 +91,20 @@ class LLMExtractor:
         self.rag_retriever = rag_retriever if rag_retriever is not None else RAGRetriever()
 
     def is_available(self) -> bool:
-        """Checks if local Ollama server or Anthropic API is configured and running."""
-        if os.getenv("ANTHROPIC_API_KEY"):
-            return True
+        """Checks if Ollama server is running and model is available."""
         try:
-            res = httpx.get(f"{self.base_url}/api/tags", timeout=1.0)
-            return res.status_code == 200
+            res = httpx.get(f"{self.base_url}/api/tags", timeout=2.0)
+            if res.status_code == 200:
+                data = res.json()
+                models = [m.get("name", "") for m in data.get("models", [])]
+                return any(self.model_name in m for m in models)
+            return False
         except Exception:
             return False
 
     def build_system_prompt(self, text: str, retrieve_context: bool = True) -> str:
         """
-        Builds the system prompt, injecting retrieved domain glossary context
-        under the DOMAIN CONTEXT section when available.
+        Builds the system prompt, injecting retrieved domain glossary context.
         """
         if not retrieve_context or not self.rag_retriever:
             return EXTRACTION_SYSTEM_PROMPT
@@ -157,7 +123,7 @@ class LLMExtractor:
         retrieve_context: bool = True
     ) -> List[ExtractedEvent]:
         """
-        Extracts structured events from text using LLM/Claude with RAG context injection.
+        Extracts structured events from text using Ollama Qwen3-4B.
         Alias for extract_with_llm.
         """
         return self.extract_with_llm(
@@ -175,13 +141,13 @@ class LLMExtractor:
         retrieve_context: bool = True
     ) -> List[ExtractedEvent]:
         """
-        Executes LLM extraction via Claude API / Ollama API with injected RAG domain context.
+        Executes LLM extraction via Ollama Qwen3-4B with RAG context injection.
         Falls back to rule-guided extraction if offline.
         """
         if not text or not text.strip():
             return []
 
-        # Pre-filter conversational / unrelated junk (like "hi", logo text, random words)
+        # Pre-filter conversational / unrelated junk
         text_lower = text.lower()
         action_verbs = [
             "done", "complet", "start", "finish", "progress", "install", "erect",
@@ -189,89 +155,44 @@ class LLMExtractor:
             "mobiliz", "demobiliz", "clear", "ongoing", "lay", "fabricat", "paint",
             "coat", "trench", "backfill", "grout", "calibrate", "commission",
             "hydrotest", "radiography", "ndt", "blasting", "insulation", "wrapping",
-            "pull", "terminate", "loop", "check", "tally", "verification"
+            "pull", "terminate", "loop", "check", "tally", "verification", "delay", "pending"
         ]
         has_action = any(v in text_lower for v in action_verbs)
         has_disc = any(d in text_lower for d in ["piping", "civil", "electrical", "instrumentation", "mechanical", "hse", "safety", "structural", "equipment"])
         has_numbers = any(char.isdigit() for char in text_lower)
 
-        # If it has no actions, disciplines, or numbers, it's not a field log or report
         if not has_action and not has_disc and not has_numbers:
             return []
 
-        # 1. Build prompt with RAG domain context injection
+        # Build prompt with RAG context
         system_prompt = self.build_system_prompt(text, retrieve_context=retrieve_context)
 
-        # 2. Use LOCAL Claude (via LiteLLM or Claude API) - NO OLLAMA
-        # First, try LOCAL Claude via LiteLLM endpoint if configured
-        local_claude_url = os.getenv("LOCAL_CLAUDE_URL", "http://localhost:4891")  # LiteLLM server
-
+        # TRY OLLAMA QWEN3-4B FIRST
         try:
-            # Try LOCAL Claude via LiteLLM
             res = httpx.post(
-                f"{local_claude_url}/v1/messages",
-                headers={
-                    "content-type": "application/json",
-                    "authorization": "Bearer local"
-                },
+                f"{self.base_url}/api/generate",
                 json={
-                    "model": "claude-3-5-sonnet",
-                    "max_tokens": 2048,
-                    "system": system_prompt,
-                    "messages": [
-                        {"role": "user", "content": f"Extract structured events from this report:\n\n{text}"}
-                    ],
-                    "temperature": 0.1
+                    "model": self.model_name,
+                    "prompt": f"{system_prompt}\n\nExtract structured events from this report:\n\n{text}",
+                    "stream": False,
+                    "temperature": 0.1,
                 },
                 timeout=self.timeout
             )
             if res.status_code == 200:
                 resp_data = res.json()
-                content_blocks = resp_data.get("content", [])
-                raw_text = "".join(b.get("text", "") for b in content_blocks if b.get("type") == "text")
+                raw_text = resp_data.get("response", "")
+                print(f"[LLM] Ollama extraction succeeded via {self.model_name}")
                 return self._parse_and_validate_llm_json(
                     raw_json_str=raw_text,
                     source_document=source_document,
                     default_date=default_date
                 )
         except Exception as e:
-            print(f"LOCAL Claude extraction failed: {e}")
+            print(f"[LLM] Ollama extraction failed: {e}")
 
-        # Fallback: Try Claude API if ANTHROPIC_API_KEY is available
-        anthropic_key = os.getenv("ANTHROPIC_API_KEY")
-        if anthropic_key:
-            try:
-                res = httpx.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": anthropic_key,
-                        "anthropic-version": "2023-06-01",
-                        "content-type": "application/json"
-                    },
-                    json={
-                        "model": os.getenv("CLAUDE_MODEL", "claude-3-5-sonnet-20241022"),
-                        "max_tokens": 2048,
-                        "system": system_prompt,
-                        "messages": [
-                            {"role": "user", "content": f"Extract structured events from this report:\n\n{text}"}
-                        ],
-                        "temperature": 0.1
-                    },
-                    timeout=self.timeout
-                )
-                if res.status_code == 200:
-                    resp_data = res.json()
-                    content_blocks = resp_data.get("content", [])
-                    raw_text = "".join(b.get("text", "") for b in content_blocks if b.get("type") == "text")
-                    return self._parse_and_validate_llm_json(
-                        raw_json_str=raw_text,
-                        source_document=source_document,
-                        default_date=default_date
-                    )
-            except Exception as e:
-                print(f"Claude API extraction failed: {e}")
-
-        # Offline / Fallback parsing
+        # Fallback: offline extraction
+        print(f"[LLM] Falling back to offline extraction")
         return self._offline_smart_extractor(text, source_document, default_date)
 
     def _parse_and_validate_llm_json(
@@ -287,6 +208,7 @@ class LLMExtractor:
         try:
             data = json.loads(cleaned)
         except json.JSONDecodeError:
+            print(f"[Parse] JSON decode failed: {cleaned[:100]}")
             return []
 
         events_list = data.get("events", []) if isinstance(data, dict) else (data if isinstance(data, list) else [])
@@ -303,21 +225,18 @@ class LLMExtractor:
             if not isinstance(item, dict):
                 continue
 
-            # Ensure discipline is valid enum
             disc_str = str(item.get("discipline", "piping")).lower()
             try:
                 discipline = DisciplineEnum(disc_str)
             except ValueError:
                 discipline = DisciplineEnum.PIPING
 
-            # Ensure event_type is valid enum
             ev_type_str = str(item.get("event_type", "progress")).lower()
             try:
                 event_type = EventTypeEnum(ev_type_str)
             except ValueError:
                 event_type = EventTypeEnum.PROGRESS
 
-            # Date fallback
             ev_date = _clean_val(item.get("event_date")) or fallback_date
 
             try:
@@ -338,109 +257,47 @@ class LLMExtractor:
                     raw_confidence_hint=float(item.get("raw_confidence_hint") or 0.85)
                 )
                 validated_events.append(event)
-            except (ValidationError, ValueError, TypeError):
+            except (ValidationError, ValueError, TypeError) as e:
+                print(f"[Validation] Skipping event: {e}")
                 continue
 
-        # CONSOLIDATION: Deduplicate and keep only best extraction
         return self._consolidate_and_rank_events(validated_events)
 
     def _consolidate_and_rank_events(self, events: List[ExtractedEvent]) -> List[ExtractedEvent]:
         """
-        Consolidates duplicate activities (e.g., 'spool erected' vs 'spol erected'),
-        boosts confidence scores, and returns ONLY the best extraction to prevent conflicts.
-
-        CRITICAL: Groups by ACTIVITY NAME ONLY, not discipline.
-        If same activity has multiple discipline predictions, keeps HIGHEST CONFIDENCE.
-        This prevents conflicting discipline cards for the same activity.
-
-        Uses LOCAL Claude Intelligence for final selection.
+        Consolidates duplicate activities and returns ranked events.
         """
         if not events:
             return []
 
         if len(events) == 1:
-            # Single event: boost confidence and return
             event = events[0]
-            event.raw_confidence_hint = min(1.0, event.raw_confidence_hint * 1.15)  # +15% boost
+            event.raw_confidence_hint = min(1.0, (event.raw_confidence_hint or 0.85) * 1.15)
             return [event]
 
-        # Normalize activity phrases to detect duplicates (spool/spol variations)
         def normalize_activity(phrase: str) -> str:
-            """
-            Normalize activity phrases to detect duplicates.
-            Handles spelling mistakes like "spol"→"spool", "errection"→"erection", etc.
-            """
-            normalized = phrase.lower().strip()
+            """Normalizes activity names to detect duplicates."""
+            return re.sub(r"\s+", " ", phrase.lower().strip()).replace("spol", "spool")
 
-            # PIPING activity variations
-            normalized = re.sub(r'\bspol\b', 'spool', normalized)
-            normalized = re.sub(r'\berrect', 'erect', normalized)
-            normalized = re.sub(r'\berction\b', 'erection', normalized)
-            normalized = re.sub(r'\berectn\b', 'erection', normalized)
-            normalized = re.sub(r'\beweld', 'weld', normalized)
-            normalized = re.sub(r'\bweling\b', 'welding', normalized)
-            normalized = re.sub(r'\bweldng\b', 'welding', normalized)
-            normalized = re.sub(r'\binspect', 'inspect', normalized)
-            normalized = re.sub(r'\binspecion\b', 'inspection', normalized)
-            normalized = re.sub(r'\binspetion\b', 'inspection', normalized)
-
-            # CIVIL activity variations
-            normalized = re.sub(r'\bexcavtion\b', 'excavation', normalized)
-            normalized = re.sub(r'\bexcv\b', 'excavation', normalized)
-            normalized = re.sub(r'\bexcavaton\b', 'excavation', normalized)
-            normalized = re.sub(r'\bconcreting\b', 'concreting', normalized)
-            normalized = re.sub(r'\bconcrte\b', 'concrete', normalized)
-            normalized = re.sub(r'\bfoundation\b', 'foundation', normalized)
-            normalized = re.sub(r'\bbackfill\b', 'backfill', normalized)
-            normalized = re.sub(r'\bgrout\b', 'grout', normalized)
-
-            # ELECTRICAL activity variations
-            normalized = re.sub(r'\bcable pull', 'cable pulling', normalized)
-            normalized = re.sub(r'\bcable lay', 'cable laying', normalized)
-            normalized = re.sub(r'\bterminate', 'termination', normalized)
-
-            # Common completion/status variations
-            normalized = re.sub(r'\bcompleted\b', 'completed', normalized)
-            normalized = re.sub(r'\bcomplet\b', 'completed', normalized)
-            normalized = re.sub(r'\bcomplted\b', 'completed', normalized)
-            normalized = re.sub(r'\bfinished\b', 'finished', normalized)
-            normalized = re.sub(r'\bfiinished\b', 'finished', normalized)
-            normalized = re.sub(r'\bfinsihed\b', 'finished', normalized)
-            normalized = re.sub(r'\bfinished\b', 'finished', normalized)
-
-            # Collapse multiple spaces
-            normalized = re.sub(r'\s+', ' ', normalized)
-            return normalized
-
-        # Group events by NORMALIZED ACTIVITY NAME ONLY (not discipline!)
-        # This allows us to detect same activities with different discipline predictions
-        groups: Dict[str, List[ExtractedEvent]] = {}
+        # Group by normalized activity phrase
+        grouped: Dict[str, List[ExtractedEvent]] = {}
         for event in events:
-            norm_activity = normalize_activity(event.activity_phrase)
-            if norm_activity not in groups:
-                groups[norm_activity] = []
-            groups[norm_activity].append(event)
+            key = normalize_activity(event.activity_phrase)
+            if key not in grouped:
+                grouped[key] = []
+            grouped[key].append(event)
 
-        # For each activity, select the HIGHEST CONFIDENCE extraction
-        # (even if disciplines differ, keep the most confident one)
-        best_events = []
-        for activity_events in groups.values():
-            # Sort by confidence descending - select BEST regardless of discipline
-            sorted_group = sorted(activity_events, key=lambda e: e.raw_confidence_hint, reverse=True)
-            best = sorted_group[0]
+        result = []
+        for group in grouped.values():
+            if len(group) == 1:
+                result.append(group[0])
+            else:
+                # Pick highest confidence, boost by 10%
+                best = max(group, key=lambda e: e.raw_confidence_hint or 0.5)
+                best.raw_confidence_hint = min(1.0, (best.raw_confidence_hint or 0.85) * 1.1)
+                result.append(best)
 
-            # Boost confidence by 20% (LOCAL Claude confidence boost)
-            best.raw_confidence_hint = min(1.0, best.raw_confidence_hint * 1.20)
-            best_events.append(best)
-
-        # Sort by confidence and return ONLY the TOP 1 (prevent duplicate cards)
-        best_events.sort(key=lambda e: e.raw_confidence_hint, reverse=True)
-
-        # Return only the BEST extraction (prevents conflicting discipline predictions)
-        if best_events:
-            return [best_events[0]]
-
-        return []
+        return result
 
     def _offline_smart_extractor(
         self,

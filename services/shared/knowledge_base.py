@@ -8,6 +8,10 @@ import os
 from typing import List, Dict, Optional
 from pathlib import Path
 
+from services.shared.fuzzy_match import tokenize, keyword_in_text
+
+DISCIPLINES = ["piping", "civil", "electrical", "instrumentation", "static_rotating", "hse"]
+
 
 class EngineeringKnowledgeBase:
     """
@@ -85,7 +89,7 @@ class EngineeringKnowledgeBase:
         term_lower = term.lower()
 
         # Search through disciplines
-        for discipline in ["piping", "civil", "electrical", "instrumentation", "hse"]:
+        for discipline in DISCIPLINES:
             terms = self.get_discipline_terms(discipline)
             for term_dict in terms:
                 if (term_lower in term_dict.get("canonical_term", "").lower() or
@@ -122,16 +126,17 @@ class EngineeringKnowledgeBase:
             Inferred discipline or None
         """
         text_lower = text.lower()
+        tokens = tokenize(text_lower)
 
         # Check each discipline
-        for discipline in ["piping", "civil", "electrical", "instrumentation", "hse"]:
+        for discipline in DISCIPLINES:
             terms = self.get_discipline_terms(discipline)
             for term_dict in terms:
                 canonical = term_dict.get("canonical_term", "").lower()
-                if canonical in text_lower:
+                if canonical and keyword_in_text(text_lower, tokens, canonical):
                     return discipline
                 for synonym in term_dict.get("synonyms", []):
-                    if synonym.lower() in text_lower:
+                    if keyword_in_text(text_lower, tokens, synonym.lower()):
                         return discipline
 
         return None
