@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Tailwind v4 defaults dark: to prefers-color-scheme. This app toggles a
+   `.dark` class on <html> instead (see ReviewQueueContext), so dark: must be
+   bound to that class or the toggle has no effect on any dark: utility. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-danger: #DA251C;
   --color-warning: #E1B91B;
