@@ -34,7 +34,9 @@ const resolveTag = (event: any, matchData: any) => {
 };
 
 // UNIFIED EXTRACTION FUNCTION - Uses ONLY Claude Intelligence
-const extractFieldReport = async (text: string, source: string = "field_input"): Promise<any> => {
+// Returns ALL extracted events, not just the first - a report can name
+// several distinct activities and every one of them must reach the queue.
+const extractFieldReport = async (text: string, source: string = "field_input"): Promise<any[]> => {
   try {
     const response = await fetch("http://localhost:8001/ingest/llm", {
       method: "POST",
@@ -49,14 +51,41 @@ const extractFieldReport = async (text: string, source: string = "field_input"):
     if (!response.ok) throw new Error(`Extraction failed: ${response.status}`);
 
     const data = await response.json();
-    if (!data.events || data.events.length === 0) return null;
-
-    // Return ONLY first event - prevents duplicate extractions
-    return data.events[0];
+    return data.events || [];
   } catch (err: any) {
     console.error("Extraction error:", err);
     throw err;
   }
+};
+
+// Runs one extracted event through match + queue-add, returns the chat card message.
+const matchAndBuildCard = async (event: any, idOffset: number): Promise<any> => {
+  const matchRes = await fetch("http://localhost:8002/match", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(event)
+  });
+  if (!matchRes.ok) throw new Error("Match HTTP " + matchRes.status);
+  const matchData = await matchRes.json();
+  try {
+    await fetch("http://localhost:8003/queue/add", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ event: event, match: matchData })
+    });
+  } catch (e) { console.error("Queue fail", e); }
+  return {
+    id: Date.now() + idOffset, type: "card",
+    activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
+    discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
+    tag: resolveTag(event, matchData),
+    start: event.event_date || "-",
+    finish: event.event_date || "-",
+    linkedActivityId: (matchData.confidence_band !== "low" && (matchData.confidence_score || 0) >= 0.5) ? (matchData.top_activity_id || null) : null,
+    confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
+    confidenceBand: matchData.confidence_band || 'low',
+    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  };
 };
 
 const i18n: any = {
@@ -226,10 +255,10 @@ function App() {
       const [screen, setScreen] = useState("home");
       const [isOffline, setIsOffline] = useState(false);
       const [highContrast, setHighContrast] = useState(false);
-        const [isDarkMode, setIsDarkMode] = useState(true);
+        const [isDarkMode] = useState(false);
       // "xs" = A-,  "sm" = Normal,  "base" = A+
       const [textSize, setTextSize] = useState<"xs"|"sm"|"base">("sm");
-      const [language, setLanguage] = useState("EN");
+      const [language] = useState("EN");
       const [isRecording, setIsRecording] = useState(false);
       const [isTyping, setIsTyping] = useState(false);
       const [inputText, setInputText] = useState("");
@@ -584,39 +613,16 @@ function App() {
         setIsTyping(true);
         try {
           // Use UNIFIED extraction function - ensures Claude Intelligence only
-          const event = await extractFieldReport(newMsg.text, "field_agent_chat");
-          if (!event) {
+          const events = await extractFieldReport(newMsg.text, "field_agent_chat");
+          if (!events.length) {
             setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "noProgressUpdate", vars: undefined, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
             return;
           }
-          const matchRes = await fetch("http://localhost:8002/match", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(event)
-          });
-          if (!matchRes.ok) throw new Error("Match HTTP " + matchRes.status);
-          const matchData = await matchRes.json();
-          try {
-            await fetch("http://localhost:8003/queue/add", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ event: event, match: matchData })
-            });
-          } catch(e) { console.error("Queue fail", e); }
-          setMessages((prev: any[]) => [...prev, {
-            id: Date.now() + 1, type: "card",
-            activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
-            // Discipline from LOCAL Claude Intelligence - PERFECT prediction
-            discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
-            tag: resolveTag(event, matchData),
-            start: event.event_date || "-",
-            // END TIME from Claude extraction - NOW DISPLAYED
-            finish: event.event_date || "-",
-            linkedActivityId: (matchData.confidence_band !== "low" && (matchData.confidence_score || 0) >= 0.5) ? (matchData.top_activity_id || null) : null,
-            confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
-            confidenceBand: matchData.confidence_band || 'low',
-            time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-          }]);
+          const cards = [];
+          for (let i = 0; i < events.length; i++) {
+            cards.push(await matchAndBuildCard(events[i], i + 1));
+          }
+          setMessages((prev: any[]) => [...prev, ...cards]);
         } catch (err: any) {
           setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "backendError", vars: { error: err.message }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
         } finally {
@@ -660,47 +666,28 @@ function App() {
         setMessages((prev: any[]) => [...prev, { id: Date.now(), type: "user", text: "Uploading: " + file.name, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
 
         try {
-          // Read file as text and use UNIFIED extraction function
-          const fileText = await file.text();
-          const event = await extractFieldReport(fileText, `file_${file.name}`);
+          // Real file parsing (csv/xlsx/pdf/image/audio) via /ingest/file -
+          // reading the file as raw text and feeding it to the text/LLM
+          // extractor mangled spreadsheets and binary formats.
+          const form = new FormData();
+          form.append("file", file);
+          const ingestRes = await fetch("http://localhost:8001/ingest/file", { method: "POST", body: form });
+          if (!ingestRes.ok) throw new Error("Ingest HTTP " + ingestRes.status);
+          const ingestData = await ingestRes.json();
+          const events: any[] = ingestData.events || [];
 
-          if (!event) {
+          if (!events.length) {
             setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "noActivitiesExtracted", vars: { filename: file.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
             return;
           }
 
-          setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "extractedEventsProcessing", vars: { count: "1", filename: file.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
+          setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "extractedEventsProcessing", vars: { count: String(events.length), filename: file.name }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
 
-          const matchRes = await fetch("http://localhost:8002/match", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(event) });
-
-          if (matchRes.ok) {
-            const matchData = await matchRes.json();
-
-            try {
-              await fetch("http://localhost:8003/queue/add", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ event: event, match: matchData })
-              });
-            } catch(err) {
-              console.error("Queue add failed", err);
-            }
-
-            setMessages((prev: any[]) => [...prev, {
-              id: Date.now() + 2, type: "card",
-              activity: (event.activity_phrase ? event.activity_phrase.charAt(0).toUpperCase() + event.activity_phrase.slice(1) : "Unknown Activity"),
-              // Discipline from LOCAL Claude Intelligence - PERFECT prediction
-              discipline: (event.discipline || "unknown").charAt(0).toUpperCase() + (event.discipline || "").slice(1),
-              tag: resolveTag(event, matchData),
-              start: event.event_date || "-",
-              // END TIME from Claude extraction - NOW DISPLAYED
-              finish: event.event_date || "-",
-              linkedActivityId: (matchData.confidence_band !== "low" && (matchData.confidence_score || 0) >= 0.5) ? (matchData.top_activity_id || null) : null,
-              confidenceScore: Math.round((matchData.confidence_score || 0) * 100),
-              confidenceBand: matchData.confidence_band || 'low',
-              time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-            }]);
+          const cards = [];
+          for (let i = 0; i < events.length; i++) {
+            cards.push(await matchAndBuildCard(events[i], i + 2));
           }
+          setMessages((prev: any[]) => [...prev, ...cards]);
         } catch (err: any) {
           setMessages((prev: any[]) => [...prev, { id: Date.now() + 1, type: "bot", text: "uploadError", vars: { error: err.message }, time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }]);
         } finally {
@@ -770,15 +757,10 @@ function App() {
                 ))}
               </div>
               <div className="flex items-center gap-3">
-                <button onClick={() => setIsDarkMode(!isDarkMode)} className={"px-2 py-0.5 border rounded text-xs flex items-center gap-1 cursor-pointer transition-colors " + (isDarkMode ? "bg-slate-700 border-slate-600 text-amber-400 font-bold" : "bg-white border-gray-300 text-gray-700")} title="Toggle Dark Mode"><span className="material-symbols-outlined text-sm">{isDarkMode ? "dark_mode" : "light_mode"}</span><span>{isDarkMode ? "Dark" : "Light"}</span></button>
                 <label className={"flex items-center gap-1 text-xs cursor-pointer " + (isDarkMode ? "text-slate-200" : "text-[#666666]")}>
                   <span>{t("highContrast")}</span>
                   <input type="checkbox" checked={highContrast} onChange={e => setHighContrast(e.target.checked)} className="cursor-pointer" />
                 </label>
-                <div className="flex border border-[#CCCCCC] rounded overflow-hidden">
-                  <button onClick={() => setLanguage("EN")} className={"px-2 py-0.5 text-xs transition-colors " + (language === "EN" ? (isDarkMode ? "bg-amber-400 text-black font-bold" : "bg-[#eae8e7] text-black font-bold") : (isDarkMode ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-white text-gray-700"))}>EN</button>
-                  <button onClick={() => setLanguage("HI")} className={"px-2 py-0.5 text-xs transition-colors " + (language === "HI" ? (isDarkMode ? "bg-amber-400 text-black font-bold" : "bg-[#eae8e7] text-black font-bold") : (isDarkMode ? "bg-slate-800 text-slate-300 hover:bg-slate-700" : "bg-white text-gray-700"))}>हिन्दी</button>
-                </div>
               </div>
             </div>
           )}
