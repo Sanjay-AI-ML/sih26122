@@ -151,18 +151,6 @@ export const SideNav: React.FC = () => {
             </button>
             <button
               onClick={() => {
-                navigate('/claude-extractor');
-                closeMobileSidebar();
-              }}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-md cursor-pointer transition-colors text-on-surface-variant hover:bg-surface-container ${
-                location.pathname === '/claude-extractor' ? 'bg-blue-100 text-blue-900 font-bold ring-1 ring-blue-400' : ''
-              }`}
-            >
-              <span className="material-symbols-outlined text-[16px] text-blue-600">smart_toy</span>
-              <span className="font-body-sm text-sm">Claude Keyword Extractor</span>
-            </button>
-            <button
-              onClick={() => {
                 navigate('/analytics');
                 setIsAnalyticsOpen(true);
                 closeMobileSidebar();

@@ -7,14 +7,11 @@ interface TopAppBarProps {
 }
 
 export const TopAppBar: React.FC<TopAppBarProps> = ({ onLogout }) => {
-  const { 
+  const {
     isDarkMode,
-    toggleDarkMode,
-    toggleHighContrast, 
-    isHighContrast, 
-    toggleTextEnlarged, 
-    toggleLanguage, 
-    language, 
+    toggleHighContrast,
+    isHighContrast,
+    toggleTextEnlarged,
     showToast,
     t,
     toggleMobileSidebar,
@@ -78,31 +75,13 @@ export const TopAppBar: React.FC<TopAppBarProps> = ({ onLogout }) => {
           >
             <span className="material-symbols-outlined text-[18px] sm:text-[20px] flex items-center justify-center" data-icon="text_increase">text_increase</span>
           </button>
-          <button 
-            onClick={toggleDarkMode}
-            aria-label="Dark Mode" 
-            title={`Toggle Dark Mode (${isDarkMode ? 'Dark' : 'Light'})`}
-            className={`h-8 px-2 rounded transition-colors active:opacity-80 flex items-center justify-center gap-1 cursor-pointer ${isDarkMode ? 'bg-slate-800 text-amber-400 border border-slate-700 font-bold' : 'text-primary hover:bg-surface-container-high'}`}
-          >
-            <span className="material-symbols-outlined text-[18px] flex items-center justify-center">{isDarkMode ? 'dark_mode' : 'light_mode'}</span>
-            <span className="text-[10px] font-technical-data hidden sm:inline-block">{isDarkMode ? 'Dark' : 'Light'}</span>
-          </button>
-          <button 
+          <button
             onClick={toggleHighContrast}
-            aria-label="High Contrast Mode" 
+            aria-label="High Contrast Mode"
             title="Toggle High Contrast Mode"
             className={`h-8 w-8 rounded transition-colors active:opacity-80 flex items-center justify-center cursor-pointer ${isHighContrast ? "bg-primary text-on-primary" : (isDarkMode ? "text-slate-200 hover:bg-slate-800" : "text-primary hover:bg-surface-container-high")}`}
           >
             <span className="material-symbols-outlined text-[18px] sm:text-[20px] flex items-center justify-center" data-icon="contrast">contrast</span>
-          </button>
-          <button 
-            onClick={toggleLanguage}
-            aria-label="Change Language" 
-            title={`Current Language: ${language} (Click to switch)`}
-            className={`h-8 px-2 rounded transition-colors active:opacity-80 flex items-center justify-center gap-1 text-xs font-semibold cursor-pointer ${isDarkMode ? "text-slate-200 hover:bg-slate-800" : "text-primary hover:bg-surface-container-high"}`}
-          >
-            <span className="material-symbols-outlined text-[18px] sm:text-[20px] flex items-center justify-center" data-icon="language">language</span>
-            <span className="text-[10px] font-technical-data leading-none flex items-center">{language}</span>
           </button>
 
           {onLogout && (

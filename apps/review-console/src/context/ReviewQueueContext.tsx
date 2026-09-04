@@ -462,7 +462,7 @@ export const ReviewQueueProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
 
   // Accessibility
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [isHighContrast, setIsHighContrast] = useState(false);
 
   const toggleDarkMode = useCallback(() => {

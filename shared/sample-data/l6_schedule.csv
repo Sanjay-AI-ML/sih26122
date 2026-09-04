@@ -1,13 +1,53 @@
 activity_id,activity_name,discipline,tag,wbs_path,planned_start,planned_finish
-L6-PIP-401,Spool erection and fit-up - Main cooling line,piping,24-PL-001,2.3.1.1 Piping / Main Cooling Circuit,2026-08-20,2026-09-10
-L6-PIP-402,Welding and joint inspection,piping,P-201A,2.3.1.2 Piping / Welding,2026-09-01,2026-09-15
-L6-PIP-403,Hydro testing primary line,piping,24-PL-001,2.3.1.3 Piping / Testing,2026-09-10,2026-09-20
-L6-CIV-104,Excavation and foundation Block B4,civil,,2.1.1 Civil / Foundations,2026-08-25,2026-09-20
-L6-CIV-402,Concrete pour - Foundation plinth,civil,,2.1.2 Civil / Concrete,2026-09-05,2026-09-12
-L6-CIV-501,Blast wall construction,civil,,2.1.3 Civil / Structures,2026-09-01,2026-09-25
-L6-ELE-201,Cable tray installation,electrical,TAG-201,2.4.1 Electrical / Cable Trays,2026-08-15,2026-09-05
-L6-ELE-404,Switchgear panel wiring,electrical,TAG-404,2.4.2 Electrical / Panels,2026-08-20,2026-09-10
-L6-INS-505,Transmitter calibration - Unit 2,instrumentation,,2.5.1 Instrumentation / Calibration,2026-09-01,2026-09-10
-L6-INS-506,Flow meter calibration,instrumentation,,2.5.2 Instrumentation / Meters,2026-09-08,2026-09-15
-L6-HSE-301,Safety briefing and HSE inspection,hse,,2.6.1 HSE / Site Safety,2026-08-01,2026-09-30
-L6-ROT-301,Pump alignment and grouting,static_rotating,P-101,2.2.1 Mechanical / Rotating,2026-09-01,2026-09-12
+L6-CIV-101,Site clearance and grading,civil,,1.1.1 Civil / Site Preparation,2026-07-01,2026-07-15
+L6-CIV-102,Survey and benchmark establishment,civil,,1.1.2 Civil / Site Preparation,2026-07-01,2026-07-10
+L6-CIV-201,Piling works - Unit 1 foundation,civil,,1.2.1 Civil / Foundations,2026-07-10,2026-08-05
+L6-CIV-202,Excavation and foundation Block A1,civil,,1.2.2 Civil / Foundations,2026-07-15,2026-08-10
+L6-CIV-203,Excavation and foundation Block B4,civil,,1.2.3 Civil / Foundations,2026-08-25,2026-09-20
+L6-CIV-301,Concrete pour - Foundation plinth,civil,,1.3.1 Civil / Concrete Works,2026-09-05,2026-09-12
+L6-CIV-302,Concrete pour - Equipment pedestal,civil,,1.3.2 Civil / Concrete Works,2026-08-15,2026-08-28
+L6-CIV-303,Concrete curing and quality inspection,civil,,1.3.3 Civil / Concrete Works,2026-08-28,2026-09-04
+L6-CIV-401,Structural steel erection - Main process building,civil,,1.4.1 Civil / Structural Steel,2026-09-01,2026-09-30
+L6-CIV-402,Structural steel erection - Pipe rack,civil,PR-05,1.4.2 Civil / Structural Steel,2026-09-05,2026-09-25
+L6-CIV-501,Blast wall construction,civil,,1.5.1 Civil / Structures,2026-09-01,2026-09-25
+L6-CIV-502,Boundary wall and access road paving,civil,,1.5.2 Civil / Structures,2026-09-10,2026-10-05
+L6-CIV-601,Roofing and cladding - Main building,civil,,1.6.1 Civil / Finishing,2026-10-01,2026-10-20
+L6-PIP-401,Spool erection and fit-up - Main process line,piping,24-PL-001,2.1.1 Piping / Process Lines,2026-08-20,2026-09-10
+L6-PIP-402,Welding and joint inspection,piping,P-201A,2.1.2 Piping / Welding,2026-09-01,2026-09-15
+L6-PIP-403,Hydro testing primary line,piping,24-PL-001,2.1.3 Piping / Testing,2026-09-10,2026-09-20
+L6-PIP-404,Spool erection - Utility line 2,piping,08-SS-202,2.1.4 Piping / Utility Lines,2026-09-05,2026-09-22
+L6-PIP-405,Pipe rack tie-in and support installation,piping,PR-05,2.1.5 Piping / Pipe Rack,2026-09-12,2026-09-28
+L6-PIP-406,Radiography and NDT of welded joints,piping,P-201A,2.1.6 Piping / Quality Control,2026-09-15,2026-09-25
+L6-PIP-407,Pipeline insulation and wrapping,piping,24-PL-001,2.1.7 Piping / Insulation,2026-09-20,2026-10-05
+L6-PIP-408,Final alignment and flange bolt-up,piping,P-201A,2.1.8 Piping / Alignment,2026-09-25,2026-10-02
+L6-ROT-301,Pump alignment and grouting,static_rotating,P-101,2.2.1 Mechanical / Rotating Equipment,2026-09-01,2026-09-12
+L6-ROT-302,Compressor installation and coupling alignment,static_rotating,C-301,2.2.2 Mechanical / Rotating Equipment,2026-09-10,2026-09-28
+L6-ROT-401,Vessel and tank installation,static_rotating,TK-101,2.2.3 Mechanical / Static Equipment,2026-08-15,2026-09-10
+L6-ROT-402,Exchanger mounting and connection,static_rotating,E-102,2.2.4 Mechanical / Static Equipment,2026-09-05,2026-09-20
+L6-ROT-501,Mechanical run-in test - rotating equipment,static_rotating,P-101,2.2.5 Mechanical / Commissioning,2026-10-01,2026-10-10
+L6-ELE-201,Cable tray installation,electrical,TAG-201,3.1.1 Electrical / Cable Trays,2026-08-15,2026-09-05
+L6-ELE-202,Cable trench excavation and ducting,electrical,CT-04,3.1.2 Electrical / Cable Trenches,2026-08-20,2026-09-08
+L6-ELE-301,Cable pulling and termination - main feeder,electrical,SS-01,3.2.1 Electrical / Cabling,2026-09-01,2026-09-18
+L6-ELE-302,Cable pulling - motor control circuits,electrical,MCC-01,3.2.2 Electrical / Cabling,2026-09-05,2026-09-20
+L6-ELE-401,Substation equipment installation,electrical,SS-01,3.3.1 Electrical / Substation,2026-08-25,2026-09-20
+L6-ELE-402,Transformer installation and testing,electrical,TY-02,3.3.2 Electrical / Substation,2026-09-01,2026-09-22
+L6-ELE-404,Switchgear panel wiring,electrical,TAG-404,3.3.3 Electrical / Panels,2026-08-20,2026-09-10
+L6-ELE-405,MCC panel installation and termination,electrical,MCC-01,3.3.4 Electrical / Panels,2026-09-08,2026-09-25
+L6-ELE-501,Earthing and lightning protection system,electrical,,3.4.1 Electrical / Earthing,2026-09-15,2026-09-30
+L6-ELE-601,Electrical continuity and megger testing,electrical,SS-01,3.5.1 Electrical / Testing,2026-09-28,2026-10-08
+L6-INS-501,Instrument air tubing installation,instrumentation,,4.1.1 Instrumentation / Tubing,2026-09-01,2026-09-15
+L6-INS-502,Instrument cable pulling and termination,instrumentation,,4.1.2 Instrumentation / Cabling,2026-09-05,2026-09-20
+L6-INS-505,Pressure transmitter calibration - Unit 2,instrumentation,PT-509,4.2.1 Instrumentation / Calibration,2026-09-01,2026-09-10
+L6-INS-506,Flow meter calibration,instrumentation,FT-301,4.2.2 Instrumentation / Calibration,2026-09-08,2026-09-15
+L6-INS-507,Temperature transmitter installation and loop check,instrumentation,,4.2.3 Instrumentation / Loop Checks,2026-09-12,2026-09-22
+L6-INS-508,Level gauge and switch installation,instrumentation,,4.2.4 Instrumentation / Installation,2026-09-10,2026-09-20
+L6-INS-601,DCS/PLC control loop configuration,instrumentation,,4.3.1 Instrumentation / Control Systems,2026-09-20,2026-10-05
+L6-INS-602,Instrument loop punch-listing and sign-off,instrumentation,,4.3.2 Instrumentation / Commissioning,2026-10-05,2026-10-12
+L6-HSE-301,Safety briefing and toolbox talk,hse,,5.1.1 HSE / Site Safety,2026-07-01,2026-10-30
+L6-HSE-302,Permit-to-work and scaffold inspection,hse,,5.1.2 HSE / Site Safety,2026-07-01,2026-10-30
+L6-HSE-303,Hydrocracker unit safety walkdown,hse,,5.1.3 HSE / Site Safety,2026-08-01,2026-10-30
+L6-HSE-401,Fire and gas detection system installation,hse,,5.2.1 HSE / Life Safety Systems,2026-09-10,2026-09-30
+L6-HSE-402,Emergency shutdown system testing,hse,,5.2.2 HSE / Life Safety Systems,2026-10-05,2026-10-15
+L6-COM-701,Pre-commissioning system walkdown,piping,,6.1.1 Commissioning / Mechanical,2026-10-10,2026-10-18
+L6-COM-702,Loop testing and functional checks,instrumentation,,6.1.2 Commissioning / Instrumentation,2026-10-12,2026-10-20
+L6-COM-801,Performance test run and handover,static_rotating,,6.2.1 Commissioning / Handover,2026-10-20,2026-10-30
