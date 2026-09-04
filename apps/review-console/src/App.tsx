@@ -32,7 +32,7 @@ const RouteHandler: React.FC = () => {
     <Routes>
       <Route path="/" element={<ReviewQueueScreen />} />
       <Route path="/primavera" element={<PrimaveraP6Screen />} />
-      <Route path="/claude-extractor" element={<div className="flex-1 overflow-auto p-6"><ClaudeKeywordExtractor /></div>} />
+      <Route path="/claude-extractor" element={<div className="lg:ml-[240px] ml-0 mt-[56px] flex-1 overflow-y-auto p-4 lg:p-6 min-h-[calc(100vh-56px)]"><ClaudeKeywordExtractor /></div>} />
       <Route path="/analytics" element={<DelayRiskDashboard isOpen={true} onClose={() => navigate("/")} />} />
       <Route path="/record/:id" element={<RecordDetailScreen />} />
       <Route path="/create" element={<ReviewQueueScreen />} />
