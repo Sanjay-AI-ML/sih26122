@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, Download, TrendingDown, AlertTriangle, Activity, BrainCircuit, Search, CheckCircle } from 'lucide-react';
 import { useReviewQueue } from '../context/ReviewQueueContext';
-import { useProjectMetrics } from '../lib/dataIntegration';
+import { useProjectMetrics, useAnalyticsData } from '../lib/dataIntegration';
 import { useRealTimeDataPolling } from '../hooks/useRealTimeData';
 
 interface DelayRiskDashboardProps {
@@ -19,8 +19,9 @@ interface CriticalPathItem {
 }
 
 export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, onClose }) => {
-  const { setIsExportModalOpen, items, isDarkMode } = useReviewQueue();
+  const { setIsExportModalOpen, isDarkMode } = useReviewQueue();
   const { metrics, isLoading } = useProjectMetrics();
+  const { data: rawData } = useAnalyticsData();
   const [searchQuery, setSearchQuery] = React.useState("");
 
   // Enable real-time data polling
@@ -28,26 +29,25 @@ export const DelayRiskDashboard: React.FC<DelayRiskDashboardProps> = ({ isOpen, 
 
   if (!isOpen) return null;
 
-  const safeItems = items || [];
+  // Bottlenecks are sourced from the real backend audit history (not the
+  // local per-session review queue, which is empty on a fresh page load and
+  // was making this list disagree with the "Active Bottlenecks" count and
+  // the Delay by Discipline chart, which both already read real data).
+  const auditHistory = rawData?.auditHistory || [];
+  const realBottlenecks = auditHistory.filter((r: any) => r.delay_reason);
 
-  // Real queue items with delay reasons
-  const realBottlenecks = safeItems.filter(i => i.delayReason);
-
-  // Use real bottlenecks OR empty when none available
-  const activeBottlenecksList = realBottlenecks.length > 0
-    ? realBottlenecks.map((b, idx) => ({
-        id: b.id || `Q-${idx}`,
-        reason: b.delayReason || "Schedule Variance Reported",
-        activity: b.activityDescription || b.eventId || "WBS Node Activity",
-        discipline: b.discipline || "Piping",
-        delayDays: Math.max(0, (b as any).delayDays || 0)
-      }))
-    : [];
+  const activeBottlenecksList = realBottlenecks.map((b: any, idx: number) => ({
+    id: b.id ?? `AH-${idx}`,
+    reason: b.delay_reason || "Schedule Variance Reported",
+    activity: b.source_excerpt || b.activity_id || "WBS Node Activity",
+    discipline: b.discipline || "Piping",
+    delayDays: 0
+  }));
 
   // Use real metrics from integration layer
   const hasRealData = metrics && metrics.totalEvents > 0;
   const scheduleVariance = metrics?.scheduleVariance ?? 0;
-  const bottleneckCount = activeBottlenecksList.length > 0 ? activeBottlenecksList.length : (metrics?.ambiguousEvents ?? 0);
+  const bottleneckCount = activeBottlenecksList.length;
   const avgConfidence = metrics?.overallConfidence ?? 86;
   const criticalPathDelay = metrics?.criticalPathDelay ?? 0;
 
