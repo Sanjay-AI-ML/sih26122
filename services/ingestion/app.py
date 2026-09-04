@@ -99,7 +99,7 @@ def supported_formats():
     tags=["Ingestion"],
     summary="Unified Ingestion Endpoint"
 )
-async def ingest_unified(
+def ingest_unified(
     file: Optional[UploadFile] = File(None),
     text: Optional[str] = Form(None),
     source_document: Optional[str] = Form(None),
@@ -107,10 +107,14 @@ async def ingest_unified(
 ):
     """
     Unified ingestion endpoint accepting either a multipart file upload OR form text.
+    Sync def so FastAPI runs it in the threadpool - PDF text extraction and
+    the (possibly many, sequential) LLM calls it triggers are blocking, and
+    an async def here would freeze the whole event loop (every other
+    request, including /health) for the entire upload.
     """
     if file is not None:
         filename = file.filename or "uploaded_file"
-        content = await file.read()
+        content = file.file.read()
         events = engine.ingest_file(
             file_content=content,
             filename=filename,
@@ -151,15 +155,17 @@ async def ingest_unified(
     tags=["Ingestion"],
     summary="Upload & Ingest File (.txt, .pdf, .csv, .xlsx, .jpg, .png)"
 )
-async def ingest_file_endpoint(
+def ingest_file_endpoint(
     file: UploadFile = File(...),
     default_date: Optional[str] = Form(None)
 ):
     """
     Ingests an uploaded file and returns extracted events.
+    Sync def so FastAPI runs it in the threadpool - see ingest_unified note
+    above; the same event-loop-freeze applies here for PDF/spreadsheet uploads.
     """
     filename = file.filename or "uploaded_file"
-    content = await file.read()
+    content = file.file.read()
     events = engine.ingest_file(
         file_content=content,
         filename=filename,
@@ -229,15 +235,17 @@ def ingest_voice_endpoint(payload: VoiceIngestRequest):
     tags=["Ingestion"],
     summary="Upload & Transcribe Audio File (.wav, .mp3, .m4a, .ogg)"
 )
-async def ingest_audio_endpoint(
+def ingest_audio_endpoint(
     file: UploadFile = File(...),
     default_date: Optional[str] = Form(None)
 ):
     """
     Uploads supervisor voice recording, transcribes via local Whisper model, and extracts events.
+    Sync def so FastAPI runs it in the threadpool - Whisper transcription is
+    blocking and would otherwise freeze the whole event loop mid-upload.
     """
     filename = file.filename or "supervisor_voice.wav"
-    content = await file.read()
+    content = file.file.read()
     events = engine.ingest_audio(
         audio_input=content,
         filename=filename,

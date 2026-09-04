@@ -227,24 +227,45 @@ class LLMExtractor:
         print(f"[LLM] Falling back to offline extraction")
         return self._offline_smart_extractor(text, source_document, default_date)
 
+    # Each chunk costs one sequential Ollama call (~10-40s on modest local
+    # hardware). A long PDF/report can have 50+ sentences - uncapped, that is
+    # many minutes of blocking work per upload. Cap the call count and, if a
+    # document has more sentences than that, batch several sentences per
+    # remaining chunk instead of dropping any content.
+    MAX_LLM_CHUNKS = 12
+
     def _split_into_activity_chunks(self, text: str) -> List[str]:
         """
         Splits report text into per-sentence chunks so each LLM call only
         ever has to parse ONE activity. Splits on newlines first, then on
         sentence boundaries within each line. Chunks under 8 chars (stray
-        punctuation) are dropped.
+        punctuation) are dropped. Bounded to MAX_LLM_CHUNKS - see above.
         """
-        chunks: List[str] = []
+        sentences: List[str] = []
         for line in text.split("\n"):
             line = line.strip()
             if not line:
                 continue
-            sentences = re.split(r"(?<=[.!?])\s+(?=[A-Z])", line)
-            for s in sentences:
+            for s in re.split(r"(?<=[.!?])\s+(?=[A-Z])", line):
                 s = s.strip()
                 if len(s) >= 8:
-                    chunks.append(s)
-        return chunks or ([text.strip()] if text.strip() else [])
+                    sentences.append(s)
+
+        if not sentences:
+            return [text.strip()] if text.strip() else []
+
+        if len(sentences) <= self.MAX_LLM_CHUNKS:
+            return sentences
+
+        # Too many sentences for one-call-per-sentence: batch them evenly
+        # into MAX_LLM_CHUNKS groups (still far fewer activities per call
+        # than the original whole-document prompt that caused the merging).
+        import math
+        batch_size = math.ceil(len(sentences) / self.MAX_LLM_CHUNKS)
+        return [
+            " ".join(sentences[i:i + batch_size])
+            for i in range(0, len(sentences), batch_size)
+        ]
 
     def _extract_chunk(
         self,
